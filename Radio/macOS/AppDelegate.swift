@@ -4,32 +4,12 @@
 //
 
 import Foundation
-
-#if os(iOS)
-import UIKit
-#elseif os(macOS)
 import Cocoa
 import RadioBrowserAPI
 import Storage
 import SwiftData
 import NeedleFoundation
-#endif
 
-#if os(iOS)
-@main
-class AppDelegate: UIResponder, UIApplicationDelegate {
-    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        return true
-    }
-
-    func application(_ application: UIApplication, configurationForConnecting connectingSceneSession: UISceneSession, options: UIScene.ConnectionOptions) -> UISceneConfiguration {
-        return UISceneConfiguration(name: "Default Configuration", sessionRole: connectingScene/session.role)
-    }
-
-    func application(_ application: UIApplication, didDiscardSceneSessions sceneSessions: Set<UISceneSession>) {
-    }
-}
-#elseif os(macOS)
 class AppDelegate: NSObject, NSApplicationDelegate {
     var window: NSWindow?
     var appComponent: AppComponent?
@@ -72,4 +52,3 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         return true
     }
 }
-#endif

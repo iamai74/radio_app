@@ -4,14 +4,8 @@
 //
 
 import Foundation
-
-#if os(iOS)
 import UIKit
-#elseif os(macOS)
-import AppKit
-#endif
 
-#if os(iOS)
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     var window: UIWindow?
 
@@ -30,9 +24,3 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     func sceneWillEnterForeground(_ scene: UIScene) {}
     func sceneDidEnterBackground(_ scene: UIScene) {}
 }
-#elseif os(macOS)
-class SceneDelegate: NSObject, NSApplicationDelegate {
-    func applicationDidFinishLaunching(_ notification: Notification) {}
-    func applicationWillTerminate(_ notification: Notification) {}
-}
-#endif
