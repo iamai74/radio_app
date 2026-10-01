@@ -1,0 +1,46 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Xcode
+build/
+DerivedData/
+*.xcodeproj
+*.xcodeproj/xcuserdata/
+*.xcworkspace/
+*.xcworkspace/xcuserdata/
+*.xcuserdatad
+*.xccheckout
+*.moved-aside
+*.xcuserstate
+*.xcuserdatad/
+*.xcworkspace/
+!default.xcworkspace
+
+# Swift Package Manager
+.build/
+.swiftpm/
+Package.resolved
+
+# Needle (Generated files)
+NeedleGenerated.swift
+*.NeedleGenerated.swift
+
+# CocoaPods
+Pods/
+*.xcworkspace
+
+# CocoaPods/SwiftGen
+.swiftgen/
+
+# Local environment
+.env
+*.local
+
+# Project specific
+Packages/RadioBrowserAPI/.build/
+Packages/Storage/.build/
+Packages/UILibrary/.build/
+Packages/Resources/.build/
+Packages/Architecture/.build/

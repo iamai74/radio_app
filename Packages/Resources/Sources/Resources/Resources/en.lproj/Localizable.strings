@@ -1,0 +1,18 @@
+/* StationList */
+"filter_all" = "All";
+"filter_favorites" = "Favorites";
+
+/* Search */
+"search_placeholder" = "Search stations...";
+
+/* EmptySearch */
+"empty_search_title" = "Search Stations";
+"empty_search_subtitle" = "Enter a station name, country, or tag";
+"empty_search_no_results_title" = "No Results";
+"empty_search_no_results_subtitle" = "No stations found for \"%@\"";
+
+/* StationRow */
+"station_row_bitrate" = "%@ kbps";
+
+/* New */
+"test_new_string" = "This is a new test string";

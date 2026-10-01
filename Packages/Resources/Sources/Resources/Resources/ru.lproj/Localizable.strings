@@ -1,0 +1,12 @@
+/* StationList */
+"filter_all" = "Все";
+"filter_favorites" = "Избранное";
+
+/* Search */
+"search_placeholder" = "Поиск станций...";
+
+/* EmptySearch */
+"empty_search_title" = "Поиск станций";
+"empty_search_subtitle" = "Введите название станции, страны или тег";
+"empty_search_no_results_title" = "Результатов нет";
+"empty_search_no_results_subtitle" = "Станции не найдены для \"%@\"";

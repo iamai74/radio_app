@@ -1,0 +1,75 @@
+name: Radio
+options:
+  bundleIdPrefix: com.radio
+  deploymentTarget:
+    iOS: "17.0"
+    macOS: "14.0"
+  xcodeVersion: "15.0"
+
+packages:
+  RadioBrowserAPI:
+    path: Packages/RadioBrowserAPI
+  Storage:
+    path: Packages/Storage
+  UILibrary:
+    path: Packages_UILibrary
+  Resources:
+    path: Packages/Resources
+  Architecture:
+    path: Packages/Architecture
+
+targets:
+  Radio_iOS:
+    type: application
+    platform: iOS
+    sources:
+      - path: Radio/iOS
+        excludes:
+          - "Info.plist"
+      - path: Radio/Middleware
+      - Radio/Assets.xcassets
+    info:
+      path: Radio/iOS/Info.plist
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.radio.ios
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        SWIFT_VERSION: "5.0"
+        TARGETED_DEVIC_FAMILY: "1,2"
+    dependencies:
+      - package: RadioBrowserAPI
+      - package: Storage
+      - package: UILibrary
+    preBuildScripts:
+      - name: SwiftGen
+        script: |
+          cd "$PROJECT_DIR/Packages/Resources"
+          swiftgen config run
+        basedOnDependencyAnalysis: false
+
+  Radio_macOS:
+    type: application
+    platform: macOS
+    sources:
+      - path: Radio/macOS
+        excludes:
+          - "Info.plist"
+      - path: Radio/Middleware
+      - Radio/Assets.xcassets
+    info:
+      path: Radio/macOS/Info.plist
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.radio.macos
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        SWIFT_VERSION: "5.0"
+        COMBINE_HIDPI_IMAGES: YES
+    dependencies:
+      - package: RadioBrowser
+      - package: Storage
+      - package: UILibrary
+    preBuildScripts:
+      - name: SwiftGen
+        script: |
+          cd "$PROJECT_DIR/Packages/Resources" && swiftgen config run
+        basedOnDependencyAnalysis: false

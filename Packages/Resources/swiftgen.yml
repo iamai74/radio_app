@@ -1,0 +1,9 @@
+strings:
+  inputs:
+    - Sources/Resources/Resources/en.lproj/Localizable.strings
+  outputs:
+    - output: Sources/Resources/Localization/Generated/L10n.swift
+      templateName: structured-swift5
+      params:
+        publicAccess: true
+        bundle: Bundle.module
