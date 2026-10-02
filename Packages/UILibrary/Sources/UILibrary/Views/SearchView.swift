@@ -107,7 +107,7 @@ public struct SearchView: View {
         HStack {
             Image(systemName: "magnifyingglass")
                 .foregroundStyle(.secondary)
-            TextField(L10n.searchPlaceholder, text: $searchText)
+            TextField(R.string.localizable.search_placeholder(), text: $searchText)
                 .textFieldStyle(.roundedBorder)
         }
         .padding()

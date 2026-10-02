@@ -13,11 +13,16 @@ let package = Package(
             name: "Resources",
             targets: ["Resources"]),
     ],
+    dependencies: [
+        .package(url: "https://github.com/mac-cain13/R.swift", from: "7.5.0"),
+    ],
     targets: [
         .target(
             name: "Resources",
-            dependencies: [],
-            sources: ["Localization"],
-            resources: [.process("Resources")]),
+            dependencies: [.product(name: "RswiftLibrary", package: "R.swift")],
+            resources: [.process("en.lproj"), .process("ru.lproj")],
+            plugins: [
+                .plugin(name: "RswiftGeneratePublicResources", package: "R.swift"),
+            ]),
     ]
 )

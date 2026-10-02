@@ -31,8 +31,6 @@ NeedleGenerated.swift
 Pods/
 *.xcworkspace
 
-# CocoaPods/SwiftGen
-.swiftgen/
 
 # Local environment
 .env

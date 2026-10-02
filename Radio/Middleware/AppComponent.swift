@@ -3,18 +3,14 @@ import NeedleFoundation
 import RadioBrowserAPI
 import Storage
 
-@MainActor
-public protocol AppDependency: Dependency {
-    var networkClient: NetworkClientProtocol { get }
-    var dataStore: Storage.DataStore { get }
-}
+typealias ComponentAppDependency = AppDependency
 
 @MainActor
 public class AppComponent: BootstrapComponent {
     
-    let appDependency: AppDependency
+    let appDependency: ComponentAppDependency
     
-    public init(appDependency: AppDependency) {
+    init(appDependency: ComponentAppDependency) {
         self.appDependency = appDependency
         super.init()
     }

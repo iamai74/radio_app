@@ -24,8 +24,6 @@ targets:
     sources:
       - path: Radio/iOS
       - path: Radio/Middleware
-        excludes:
-          - AppInitializer.swift
       - path: Radio/Assets.xcassets
     info:
       path: Radio/iOS/Info.plist
@@ -47,12 +45,7 @@ targets:
       - package: RadioBrowserAPI
       - package: Storage
       - package: UILibrary
-    preBuildScripts:
-      - name: SwiftGen
-        script: |
-          cd "$PROJECT_DIR/Packages/Resources"
-          swiftgen config run
-        basedOnDependencyAnalysis: false
+    preBuildScripts: []
   Radio_macOS:
     type: application
     platform: macOS
@@ -72,9 +65,4 @@ targets:
       - package: RadioBrowserAPI
       - package: Storage
       - package: UILibrary
-    preBuildScripts:
-      - name: SwiftGen
-        script: |
-          cd "$PROJECT_DIR/Packages/Resources"
-          swiftgen config run
-        basedOnDependencyAnalysis: false
+    preBuildScripts: []

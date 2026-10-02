@@ -15,16 +15,16 @@ public struct EmptySearchView: View {
                 .foregroundStyle(.secondary)
             
             if searchText.isEmpty {
-                Text(L10n.emptySearchTitle)
+                Text(R.string.localizable.empty_search_title())
                     .font(.title2)
                     .fontWeight(.semibold)
-                Text(L10n.emptySearchSubtitle)
+                Text(R.string.localizable.empty_search_subtitle())
                     .foregroundStyle(.secondary)
             } else {
-                Text(L10n.emptySearchNoResultsTitle)
+                Text(R.string.localizable.empty_search_no_results_title())
                     .font(.title2)
                     .fontWeight(.semibold)
-                Text(L10n.emptySearchNoResultsSubtitle(searchText))
+                Text(R.string.localizable.empty_search_no_results_subtitle(searchText))
                     .foregroundStyle(.secondary)
             }
         }

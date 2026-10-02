@@ -8,9 +8,9 @@ public enum StationFilter: String, CaseIterable {
     public var displayName: String {
         switch self {
         case .all:
-            return L10n.filterAll
+            return R.string.localizable.filter_all()
         case .favorites:
-            return L10n.filterFavorites
+            return R.string.localizable.filter_favorites()
         }
     }
 }
