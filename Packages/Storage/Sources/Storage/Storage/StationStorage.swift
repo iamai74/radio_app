@@ -18,6 +18,7 @@ final class StationStorageImpl: BaseStorage<StationEntityImpl, StationFilter>, S
             .eraseToAnyPublisher()
     }
 
+    // swiftlint:disable:next cyclomatic_complexity
     override func applyFilter(_ filter: StationFilter, to results: inout [StationEntityImpl]) throws {
         if let name = filter.name, !name.isEmpty {
             results = results.filter { $0.name.localizedStandardContains(name) }

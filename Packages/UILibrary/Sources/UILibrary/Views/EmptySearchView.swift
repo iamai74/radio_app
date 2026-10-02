@@ -3,17 +3,17 @@ import Resources
 
 public struct EmptySearchView: View {
     let searchText: String
-    
+
     public init(searchText: String) {
         self.searchText = searchText
     }
-    
+
     public var body: some View {
         VStack(spacing: 12) {
             Image(systemName: "magnifyingglass")
                 .font(.system(size: 48))
                 .foregroundStyle(.secondary)
-            
+
             if searchText.isEmpty {
                 Text(R.string.localizable.empty_search_title())
                     .font(.title2)

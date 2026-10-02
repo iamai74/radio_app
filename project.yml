@@ -4,6 +4,9 @@ options:
   xcodeVersion: "15.0"
 
 packages:
+  SwiftLintPlugins:
+    url: https://github.com/SimplyDanny/SwiftLintPlugins
+    from: 0.65.1
   RadioBrowserAPI:
     path: Packages/RadioBrowserAPI
   Storage:
@@ -45,7 +48,12 @@ targets:
       - package: RadioBrowserAPI
       - package: Storage
       - package: UILibrary
+    buildToolPlugins:
+      - plugin: SwiftLintBuildToolPlugin
+        package: SwiftLintPlugins
+    scheme: {}
     preBuildScripts: []
+    postBuildScripts: []
   Radio_macOS:
     type: application
     platform: macOS
@@ -65,4 +73,9 @@ targets:
       - package: RadioBrowserAPI
       - package: Storage
       - package: UILibrary
+    buildToolPlugins:
+      - plugin: SwiftLintBuildToolPlugin
+        package: SwiftLintPlugins
+    scheme: {}
     preBuildScripts: []
+    postBuildScripts: []

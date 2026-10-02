@@ -5,11 +5,11 @@ public struct SearchView: View {
     let stations: [any Station]
     @State private var searchText: String = ""
     @State private var selectedTags: Set<String> = []
-    
+
     public init(stations: [any Station]) {
         self.stations = stations
     }
-    
+
     private var allTags: [String] {
         var tags = Set<String>()
         for station in stations {
@@ -19,10 +19,10 @@ public struct SearchView: View {
         }
         return Array(tags).sorted()
     }
-    
+
     private var filteredStations: [any Station] {
         var results = stations
-        
+
         if !searchText.isEmpty {
             results = results.filter { station in
                 station.name.localizedCaseInsensitiveContains(searchText) ||
@@ -30,17 +30,17 @@ public struct SearchView: View {
                 (station.tags?.contains { $0.localizedCaseInsensitiveContains(searchText) } ?? false)
             }
         }
-        
+
         if !selectedTags.isEmpty {
             results = results.filter { station in
                 guard let stationTags = station.tags else { return false }
                 return !selectedTags.isDisjoint(with: Set(stationTags))
             }
         }
-        
+
         return results
     }
-    
+
     #if os(iOS)
     public var body: some View {
         VStack(spacing: 0) {
@@ -52,7 +52,7 @@ public struct SearchView: View {
                 }
                 .listStyle(.plain)
             }
-            
+
             if !allTags.isEmpty {
                 TagsCloudView(
                     tags: allTags,
@@ -67,7 +67,7 @@ public struct SearchView: View {
                 )
                 .padding(.vertical, 8)
             }
-            
+
             searchField
         }
     }
@@ -75,7 +75,7 @@ public struct SearchView: View {
     public var body: some View {
         VStack(spacing: 0) {
             searchField
-            
+
             if !allTags.isEmpty {
                 TagsCloudView(
                     tags: allTags,
@@ -90,7 +90,7 @@ public struct SearchView: View {
                 )
                 .padding(.vertical, 8)
             }
-            
+
             if filteredStations.isEmpty {
                 EmptySearchView(searchText: searchText)
             } else {
@@ -102,7 +102,7 @@ public struct SearchView: View {
         }
     }
     #endif
-    
+
     private var searchField: some View {
         HStack {
             Image(systemName: "magnifyingglass")

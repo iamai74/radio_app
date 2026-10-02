@@ -15,6 +15,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/mac-cain13/R.swift", from: "7.5.0"),
+        .package(url: "https://github.com/SimplyDanny/SwiftLintPlugins", from: "0.65.1")
     ],
     targets: [
         .target(
@@ -23,6 +24,7 @@ let package = Package(
             resources: [.process("en.lproj"), .process("ru.lproj")],
             plugins: [
                 .plugin(name: "RswiftGeneratePublicResources", package: "R.swift"),
+                .plugin(name: "SwiftLintBuildToolPlugin", package: "SwiftLintPlugins"),
             ]),
     ]
 )

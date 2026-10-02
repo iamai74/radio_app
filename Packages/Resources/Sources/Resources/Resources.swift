@@ -7,4 +7,4 @@
 
 import Foundation
 
-public class Resources{}
+public class Resources {}

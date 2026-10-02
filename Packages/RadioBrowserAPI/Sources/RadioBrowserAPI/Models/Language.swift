@@ -12,9 +12,4 @@ public protocol Language {
 internal struct LanguageObject: Codable, Language {
     public let name: String
     public let stationCount: Int
-    
-    init(name: String, stationCount: Int) {
-        self.name = name
-        self.stationCount = stationCount
-    }
 }

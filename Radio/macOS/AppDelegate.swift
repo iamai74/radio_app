@@ -19,9 +19,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             do {
                 let dependency = try await AppInitializer.initialize()
                 appComponent = AppComponent(appDependency: dependency)
-                
+
                 // Note: registerProviderFactories() should be implemented if needed
-                
+
                 let stationsService = appComponent!.stationsService
                 print("StationsService initialized: \(stationsService)")
             } catch {
@@ -30,25 +30,25 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         window = NSWindow(
-            contentRect: NSMakeRect(0, 0, 800, 600),
+            contentRect: NSRect(x: 0, y: 0, width: 800, height: 600),
             styleMask: [.titled, .closable, .resizable],
             backing: .buffered,
             defer: false
         )
         window?.title = "Radio"
         window?.center()
-        
+
         let view = NSView()
         view.wantsLayer = true
         view.layer?.backgroundColor = NSColor.red.cgColor
         window?.contentView = view
-        
+
         window?.makeKeyAndOrderFront(nil)
     }
 
     func applicationWillTerminate(_ aNotification: Notification) {}
 
     func applicationSupportsSecureRestorableState(_ app: NSApplication) -> Bool {
-        return true
+        true
     }
 }

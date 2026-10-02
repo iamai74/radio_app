@@ -1,0 +1,99 @@
+# SwiftLint configuration
+# https://realm.github.io/SwiftLint/
+
+# NOTE: `included` is intentionally omitted. The SwiftLint build tool plugin
+# passes the explicit source-file list of the target being built, so linting
+# scope is already defined by the target's `sources` in project.yml.
+# A plain `swiftlint` run from the repository root still scans everything
+# recursively, minus `excluded` below.
+
+excluded:
+  - "**/.build"
+  - "**/.swiftpm"
+  - "**/DerivedData"
+  - "**/Pods"
+  - "**/build"
+  - "**/*.xcodeproj"
+  - "**/*.xcworkspace"
+  # Package manifests are build configuration, not target sources:
+  # the build tool plugin never passes them to SwiftLint, so linting them
+  # here would only make manual runs differ from build runs.
+  - "**/Package.swift"
+  # Generated code
+  - "**/NeedleGenerated.swift"
+  - "Packages/RadioBrowserAPI/Generated"
+  - "**/*.generated.swift"
+  - "**/R.generated.swift"
+
+# Rules enabled by default that this project does not want.
+disabled_rules:
+  # Generated/DI-heavy code makes size-based limits noisy.
+  - file_length
+  - function_body_length
+  - type_body_length
+
+# Additional opt-in rules that are widely adopted and safe for this codebase.
+opt_in_rules:
+  - array_init
+  - contains_over_filter_count
+  - contains_over_filter_is_empty
+  - contains_over_first_not_nil
+  - empty_collection_literal
+  - empty_count
+  - empty_string
+  - explicit_init
+  - fallthrough
+  - first_where
+  - implicit_return
+  - joined_default_parameter
+  - last_where
+  - literal_expression_end_indentation
+  - modifier_order
+  - operator_usage_whitespace
+  - overridden_super_call
+  - prefer_zero_over_explicit_init
+  - private_over_fileprivate
+  - redundant_nil_coalescing
+  - redundant_type_annotation
+  - sorted_first_last
+  - toggle_bool
+  - unavailable_function
+  - unneeded_parentheses_in_closure_argument
+  - unused_optional_binding
+  - vertical_parameter_alignment_on_call
+  - yoda_condition
+
+# Rules only run by `swiftlint analyze`; all analyzer rules are opt-in.
+analyzer_rules:
+  - unused_import
+
+# Customizable rule configuration.
+line_length:
+  warning: 140
+  error: 200
+
+type_name:
+  min_length: 3
+  max_length:
+    warning: 40
+    error: 50
+
+identifier_name:
+  min_length:
+    warning: 3
+    error: 2
+  excluded:
+    - di
+    - id
+    - URL
+    - url
+
+nesting:
+  type_level: 2
+
+cyclomatic_complexity:
+  warning: 10
+  error: 20
+
+# Fail the build on any violation (including warnings).
+strict: true

@@ -1,6 +1,7 @@
 import Foundation
 
 public protocol StationsEndpointProtocol: Sendable {
+    // swiftlint:disable:next function_parameter_count
     func getStations(
         country: String?,
         language: String?,
@@ -12,7 +13,7 @@ public protocol StationsEndpointProtocol: Sendable {
         order: String,
         reverse: Bool
     ) async throws -> [Station]
-    
+
     func getStation(byID id: String) async throws -> Station
     func searchStations(query: String, limit: Int) async throws -> [Station]
     func getStationsByCountry(_ country: String, limit: Int) async throws -> [Station]

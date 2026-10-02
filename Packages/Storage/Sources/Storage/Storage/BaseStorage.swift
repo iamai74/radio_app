@@ -39,11 +39,11 @@ class BaseStorage<Entity: PersistentModel & Hashable, Filter: Hashable>: AnyObje
 
     func reload() {
         let descriptor = FetchDescriptor<Entity>(sortBy: [SortDescriptor(sortKeyPath)])
-        
+
         if let results = try? modelContext.fetch(descriptor) {
             subject.send(results)
         }
-        
+
         if let allResults = try? modelContext.fetch(FetchDescriptor<Entity>()) {
             var current = filteredSubjects.value
             for filter in current.keys {

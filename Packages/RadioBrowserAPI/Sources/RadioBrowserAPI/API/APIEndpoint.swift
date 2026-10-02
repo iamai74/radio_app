@@ -14,7 +14,7 @@ enum APIEndpoint: String, Sendable {
     case tags = "/json/tags"
     case tagsByFilter = "/json/tags/%@"
     case codecs = "/json/codecs"
-    
+
     public func path(with argument: String? = nil) -> String {
         if let arg = argument {
             return String(format: rawValue, arg)

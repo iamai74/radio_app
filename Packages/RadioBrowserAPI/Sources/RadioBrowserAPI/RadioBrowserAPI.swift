@@ -6,7 +6,7 @@ public final class RadioBrowserAPI {
     public let languages: LanguagesEndpointProtocol
     public let tags: TagsEndpointProtocol
     public let codecs: CodecsEndpointProtocol
-    
+
     public init(component: RadioBrowserApiComponent) {
         self.stations = component.stations
         self.countries = component.countries
@@ -14,7 +14,7 @@ public final class RadioBrowserAPI {
         self.tags = component.tags
         self.codecs = component.codecs
     }
-    
+
     public convenience init(networkClient: NetworkClientProtocol = DefaultNetworkClient()) {
         self.init(
             stations: StationsEndpoint(networkClient: networkClient),
@@ -24,7 +24,7 @@ public final class RadioBrowserAPI {
             codecs: CodecsEndpoint(networkClient: networkClient)
         )
     }
-    
+
     init(
         stations: StationsEndpointProtocol,
         countries: CountriesEndpointProtocol,

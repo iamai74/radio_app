@@ -15,10 +15,4 @@ internal struct CountryObject: Codable, Country {
     public let name: String
     public let iso31661: String
     public let stationCount: Int
-    
-    init(name: String, iso31661: String, stationCount: Int) {
-        self.name = name
-        self.iso31661 = iso31661
-        self.stationCount = stationCount
-    }
 }

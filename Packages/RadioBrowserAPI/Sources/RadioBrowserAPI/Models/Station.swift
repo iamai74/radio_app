@@ -48,7 +48,7 @@ internal struct StationObject: Codable, Station {
     public let changeCounter: Int
     public let creationTime: Date?
     public let urlResolved: String?
-    
+
     init(
         id: String,
         name: String,

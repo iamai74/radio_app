@@ -12,9 +12,4 @@ public protocol Codec {
 internal struct CodecObject: Codable, Codec {
     public let name: String
     public let stationCount: Int
-    
-    init(name: String, stationCount: Int) {
-        self.name = name
-        self.stationCount = stationCount
-    }
 }

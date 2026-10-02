@@ -15,10 +15,10 @@ public class AppInitializer {
         let modelContainer = try StorageContainer.create()
         let storageDi = Storage.DIContainer.shared
         storageDi.register(modelContainer: modelContainer)
-        
+
         let networkClient = DefaultNetworkClient()
         let dataStore = storageDi.dataStore
-        
+
         return AppDependencyImpl(
             networkClient: networkClient,
             dataStore: dataStore
@@ -30,7 +30,7 @@ public class AppInitializer {
 internal final class AppDependencyImpl: AppDependency {
     let networkClient: NetworkClientProtocol
     let dataStore: Storage.DataStore
-    
+
     init(networkClient: NetworkClientProtocol, dataStore: Storage.DataStore) {
         self.networkClient = networkClient
         self.dataStore = dataStore

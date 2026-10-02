@@ -19,7 +19,7 @@ public struct StationFilter: Hashable {
     }
 
     public static var empty: StationFilter { StationFilter() }
-    
+
     public init() {}
 }
 
@@ -35,7 +35,7 @@ public struct CountryFilter: Hashable {
     }
 
     public static var empty: CountryFilter { CountryFilter() }
-    
+
     public init() {}
 }
 
@@ -51,7 +51,7 @@ public struct TagFilter: Hashable {
     }
 
     public static var empty: TagFilter { TagFilter() }
-    
+
     public init() {}
 }
 
@@ -67,7 +67,7 @@ public struct LanguageFilter: Hashable {
     }
 
     public static var empty: LanguageFilter { LanguageFilter() }
-    
+
     public init() {}
 }
 
@@ -83,6 +83,6 @@ public struct CodecFilter: Hashable {
     }
 
     public static var empty: CodecFilter { CodecFilter() }
-    
+
     public init() {}
 }

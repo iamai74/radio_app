@@ -14,9 +14,15 @@ let package = Package(
             name: "Storage",
             targets: ["Storage"]),
     ],
+    dependencies: [
+        .package(url: "https://github.com/SimplyDanny/SwiftLintPlugins", from: "0.65.1")
+    ],
     targets: [
         .target(
             name: "Storage",
-            dependencies: []),
+            dependencies: [],
+            plugins: [
+                .plugin(name: "SwiftLintBuildToolPlugin", package: "SwiftLintPlugins")
+            ]),
     ]
 )

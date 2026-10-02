@@ -5,7 +5,7 @@ public enum APIError: Error, LocalizedError {
     case invalidResponse
     case decodingFailed(Error)
     case networkFailed(Error)
-    
+
     public var errorDescription: String? {
         switch self {
         case .invalidURL:

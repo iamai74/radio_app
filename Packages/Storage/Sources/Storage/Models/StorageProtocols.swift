@@ -5,9 +5,9 @@ import Combine
 @MainActor
 public protocol StorageProtocol: AnyObject {
     associatedtype Entity: PersistentModel & Hashable
-    
+
     var publisher: AnyPublisher<[Entity], Never> { get }
-    
+
     func save(_ entities: [Entity]) throws
     func deleteAll() throws
 }

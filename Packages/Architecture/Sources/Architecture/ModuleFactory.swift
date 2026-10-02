@@ -9,9 +9,9 @@ public protocol ModuleFactory: AnyObject {
 
 public class NeedleModuleFactory<C: NeedleFoundation.Component>: ModuleFactory {
     public typealias Component = C
-    
+
     public init() {}
-    
+
     public func makeCoordinator<M: Module>(for moduleType: M.Type, component: C) -> M.CoordinatorType where M.Component == C {
         // This implementation assumes the Module is also resolvable via Needle.
         // We use Needle's resolve method to find the module and then call its makeCoordinator.

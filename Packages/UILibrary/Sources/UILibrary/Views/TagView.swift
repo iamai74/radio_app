@@ -3,7 +3,7 @@ import SwiftUI
 public struct TagView: View {
     let text: String
     var isSelected: Bool = false
-    
+
     public var body: some View {
         Text(text)
             .font(.caption)

@@ -4,7 +4,7 @@ import Resources
 public enum StationFilter: String, CaseIterable {
     case all
     case favorites
-    
+
     public var displayName: String {
         switch self {
         case .all:
@@ -19,12 +19,12 @@ public struct StationListView: View {
     let stations: [any Station]
     @State private var selectedFilter: StationFilter = .all
     let searchView: SearchView
-    
+
     public init(stations: [any Station]) {
         self.stations = stations
         self.searchView = SearchView(stations: stations)
     }
-    
+
     private var filteredStations: [any Station] {
         switch selectedFilter {
         case .all:
@@ -33,7 +33,7 @@ public struct StationListView: View {
             return stations.filter(\.isFavorite)
         }
     }
-    
+
     public var body: some View {
         VStack(spacing: 0) {
             Picker("Filter", selection: $selectedFilter) {
@@ -44,12 +44,12 @@ public struct StationListView: View {
             .pickerStyle(.segmented)
             .padding(.horizontal)
             .padding(.top)
-            
+
             List(filteredStations, id: \.id) { station in
                 StationRowView(station: station)
             }
             .listStyle(.plain)
-            
+
             HStack {
                 Spacer()
                 Button {

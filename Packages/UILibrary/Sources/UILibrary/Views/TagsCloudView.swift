@@ -4,7 +4,7 @@ public struct TagsCloudView: View {
     let tags: [String]
     var selectedTags: Set<String> = []
     var onTagTap: ((String) -> Void)?
-    
+
     public init(
         tags: [String],
         selectedTags: Set<String> = [],
@@ -14,7 +14,7 @@ public struct TagsCloudView: View {
         self.selectedTags = selectedTags
         self.onTagTap = onTagTap
     }
-    
+
     public var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {

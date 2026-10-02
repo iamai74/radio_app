@@ -14,7 +14,7 @@ public struct MockStation: Station {
     public let bitrate: Int?
     public let lastCheckOk: Bool
     public let isFavorite: Bool
-    
+
     public init(
         id: String,
         name: String,
@@ -62,7 +62,7 @@ enum MockStations {
         lastCheckOk: true,
         isFavorite: true
     )
-    
+
     static let classical = MockStation(
         id: "2",
         name: "Classical FM",
@@ -78,7 +78,7 @@ enum MockStations {
         lastCheckOk: true,
         isFavorite: false
     )
-    
+
     static let rockRadio = MockStation(
         id: "3",
         name: "Rock Radio",
@@ -94,6 +94,6 @@ enum MockStations {
         lastCheckOk: false,
         isFavorite: true
     )
-    
+
     static let all: [any Station] = [jazzRadio, classical, rockRadio]
 }

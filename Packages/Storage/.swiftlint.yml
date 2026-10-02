@@ -1,0 +1,8 @@
+# The SwiftLint build tool plugin runs with this package directory as the
+# working directory, so the root configuration is pulled in explicitly.
+#
+# `strict` must be repeated here: SwiftLint's parent/child merge takes the
+# CHILD's `strict` and discards the parent's, so without it every warning
+# would silently pass instead of failing the build.
+parent_config: ../../.swiftlint.yml
+strict: true

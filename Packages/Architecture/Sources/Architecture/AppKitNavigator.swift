@@ -9,6 +9,7 @@ public class AppKitNavigator: Navigator {
         self.window = window
     }
 
+    // swiftlint:disable:next unavailable_function
     public func push<V: View>(view: V) where V.ViewModelType: ViewModel {
         fatalError("Push is not natively supported in AppKit window-based navigation in this abstraction")
     }
