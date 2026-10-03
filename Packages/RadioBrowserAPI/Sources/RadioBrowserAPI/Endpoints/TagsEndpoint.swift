@@ -1,7 +1,7 @@
 import Foundation
 
 /// Endpoint for interacting with tags.
-public final class TagsEndpoint: BaseEndpoint<TagObject>, TagsEndpointProtocol {
+final class TagsEndpoint: BaseEndpoint<TagObject>, TagsEndpointProtocol {
     public init(networkClient: NetworkClientProtocol) {
         super.init(networkClient: networkClient)
     }

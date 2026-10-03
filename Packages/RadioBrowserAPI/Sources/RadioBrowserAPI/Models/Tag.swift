@@ -9,8 +9,8 @@ public protocol Tag: Decodable, Sendable {
     var stationCount: Int { get }
 }
 
-/// An public struct implementing the Tag protocol with Codable conformance.
-public struct TagObject: Codable, Tag {
+/// An internal struct implementing the Tag protocol with Codable conformance.
+internal struct TagObject: Codable, Tag {
     public let name: String
     public let stationCount: Int
 

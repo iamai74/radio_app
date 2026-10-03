@@ -12,8 +12,8 @@ public protocol Country: Decodable, Sendable {
     var stationCount: Int { get }
 }
 
-/// An public struct implementing the Country protocol with Codable conformance.
-public struct CountryObject: Codable, Country {
+/// An internal struct implementing the Country protocol with Codable conformance.
+internal struct CountryObject: Codable, Country {
     public let name: String
     public let code: String
     public let stationCount: Int

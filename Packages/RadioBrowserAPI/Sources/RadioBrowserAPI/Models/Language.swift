@@ -9,7 +9,8 @@ public protocol Language: Decodable, Sendable {
     var stationCount: Int { get }
 }
 
-public struct LanguageObject: Codable, Language {
+/// An internal struct implementing the Language protocol with Codable conformance.
+internal struct LanguageObject: Codable, Language {
     public let name: String
     public let stationCount: Int
 

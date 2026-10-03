@@ -1,7 +1,7 @@
 import Foundation
 
 /// Endpoint for interacting with languages.
-public final class LanguagesEndpoint: BaseEndpoint<LanguageObject>, LanguagesEndpointProtocol {
+final class LanguagesEndpoint: BaseEndpoint<LanguageObject>, LanguagesEndpointProtocol {
     public init(networkClient: NetworkClientProtocol) {
         super.init(networkClient: networkClient)
     }

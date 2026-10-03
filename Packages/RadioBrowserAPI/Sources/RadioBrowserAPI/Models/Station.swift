@@ -69,8 +69,8 @@ public protocol Station: Decodable, Sendable {
     var urlResolved: String? { get }
 }
 
-/// An public struct implementing the Station protocol with Codable conformance.
-public struct StationObject: Codable, Station {
+/// An internal struct implementing the Station protocol with Codable conformance.
+internal struct StationObject: Codable, Station {
     public let id: String
     public let name: String
     public let url: String

@@ -1,7 +1,7 @@
 import Foundation
 
 /// Endpoint for interacting with radio stations.
-public final class StationsEndpoint: BaseEndpoint<StationObject>, StationsEndpointProtocol {
+final class StationsEndpoint: BaseEndpoint<StationObject>, StationsEndpointProtocol {
     // MARK: - Initialization
 
     public init(networkClient: NetworkClientProtocol) {

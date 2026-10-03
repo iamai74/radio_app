@@ -8,7 +8,7 @@ import Foundation
 /// - concrete structs via `fetch(endpoint:queryItems:)` / `fetchObject(_:endpoint:)`;
 /// - model protocols via `fetch(endpoint:queryItems:exposing:)`, which erases the
 ///   decoded structs into the protocol abstraction the client consumes.
-open class BaseEndpoint<Model: Decodable> {
+internal class BaseEndpoint<Model: Decodable> {
     let networkClient: NetworkClientProtocol
     let urlBuilder: URLBuilder
     let jsonDecoder: JSONDecoderProtocol
@@ -18,7 +18,7 @@ open class BaseEndpoint<Model: Decodable> {
     ///   - networkClient: The client performing the HTTP requests.
     ///   - urlBuilder: The builder turning an endpoint into a `URL`.
     ///   - jsonDecoder: The decoder turning the response into models.
-    public init(networkClient: NetworkClientProtocol, urlBuilder: URLBuilder = URLBuilder(), jsonDecoder: JSONDecoderProtocol = DefaultJSONDecoder()) {
+    internal init(networkClient: NetworkClientProtocol, urlBuilder: URLBuilder = URLBuilder(), jsonDecoder: JSONDecoderProtocol = DefaultJSONDecoder()) {
         self.networkClient = networkClient
         self.urlBuilder = urlBuilder
         self.jsonDecoder = jsonDecoder

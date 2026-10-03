@@ -1,7 +1,7 @@
 import Foundation
 
 /// Endpoint for interacting with countries.
-public final class CountriesEndpoint: BaseEndpoint<CountryObject>, CountriesEndpointProtocol {
+final class CountriesEndpoint: BaseEndpoint<CountryObject>, CountriesEndpointProtocol {
     public init(networkClient: NetworkClientProtocol) {
         super.init(networkClient: networkClient)
     }

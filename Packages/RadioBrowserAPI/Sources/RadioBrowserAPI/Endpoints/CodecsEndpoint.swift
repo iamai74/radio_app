@@ -1,7 +1,7 @@
 import Foundation
 
 /// Endpoint for interacting with audio codecs.
-public final class CodecsEndpoint: BaseEndpoint<CodecObject>, CodecsEndpointProtocol {
+final class CodecsEndpoint: BaseEndpoint<CodecObject>, CodecsEndpointProtocol {
     public init(networkClient: NetworkClientProtocol) {
         super.init(networkClient: networkClient)
     }

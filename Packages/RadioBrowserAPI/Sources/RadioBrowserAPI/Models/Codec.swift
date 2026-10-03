@@ -9,7 +9,8 @@ public protocol Codec: Decodable, Sendable {
     var stationCount: Int { get }
 }
 
-public struct CodecObject: Codable, Codec {
+/// An internal struct implementing the Codec protocol with Codable conformance.
+internal struct CodecObject: Codable, Codec {
     public let name: String
     public let stationCount: Int
 
