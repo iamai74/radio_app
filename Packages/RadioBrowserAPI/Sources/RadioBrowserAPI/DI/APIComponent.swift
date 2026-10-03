@@ -4,7 +4,16 @@ internal protocol RadioBrowserApiDependency {
     var networkClient: NetworkClientProtocol { get }
 }
 
-internal class RadioBrowserApiComponent {
+package protocol RadioBrowserApiComponentProtocol {
+    var stations: StationsEndpointProtocol { get }
+    var countries: CountriesEndpointProtocol { get }
+    var languages: LanguagesEndpointProtocol { get }
+    var tags: TagsEndpointProtocol { get }
+    var codecs: CodecsEndpointProtocol { get }
+    var radioBrowserAPI: RadioBrowserAPI { get }
+}
+
+internal class RadioBrowserApiComponent: RadioBrowserApiComponentProtocol {
     var stations: StationsEndpointProtocol {
         StationsEndpoint(networkClient: dependency.networkClient)
     }

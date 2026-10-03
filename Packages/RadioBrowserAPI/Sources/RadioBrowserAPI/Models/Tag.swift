@@ -10,9 +10,14 @@ public protocol Tag: Decodable, Sendable {
 }
 
 /// An internal struct implementing the Tag protocol with Codable conformance.
-internal struct TagObject: Codable, Tag {
+package struct TagObject: Codable, Tag {
     public let name: String
     public let stationCount: Int
+    
+    package init(name: String, stationCount: Int) {
+        self.name = name
+        self.stationCount = stationCount
+    }
 
     private enum CodingKeys: String, CodingKey {
         case name

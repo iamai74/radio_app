@@ -16,7 +16,7 @@ public final class RadioBrowserAPI {
 
     /// Initializes the API with a dependency injection component.
     /// - Parameter component: The DI component containing necessary dependencies.
-    init(component: RadioBrowserApiComponent) {
+    package init(component: RadioBrowserApiComponentProtocol) {
         self.stations = component.stations
         self.countries = component.countries
         self.languages = component.languages

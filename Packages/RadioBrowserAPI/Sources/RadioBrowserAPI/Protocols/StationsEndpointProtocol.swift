@@ -31,9 +31,9 @@ public protocol StationsEndpointProtocol: Sendable {
 
     /// Fetches a specific station by its ID.
     /// - Parameter id: The station's unique identifier
-    /// - Returns: Station object with the specified ID
+    /// - Returns: The station with the specified ID, or `nil` when the service knows no such station
     /// - Throws: APIError if request fails
-    func getStation(byID id: String) async throws -> any Station
+    func getStation(byID id: String) async throws -> (any Station)?
 
     /// Searches for stations matching a query string.
     /// - Parameters:

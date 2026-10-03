@@ -5,7 +5,7 @@ import Foundation
 /// The class is generic over the concrete `Model` used for decoding, which keeps the
 /// decoding implementation details (e.g. `StationObject`) inside the package while
 /// subclasses may still expose either of the two flavours to their callers:
-/// - concrete structs via `fetch(endpoint:queryItems:)` / `fetchObject(_:endpoint:)`;
+/// - concrete structs via `fetch(endpoint:queryItems:)`;
 /// - model protocols via `fetch(endpoint:queryItems:exposing:)`, which erases the
 ///   decoded structs into the protocol abstraction the client consumes.
 internal class BaseEndpoint<Model: Decodable> {
@@ -51,14 +51,17 @@ internal class BaseEndpoint<Model: Decodable> {
         try await fetch(endpoint: endpoint, queryItems: queryItems).map(transform)
     }
 
-    /// Fetches a single object of the given decodable type from the given endpoint.
+    /// Fetches the first object of an endpoint that answers with a list.
+    ///
+    /// Radio Browser has no single object route: `/json/stations/byuuid/{id}` returns a list
+    /// holding the requested station, and an empty list when the station is unknown.
     /// - Parameters:
-    ///   - objectType: The concrete type to decode the response into.
-    ///   - endpoint: The API endpoint to fetch the object from.
-    /// - Returns: The decoded object.
+    ///   - endpoint: The API endpoint to fetch data from.
+    ///   - queryItems: Optional query parameters appended to the endpoint's own ones.
+    /// - Returns: The first decoded model, or `nil` when the service answered with an empty list.
     /// - Throws: `APIError` for invalid URL, decoding failures and network failures.
-    func fetchObject<Object: Decodable>(_ objectType: Object.Type, endpoint: APIEndpoint) async throws -> Object {
-        try await fetchData(endpoint: endpoint, decode: { try self.jsonDecoder.decode(objectType, from: $0) })
+    func fetchFirst(endpoint: APIEndpoint, queryItems: [URLQueryItem] = []) async throws -> Model? {
+        try await fetch(endpoint: endpoint, queryItems: queryItems).first
     }
 
     /// Performs the request and hands the raw payload over for decoding.
@@ -68,7 +71,7 @@ internal class BaseEndpoint<Model: Decodable> {
         decode: (Data) throws -> Result
     ) async throws -> Result {
         let url = try makeURL(endpoint: endpoint, queryItems: queryItems)
-        let data = try await networkClient.fetch(request: URLRequest(url: url))
+        let data = try await fetchData(from: url)
 
         do {
             return try decode(data)
@@ -81,12 +84,20 @@ internal class BaseEndpoint<Model: Decodable> {
         }
     }
 
+    /// Performs the request, reporting every transport failure as `APIError.networkFailed`.
+    private func fetchData(from url: URL) async throws -> Data {
+        do {
+            return try await networkClient.fetch(request: URLRequest(url: url))
+        } catch let error as APIError {
+            throw error
+        } catch {
+            throw APIError.networkFailed(error)
+        }
+    }
+
     /// Builds the request URL, appending the given query items to the endpoint's ones.
     private func makeURL(endpoint: APIEndpoint, queryItems: [URLQueryItem] = []) throws -> URL {
-        var mergedQueryItems = endpoint.queryItems
-        mergedQueryItems.append(contentsOf: queryItems)
-
-        guard let url = urlBuilder.build(endpoint: endpoint, queryItems: mergedQueryItems) else {
+        guard let url = urlBuilder.build(endpoint: endpoint, queryItems: queryItems) else {
             throw APIError.invalidURL
         }
 

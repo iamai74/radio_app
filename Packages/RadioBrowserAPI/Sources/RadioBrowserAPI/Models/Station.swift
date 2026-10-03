@@ -17,10 +17,14 @@ public protocol Station: Decodable, Sendable {
     /// The favicon URL of the station.
     var favicon: String? { get }
 
-    /// Tags associated with the station.
+    /// Tags associated with the station, split from the comma separated list of the API.
+    ///
+    /// Only commas are treated as separators: the service also reports some tag lists
+    /// separated by spaces, while real tags such as `classic rock` contain spaces themselves.
+    /// `nil` when the station carries no tags.
     var tags: [String]? { get }
 
-    /// The country where the station is located.
+    /// The country where the station is located, as the full name the API reports.
     var country: String { get }
 
     /// The state/region where the station is located.
@@ -45,13 +49,19 @@ public protocol Station: Decodable, Sendable {
     var lastCheckTime: Date? { get }
 
     /// The total number of checks performed on this station.
-    var lastCheckTotal: Int { get }
+    ///
+    /// Not reported by every endpoint, hence optional.
+    var lastCheckTotal: Int? { get }
 
     /// The number of failures during the last check.
-    var lastCheckFailures: Int { get }
+    ///
+    /// Not reported by every endpoint, hence optional.
+    var lastCheckFailures: Int? { get }
 
     /// The duration of the last check in milliseconds.
-    var lastCheckDuration: Int { get }
+    ///
+    /// Not reported by every endpoint, hence optional.
+    var lastCheckDuration: Int? { get }
 
     /// Error message from the last check, if any.
     var lastCheckError: String? { get }
@@ -60,7 +70,9 @@ public protocol Station: Decodable, Sendable {
     var lastChangeTime: Date? { get }
 
     /// A counter for how many changes have been made to this station.
-    var changeCounter: Int { get }
+    ///
+    /// Not reported by every endpoint, hence optional.
+    var changeCounter: Int? { get }
 
     /// The creation time of this station.
     var creationTime: Date? { get }
@@ -70,7 +82,7 @@ public protocol Station: Decodable, Sendable {
 }
 
 /// An internal struct implementing the Station protocol with Codable conformance.
-internal struct StationObject: Codable, Station {
+package struct StationObject: Codable, Station {
     public let id: String
     public let name: String
     public let url: String
@@ -85,12 +97,12 @@ internal struct StationObject: Codable, Station {
     public let bitrate: Int?
     public let lastCheckOk: Bool
     public let lastCheckTime: Date?
-    public let lastCheckTotal: Int
-    public let lastCheckFailures: Int
-    public let lastCheckDuration: Int
+    public let lastCheckTotal: Int?
+    public let lastCheckFailures: Int?
+    public let lastCheckDuration: Int?
     public let lastCheckError: String?
     public let lastChangeTime: Date?
-    public let changeCounter: Int
+    public let changeCounter: Int?
     public let creationTime: Date?
     public let urlResolved: String?
 
@@ -118,7 +130,7 @@ internal struct StationObject: Codable, Station {
     ///   - changeCounter: A counter for how many changes have been made to this station.
     ///   - creationTime: The creation time of this station.
     ///   - urlResolved: The resolved URL after checking the station's stream.
-    init(
+    package init(
         id: String,
         name: String,
         url: String,
@@ -131,14 +143,14 @@ internal struct StationObject: Codable, Station {
         votes: Int = 0,
         codec: String? = nil,
         bitrate: Int? = nil,
-        lastCheckOk: Bool,
+        lastCheckOk: Bool = false,
         lastCheckTime: Date? = nil,
-        lastCheckTotal: Int = 0,
-        lastCheckFailures: Int = 0,
-        lastCheckDuration: Int = 0,
+        lastCheckTotal: Int? = nil,
+        lastCheckFailures: Int? = nil,
+        lastCheckDuration: Int? = nil,
         lastCheckError: String? = nil,
         lastChangeTime: Date? = nil,
-        changeCounter: Int = 0,
+        changeCounter: Int? = nil,
         creationTime: Date? = nil,
         urlResolved: String? = nil
     ) {
@@ -166,7 +178,50 @@ internal struct StationObject: Codable, Station {
         self.urlResolved = urlResolved
     }
 
-    private enum CodingKeys: String, CodingKey {
+    /// Decodes a station, tolerating the layout differences of the service:
+    /// `lastcheckok` arrives as `1`/`0`, `tags` as a comma separated string, timestamps in
+    /// two layouts and the check counters are missing from the list endpoints.
+    package init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        id = try container.decodeString(forKey: .id)
+        name = try container.decodeString(forKey: .name)
+        url = try container.decodeString(forKey: .url)
+        country = try container.decodeString(forKey: .country)
+        votes = try container.decodeInt(forKey: .votes)
+        lastCheckOk = try container.decodeFlexibleBool(forKey: .lastCheckOk)
+        homepage = try container.decodeOptionalString(forKey: .homepage)
+        favicon = try container.decodeOptionalString(forKey: .favicon)
+        tags = try container.decodeStringList(forKey: .tags)
+        state = try container.decodeOptionalString(forKey: .state)
+        language = try container.decodeOptionalString(forKey: .language)
+        codec = try container.decodeOptionalString(forKey: .codec)
+        bitrate = try container.decodeOptionalInt(forKey: .bitrate)
+        lastCheckTime = try Self.decodeDate(forKey: .lastCheckTime, using: decoder)
+        lastCheckTotal = try container.decodeOptionalInt(forKey: .lastCheckTotal)
+        lastCheckFailures = try container.decodeOptionalInt(forKey: .lastCheckFailures)
+        lastCheckDuration = try container.decodeOptionalInt(forKey: .lastCheckDuration)
+        lastCheckError = try container.decodeOptionalString(forKey: .lastCheckError)
+        lastChangeTime = try Self.decodeDate(forKey: .lastChangeTime, using: decoder)
+        changeCounter = try container.decodeOptionalInt(forKey: .changeCounter)
+        creationTime = try Self.decodeDate(forKey: .creationTime, using: decoder)
+        urlResolved = try container.decodeOptionalString(forKey: .urlResolved)
+    }
+
+    /// Prefers the ISO 8601 flavour of a timestamp, falling back to the zone-less one.
+    private static func decodeDate(forKey key: CodingKeys, using decoder: Decoder) throws -> Date? {
+        if let isoKey = ISO8601DateKeys(canonicalKey: key),
+           let isoContainer = try? decoder.container(keyedBy: ISO8601DateKeys.self),
+           let date = try? isoContainer.decodeIfPresent(Date.self, forKey: isoKey) {
+            return date
+        }
+
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        return try? container.decodeIfPresent(Date.self, forKey: key)
+    }
+
+    internal enum CodingKeys: String, CodingKey, CaseIterable {
         case id = "stationuuid"
         case name
         case url
@@ -189,5 +244,16 @@ internal struct StationObject: Codable, Station {
         case changeCounter = "changecounter"
         case creationTime = "creationtime"
         case urlResolved = "url_resolved"
+    }
+}
+
+/// ISO 8601 twins the service adds to every timestamp it reports.
+private enum ISO8601DateKeys: String, CodingKey {
+    case lastCheckTime = "lastchecktime_iso8601"
+    case lastChangeTime = "lastchangetime_iso8601"
+    case creationTime = "creationtime_iso8601"
+
+    init?(canonicalKey: StationObject.CodingKeys) {
+        self.init(rawValue: canonicalKey.rawValue + "_iso8601")
     }
 }

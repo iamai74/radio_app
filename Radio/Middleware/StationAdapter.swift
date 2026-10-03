@@ -41,12 +41,12 @@ struct StationAdapter: StationEntity {
         self.bitrate = station.bitrate
         self.lastCheckOk = station.lastCheckOk
         self.lastCheckTime = station.lastCheckTime
-        self.lastCheckTotal = station.lastCheckTotal
-        self.lastCheckFailures = station.lastCheckFailures
-        self.lastCheckDuration = station.lastCheckDuration
+        self.lastCheckTotal = station.lastCheckTotal ?? 0
+        self.lastCheckFailures = station.lastCheckFailures ?? 0
+        self.lastCheckDuration = station.lastCheckDuration ?? 0
         self.lastCheckError = station.lastCheckError
         self.lastChangeTime = station.lastChangeTime
-        self.changeCounter = station.changeCounter
+        self.changeCounter = station.changeCounter ?? 0
         self.creationTime = station.creationTime
         self.urlResolved = station.urlResolved
     }

@@ -10,9 +10,14 @@ public protocol Codec: Decodable, Sendable {
 }
 
 /// An internal struct implementing the Codec protocol with Codable conformance.
-internal struct CodecObject: Codable, Codec {
+package struct CodecObject: Codable, Codec {
     public let name: String
     public let stationCount: Int
+    
+    package init(name: String, stationCount: Int) {
+        self.name = name
+        self.stationCount = stationCount
+    }
 
     private enum CodingKeys: String, CodingKey {
         case name

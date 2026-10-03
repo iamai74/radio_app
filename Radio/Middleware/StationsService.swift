@@ -27,7 +27,7 @@ final class StationsService {
             name: name,
             limit: limit,
             offset: offset,
-            hideBroken: true,
+            hideBreaks: true,
             order: "votes",
             reverse: true
         )

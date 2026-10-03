@@ -19,6 +19,20 @@ let package = Package(
     targets: [
         .target(
             name: "RadioBrowserAPI",
+            exclude: [
+                "Models/Codec.md",
+                "Models/Country.md",
+                "Models/Language.md",
+                "Models/Station.md",
+                "Models/Tag.md"
+            ],
+            plugins: [
+                .plugin(name: "SwiftLintBuildToolPlugin", package: "SwiftLintPlugins")
+            ]),
+        .testTarget(
+            name: "RadioBrowserAPITests",
+            dependencies: ["RadioBrowserAPI"],
+            resources: [.process("Mocks/Data")],
             plugins: [
                 .plugin(name: "SwiftLintBuildToolPlugin", package: "SwiftLintPlugins")
             ])

@@ -61,12 +61,14 @@ final class StationsEndpoint: BaseEndpoint<StationObject>, StationsEndpointProto
     }
 
     /// Fetches a specific station by its ID.
+    ///
+    /// Radio Browser exposes no single station route, so the request goes to
+    /// `/json/stations/byuuid/{id}`, which answers with a list.
     /// - Parameter id: The station's unique identifier
-    /// - Returns: Station object with the specified ID
+    /// - Returns: The station with the specified ID, or `nil` when the service knows no such station
     /// - Throws: APIError if request fails
-    public func getStation(byID id: String) async throws -> any Station {
-        let object = try await fetchObject(StationObject.self, endpoint: .stationByID(id: id))
-        return object
+    public func getStation(byID id: String) async throws -> (any Station)? {
+        try await fetchFirst(endpoint: .stationByID(id: id))
     }
 
     /// Searches for stations matching a query string.
@@ -76,7 +78,7 @@ final class StationsEndpoint: BaseEndpoint<StationObject>, StationsEndpointProto
     /// - Returns: Array of Station objects matching the query
     /// - Throws: APIError if request fails
     public func searchStations(query: String, limit: Int) async throws -> [any Station] {
-        var queryItems = [URLQueryItem(name: "q", value: query)]
+        var queryItems: [URLQueryItem] = []
         if limit > 0 {
             queryItems.append(URLQueryItem(name: "limit", value: "\(limit)"))
         }

@@ -1,0 +1,62 @@
+[
+  {
+    "stationuuid": "7c1f5a2e-6b6d-4f9a-9d0f-2b1c3d4e5f60",
+    "name": "  Test Radio Station  ",
+    "url": "https://example.com/stream",
+    "url_resolved": "https://example.com/resolved",
+    "homepage": "https://example.com",
+    "favicon": "https://example.com/favicon.png",
+    "tags": "rock,classic rock",
+    "country": "United States",
+    "state": "California",
+    "language": "english",
+    "votes": 42,
+    "codec": "MP3",
+    "bitrate": 128,
+    "lastcheckok": 1,
+    "lastchecktime": "2023-01-01 12:00:00",
+    "lastchecktime_iso8601": "2023-01-01T12:00:00Z",
+    "lastchecktotal": 100,
+    "lastcheckfailures": 5,
+    "lastcheckduration": 200,
+    "lastcheckerror": "",
+    "lastchangetime": "2023-01-01 12:00:00",
+    "changecounter": 10,
+    "creationtime": "2023-01-01T12:00:00Z"
+  },
+  {
+    "stationuuid": "second-station-id",
+    "name": "Second Test Station",
+    "url": "https://example.org/stream",
+    "url_resolved": "",
+    "homepage": "",
+    "favicon": "",
+    "tags": "",
+    "country": "Germany",
+    "countrycode": "DE",
+    "state": "",
+    "language": "german",
+    "votes": 0,
+    "codec": "AAC",
+    "bitrate": 96,
+    "hls": 0,
+    "lastcheckok": 0,
+    "lastchecktime": "2023-01-01 12:00:00",
+    "lastcheckoktime": "2023-01-01 12:00:00",
+    "ssl_error": 0
+  },
+  {
+    "stationuuid": "third-station-id",
+    "name": "Third Test Station",
+    "url": "https://example.net/stream",
+    "tags": [
+      "jazz",
+      "blues"
+    ],
+    "country": "Netherlands",
+    "votes": "17",
+    "lastcheckok": "true",
+    "bitrate": "320",
+    "lastchecktime": "2023-01-01T12:00:00+01:00"
+  }
+]

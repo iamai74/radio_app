@@ -20,20 +20,32 @@ public enum APIEndpoint: Sendable {
     internal var path: String {
         switch self {
         case .stations: return "/json/stations"
-        case .stationByID(let id): return "/json/stations/\(id)"
+        case .stationByID(let id): return "/json/stations/byuuid/\(Self.pathSegment(id))"
         case .stationsSearch: return "/json/stations/search"
-        case .stationsByCountry(let code): return "/json/stations/bycountry/\(code)"
-        case .stationsByLanguage(let code): return "/json/stations/bylanguage/\(code)"
-        case .stationsByTag(let tag): return "/json/stations/bytag/\(tag)"
+        case .stationsByCountry(let code): return "/json/stations/bycountry/\(Self.pathSegment(code))"
+        case .stationsByLanguage(let code): return "/json/stations/bylanguage/\(Self.pathSegment(code))"
+        case .stationsByTag(let tag): return "/json/stations/bytag/\(Self.pathSegment(tag))"
         case .countries: return "/json/countries"
-        case .countriesByFilter(let filter): return "/json/countries/\(filter)"
+        case .countriesByFilter(let filter): return "/json/countries/\(Self.pathSegment(filter))"
         case .languages: return "/json/languages"
-        case .languagesByFilter(let filter): return "/json/languages/\(filter)"
+        case .languagesByFilter(let filter): return "/json/languages/\(Self.pathSegment(filter))"
         case .tags: return "/json/tags"
-        case .tagsByFilter(let filter): return "/json/tags/\(filter)"
+        case .tagsByFilter(let filter): return "/json/tags/\(Self.pathSegment(filter))"
         case .codecs: return "/json/codecs"
         }
     }
+
+    /// Percent encodes a value interpolated into the path, so filters such as `hip hop`
+    /// reach the service as a single path segment.
+    private static func pathSegment(_ value: String) -> String {
+        value.addingPercentEncoding(withAllowedCharacters: pathSegmentAllowed) ?? value
+    }
+
+    private static let pathSegmentAllowed: CharacterSet = {
+        var allowed = CharacterSet.urlPathAllowed
+        allowed.remove(charactersIn: "/?#")
+        return allowed
+    }()
 
     /// Returns the query items for the endpoint if applicable.
     internal var queryItems: [URLQueryItem] {
