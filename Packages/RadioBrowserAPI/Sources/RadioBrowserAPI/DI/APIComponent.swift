@@ -1,11 +1,10 @@
 import Foundation
-import NeedleFoundation
 
-public protocol RadioBrowserApiDependency: Dependency {
+internal protocol RadioBrowserApiDependency {
     var networkClient: NetworkClientProtocol { get }
 }
 
-public class RadioBrowserApiComponent: Component<RadioBrowserApiDependency> {
+internal class RadioBrowserApiComponent {
     var stations: StationsEndpointProtocol {
         StationsEndpoint(networkClient: dependency.networkClient)
     }
@@ -28,5 +27,11 @@ public class RadioBrowserApiComponent: Component<RadioBrowserApiDependency> {
 
     var radioBrowserAPI: RadioBrowserAPI {
         RadioBrowserAPI(component: self)
+    }
+
+    private let dependency: RadioBrowserApiDependency
+
+    init(dependency: RadioBrowserApiDependency) {
+        self.dependency = dependency
     }
 }
