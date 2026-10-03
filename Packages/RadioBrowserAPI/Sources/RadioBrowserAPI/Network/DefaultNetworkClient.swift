@@ -9,9 +9,8 @@ public final class DefaultNetworkClient: NetworkClientProtocol {
         self.userAgent = userAgent
     }
 
-    public func fetch(url: URL) async throws -> Data {
-        var request = URLRequest(url: url)
-        request.httpMethod = "GET"
+    public func fetch(request: URLRequest) async throws -> Data {
+        var request = request
         request.setValue(userAgent, forHTTPHeaderField: "User-Agent")
 
         let (data, response) = try await session.data(for: request)

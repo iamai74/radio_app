@@ -1,44 +1,27 @@
 import Foundation
 
-open class TagsEndpoint: TagsEndpointProtocol {
-    private let networkClient: NetworkClientProtocol
-    private let urlBuilder: URLBuilder
-    private let jsonDecoder: JSONDecoderProtocol
-
+/// Endpoint for interacting with tags.
+public final class TagsEndpoint: BaseEndpoint<TagObject>, TagsEndpointProtocol {
     public init(networkClient: NetworkClientProtocol) {
-        self.networkClient = networkClient
-        self.urlBuilder = URLBuilder()
-        self.jsonDecoder = DefaultJSONDecoder()
+        super.init(networkClient: networkClient)
     }
 
-    init(networkClient: NetworkClientProtocol, urlBuilder: URLBuilder, jsonDecoder: JSONDecoderProtocol) {
-        self.networkClient = networkClient
-        self.urlBuilder = urlBuilder
-        self.jsonDecoder = jsonDecoder
+    override init(networkClient: NetworkClientProtocol, urlBuilder: URLBuilder, jsonDecoder: JSONDecoderProtocol) {
+        super.init(networkClient: networkClient, urlBuilder: urlBuilder, jsonDecoder: jsonDecoder)
     }
 
-    public func getTags() async throws -> [Tag] {
-        try await fetchTags(endpoint: .tags)
+    /// Fetches a list of all tags.
+    /// - Returns: An array of Tag objects.
+    /// - Throws: An error if the request fails.
+    public func getTags() async throws -> [any Tag] {
+        try await fetch(endpoint: .tags, exposing: { $0 })
     }
 
-    public func getTags(withFilter filter: String) async throws -> [Tag] {
-        try await fetchTags(endpoint: .tagsByFilter, argument: filter)
-    }
-
-    private func fetchTags(endpoint: APIEndpoint, argument: String? = nil) async throws -> [Tag] {
-        guard let url = urlBuilder.build(endpoint: endpoint, argument: argument) else {
-            throw APIError.invalidURL
-        }
-
-        do {
-            let data = try await networkClient.fetch(url: url)
-            return try jsonDecoder.decode([TagObject].self, from: data)
-        } catch let error as APIError {
-            throw error
-        } catch let error as DecodingError {
-            throw APIError.decodingFailed(error)
-        } catch {
-            throw APIError.networkFailed(error)
-        }
+    /// Fetches a list of tags that match the given filter.
+    /// - Parameter filter: The filter to apply to the results.
+    /// - Returns: An array of Tag objects matching the filter.
+    /// - Throws: An error if the request fails.
+    public func getTags(withFilter filter: String) async throws -> [any Tag] {
+        try await fetch(endpoint: .tagsByFilter(filter: filter), exposing: { $0 })
     }
 }

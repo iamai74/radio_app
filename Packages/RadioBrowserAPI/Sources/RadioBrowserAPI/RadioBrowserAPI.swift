@@ -1,13 +1,22 @@
 import Foundation
 
+/// The main entry point for accessing the Radio Browser API.
+/// This class provides access to various endpoints such as stations, countries, languages, tags, and codecs.
 public final class RadioBrowserAPI {
+    /// Endpoint for interacting with radio stations.
     public let stations: StationsEndpointProtocol
+    /// Endpoint for interacting with countries.
     public let countries: CountriesEndpointProtocol
+    /// Endpoint for interacting with languages.
     public let languages: LanguagesEndpointProtocol
+    /// Endpoint for interacting with tags.
     public let tags: TagsEndpointProtocol
+    /// Endpoint for interacting with audio codecs.
     public let codecs: CodecsEndpointProtocol
 
-    public init(component: RadioBrowserApiComponent) {
+    /// Initializes the API with a dependency injection component.
+    /// - Parameter component: The DI component containing necessary dependencies.
+    internal init(component: RadioBrowserApiComponent) {
         self.stations = component.stations
         self.countries = component.countries
         self.languages = component.languages
@@ -15,6 +24,8 @@ public final class RadioBrowserAPI {
         self.codecs = component.codecs
     }
 
+    /// Initializes the API with a provided network client.
+    /// - Parameter networkClient: The network client to use for requests. Defaults to `DefaultNetworkClient`.
     public convenience init(networkClient: NetworkClientProtocol = DefaultNetworkClient()) {
         self.init(
             stations: StationsEndpoint(networkClient: networkClient),
@@ -25,7 +36,7 @@ public final class RadioBrowserAPI {
         )
     }
 
-    init(
+    internal init(
         stations: StationsEndpointProtocol,
         countries: CountriesEndpointProtocol,
         languages: LanguagesEndpointProtocol,

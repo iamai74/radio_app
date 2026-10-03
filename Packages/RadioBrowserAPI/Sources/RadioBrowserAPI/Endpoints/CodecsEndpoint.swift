@@ -1,36 +1,19 @@
 import Foundation
 
-open class CodecsEndpoint: CodecsEndpointProtocol {
-    private let networkClient: NetworkClientProtocol
-    private let urlBuilder: URLBuilder
-    private let jsonDecoder: JSONDecoderProtocol
-
+/// Endpoint for interacting with audio codecs.
+public final class CodecsEndpoint: BaseEndpoint<CodecObject>, CodecsEndpointProtocol {
     public init(networkClient: NetworkClientProtocol) {
-        self.networkClient = networkClient
-        self.urlBuilder = URLBuilder()
-        self.jsonDecoder = DefaultJSONDecoder()
+        super.init(networkClient: networkClient)
     }
 
-    init(networkClient: NetworkClientProtocol, urlBuilder: URLBuilder, jsonDecoder: JSONDecoderProtocol) {
-        self.networkClient = networkClient
-        self.urlBuilder = urlBuilder
-        self.jsonDecoder = jsonDecoder
+    override init(networkClient: NetworkClientProtocol, urlBuilder: URLBuilder, jsonDecoder: JSONDecoderProtocol) {
+        super.init(networkClient: networkClient, urlBuilder: urlBuilder, jsonDecoder: jsonDecoder)
     }
 
-    public func getAudioCodecs() async throws -> [Codec] {
-        guard let url = urlBuilder.build(endpoint: .codecs) else {
-            throw APIError.invalidURL
-        }
-
-        do {
-            let data = try await networkClient.fetch(url: url)
-            return try jsonDecoder.decode([CodecObject].self, from: data)
-        } catch let error as APIError {
-            throw error
-        } catch let error as DecodingError {
-            throw APIError.decodingFailed(error)
-        } catch {
-            throw APIError.networkFailed(error)
-        }
+    /// Fetches a list of all audio codecs.
+    /// - Returns: An array of Codec objects.
+    /// - Throws: An error if the request fails.
+    public func getAudioCodecs() async throws -> [any Codec] {
+        try await fetch(endpoint: .codecs, exposing: { $0 })
     }
 }

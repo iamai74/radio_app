@@ -27,10 +27,7 @@ excluded:
 
 # Rules enabled by default that this project does not want.
 disabled_rules:
-  # Generated/DI-heavy code makes size-based limits noisy.
-  - file_length
-  - function_body_length
-  - type_body_length
+  - trailing_whitespace
 
 # Additional opt-in rules that are widely adopted and safe for this codebase.
 opt_in_rules:
@@ -69,7 +66,7 @@ analyzer_rules:
 
 # Customizable rule configuration.
 line_length:
-  warning: 140
+  warning: 160
   error: 200
 
 type_name:

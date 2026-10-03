@@ -1,125 +1,157 @@
 import Foundation
 
-open class StationsEndpoint: StationsEndpointProtocol {
-    private let networkClient: NetworkClientProtocol
-    private let urlBuilder: URLBuilder
-    private let jsonDecoder: JSONDecoderProtocol
+/// Endpoint for interacting with radio stations.
+public final class StationsEndpoint: BaseEndpoint<StationObject>, StationsEndpointProtocol {
+    // MARK: - Initialization
 
     public init(networkClient: NetworkClientProtocol) {
-        self.networkClient = networkClient
-        self.urlBuilder = URLBuilder()
-        self.jsonDecoder = DefaultJSONDecoder()
+        super.init(networkClient: networkClient)
     }
 
-    init(networkClient: NetworkClientProtocol, urlBuilder: URLBuilder, jsonDecoder: JSONDecoderProtocol) {
-        self.networkClient = networkClient
-        self.urlBuilder = urlBuilder
-        self.jsonDecoder = jsonDecoder
+    override init(networkClient: NetworkClientProtocol, urlBuilder: URLBuilder, jsonDecoder: JSONDecoderProtocol) {
+        super.init(networkClient: networkClient, urlBuilder: urlBuilder, jsonDecoder: jsonDecoder)
     }
 
-    // swiftlint:disable:next function_parameter_count
+    // MARK: - StationsEndpointProtocol
+
+    /// Fetches a list of radio stations based on the given criteria.
+    /// - Parameters:
+    ///   - country: The country to filter by, or nil for all countries.
+    ///   - language: The language to filter by, or nil for all languages.
+    ///   - tag: The tag to filter by, or nil for all tags.
+    ///   - name: The name to filter by, or nil for all names.
+    ///   - limit: The maximum number of results to return.
+    ///   - offset: The offset to start retrieving results from.
+    ///   - hideBreaks: Whether to hide breaks in the results.
+    ///   - order: The field to order by.
+    ///   - reverse: Whether the results should be in reverse order.
+    /// - Returns: Array of Station objects matching the criteria
+    /// - Throws: APIError if request fails
     public func getStations(
+        country: String? = nil,
+        language: String? = nil,
+        tag: String? = nil,
+        name: String? = nil,
+        limit: Int = 100,
+        offset: Int = 0,
+        hideBreaks: Bool = false,
+        order: String = "name",
+        reverse: Bool = false
+    ) async throws -> [any Station] {
+        let queryItems = makeQueryItems(
+            country: country,
+            language: language,
+            tag: tag,
+            name: name,
+            limit: limit,
+            offset: offset,
+            hideBreaks: hideBreaks,
+            order: order,
+            reverse: reverse
+        )
+
+        return try await fetch(endpoint: .stations, queryItems: queryItems, exposing: { $0 })
+    }
+
+    /// Fetches all radio stations.
+    /// - Returns: Array of Station objects
+    /// - Throws: APIError if request fails
+    public func getAllStations() async throws -> [any Station] {
+        try await fetch(endpoint: .stations, exposing: { $0 })
+    }
+
+    /// Fetches a specific station by its ID.
+    /// - Parameter id: The station's unique identifier
+    /// - Returns: Station object with the specified ID
+    /// - Throws: APIError if request fails
+    public func getStation(byID id: String) async throws -> any Station {
+        let object = try await fetchObject(StationObject.self, endpoint: .stationByID(id: id))
+        return object
+    }
+
+    /// Searches for stations matching a query string.
+    /// - Parameters:
+    ///   - query: The search query
+    ///   - limit: Maximum number of results to return
+    /// - Returns: Array of Station objects matching the query
+    /// - Throws: APIError if request fails
+    public func searchStations(query: String, limit: Int) async throws -> [any Station] {
+        var queryItems = [URLQueryItem(name: "q", value: query)]
+        if limit > 0 {
+            queryItems.append(URLQueryItem(name: "limit", value: "\(limit)"))
+        }
+        return try await fetch(endpoint: .stationsSearch(query: query), queryItems: queryItems, exposing: { $0 })
+    }
+
+    /// Fetches stations from a specific country.
+    /// - Parameters:
+    ///   - country: Country code filter
+    ///   - limit: Maximum number of stations to return
+    /// - Returns: Array of Station objects from the specified country
+    /// - Throws: APIError if request fails
+    public func getStationsByCountry(_ country: String, limit: Int) async throws -> [any Station] {
+        let queryItems = limit > 0 ? [URLQueryItem(name: "limit", value: "\(limit)")] : []
+        return try await fetch(endpoint: .stationsByCountry(countryCode: country), queryItems: queryItems, exposing: { $0 })
+    }
+
+    /// Fetches stations in a specific language.
+    /// - Parameters:
+    ///   - language: Language code filter
+    ///   - limit: Maximum number of stations to return
+    /// - Returns: Array of Station objects in the specified language
+    /// - Throws: APIError if request fails
+    public func getStationsByLanguage(_ language: String, limit: Int) async throws -> [any Station] {
+        let queryItems = limit > 0 ? [URLQueryItem(name: "limit", value: "\(limit)")] : []
+        return try await fetch(endpoint: .stationsByLanguage(languageCode: language), queryItems: queryItems, exposing: { $0 })
+    }
+
+    /// Fetches stations with a specific tag.
+    /// - Parameters:
+    ///   - tag: Tag filter
+    ///   - limit: Maximum number of stations to return
+    /// - Returns: Array of Station objects with the specified tag
+    /// - Throws: APIError if request fails
+    public func getStationsByTag(_ tag: String, limit: Int) async throws -> [any Station] {
+        let queryItems = limit > 0 ? [URLQueryItem(name: "limit", value: "\(limit)")] : []
+        return try await fetch(endpoint: .stationsByTag(tag: tag), queryItems: queryItems, exposing: { $0 })
+    }
+
+    // MARK: - Private helpers
+
+    // swiftlint:disable function_parameter_count
+    private func makeQueryItems(
         country: String?,
         language: String?,
         tag: String?,
         name: String?,
         limit: Int,
         offset: Int,
-        hideBroken: Bool,
+        hideBreaks: Bool,
         order: String,
         reverse: Bool
-    ) async throws -> [Station] {
-        var queryItems = [URLQueryItem]()
+    ) -> [URLQueryItem] {
+        var items: [URLQueryItem] = []
 
-        if let country = country { queryItems.append(URLQueryItem(name: "country", value: country)) }
-        if let language = language { queryItems.append(URLQueryItem(name: "language", value: language)) }
-        if let tag = tag { queryItems.append(URLQueryItem(name: "tag", value: tag)) }
-        if let name = name { queryItems.append(URLQueryItem(name: "name", value: name)) }
-
-        queryItems.append(contentsOf: [
-            URLQueryItem(name: "limit", value: "\(limit)"),
-            URLQueryItem(name: "offset", value: "\(offset)"),
-            URLQueryItem(name: "hidebroken", value: hideBroken ? "true" : "false"),
-            URLQueryItem(name: "order", value: order),
-            URLQueryItem(name: "reverse", value: reverse ? "true" : "false")
-        ])
-
-        return try await fetchObjects(endpoint: .stations, queryItems: queryItems)
-    }
-
-    public func getStation(byID id: String) async throws -> Station {
-        try await fetchSingleObject(endpoint: .stationByID, argument: id)
-    }
-
-    public func searchStations(query: String, limit: Int) async throws -> [Station] {
-        try await fetchObjects(
-            endpoint: .stationsSearch,
-            queryItems: [
-                URLQueryItem(name: "name", value: query),
-                URLQueryItem(name: "limit", value: "\(limit)")
-            ]
-        )
-    }
-
-    public func getStationsByCountry(_ country: String, limit: Int) async throws -> [Station] {
-        try await fetchObjects(
-            endpoint: .stationsByCountry,
-            argument: country,
-            queryItems: [URLQueryItem(name: "limit", value: "\(limit)")]
-        )
-    }
-
-    public func getStationsByLanguage(_ language: String, limit: Int) async throws -> [Station] {
-        try await fetchObjects(
-            endpoint: .stationsByLanguage,
-            argument: language,
-            queryItems: [URLQueryItem(name: "limit", value: "\(limit)")]
-        )
-    }
-
-    public func getStationsByTag(_ tag: String, limit: Int) async throws -> [Station] {
-        try await fetchObjects(
-            endpoint: .stationsByTag,
-            argument: tag,
-            queryItems: [URLQueryItem(name: "limit", value: "\(limit)")]
-        )
-    }
-
-    public func getAllStations() async throws -> [Station] {
-        try await fetchObjects(endpoint: .stations)
-    }
-
-    private func fetchObjects(endpoint: APIEndpoint, argument: String? = nil, queryItems: [URLQueryItem] = []) async throws -> [Station] {
-        guard let url = urlBuilder.build(endpoint: endpoint, argument: argument, queryItems: queryItems) else {
-            throw APIError.invalidURL
+        if let country = country, !country.isEmpty {
+            items.append(URLQueryItem(name: "country", value: country))
+        }
+        if let language = language, !language.isEmpty {
+            items.append(URLQueryItem(name: "language", value: language))
+        }
+        if let tag = tag, !tag.isEmpty {
+            items.append(URLQueryItem(name: "tag", value: tag))
+        }
+        if let name = name, !name.isEmpty {
+            items.append(URLQueryItem(name: "name", value: name))
         }
 
-        do {
-            let data = try await networkClient.fetch(url: url)
-            return try jsonDecoder.decode([StationObject].self, from: data)
-        } catch let error as APIError {
-            throw error
-        } catch let error as DecodingError {
-            throw APIError.decodingFailed(error)
-        } catch {
-            throw APIError.networkFailed(error)
-        }
-    }
+        items.append(URLQueryItem(name: "limit", value: "\(limit)"))
+        items.append(URLQueryItem(name: "offset", value: "\(offset)"))
+        items.append(URLQueryItem(name: "hide_breaks", value: hideBreaks ? "true" : "false"))
+        items.append(URLQueryItem(name: "order", value: order))
+        items.append(URLQueryItem(name: "reverse", value: reverse ? "true" : "false"))
 
-    private func fetchSingleObject(endpoint: APIEndpoint, argument: String) async throws -> Station {
-        guard let url = urlBuilder.build(endpoint: endpoint, argument: argument) else {
-            throw APIError.invalidURL
-        }
-
-        do {
-            let data = try await networkClient.fetch(url: url)
-            return try jsonDecoder.decode(StationObject.self, from: data)
-        } catch let error as APIError {
-            throw error
-        } catch let error as DecodingError {
-            throw APIError.decodingFailed(error)
-        } catch {
-            throw APIError.networkFailed(error)
-        }
+        return items
     }
+    // swiftlint:enable function_parameter_count
 }

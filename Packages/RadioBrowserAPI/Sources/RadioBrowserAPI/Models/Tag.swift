@@ -1,15 +1,21 @@
 import Foundation
 
-/// Represents a tag from the Radio-Browser API
-public protocol Tag {
-    /// Name of the tag
+/// A protocol representing a tag.
+public protocol Tag: Decodable, Sendable {
+    /// The name of the tag.
     var name: String { get }
-    /// Number of stations with this tag
+
+    /// The number of stations with this tag.
     var stationCount: Int { get }
 }
 
-/// Implementation of the Tag protocol
-internal struct TagObject: Codable, Tag {
+/// An public struct implementing the Tag protocol with Codable conformance.
+public struct TagObject: Codable, Tag {
     public let name: String
     public let stationCount: Int
+
+    private enum CodingKeys: String, CodingKey {
+        case name
+        case stationCount = "stationcount"
+    }
 }

@@ -1,44 +1,27 @@
 import Foundation
 
-open class CountriesEndpoint: CountriesEndpointProtocol {
-    private let networkClient: NetworkClientProtocol
-    private let urlBuilder: URLBuilder
-    private let jsonDecoder: JSONDecoderProtocol
-
+/// Endpoint for interacting with countries.
+public final class CountriesEndpoint: BaseEndpoint<CountryObject>, CountriesEndpointProtocol {
     public init(networkClient: NetworkClientProtocol) {
-        self.networkClient = networkClient
-        self.urlBuilder = URLBuilder()
-        self.jsonDecoder = DefaultJSONDecoder()
+        super.init(networkClient: networkClient)
     }
 
-    init(networkClient: NetworkClientProtocol, urlBuilder: URLBuilder, jsonDecoder: JSONDecoderProtocol) {
-        self.networkClient = networkClient
-        self.urlBuilder = urlBuilder
-        self.jsonDecoder = jsonDecoder
+    override init(networkClient: NetworkClientProtocol, urlBuilder: URLBuilder, jsonDecoder: JSONDecoderProtocol) {
+        super.init(networkClient: networkClient, urlBuilder: urlBuilder, jsonDecoder: jsonDecoder)
     }
 
-    public func getCountries() async throws -> [Country] {
-        try await fetchCountries(endpoint: .countries)
+    /// Fetches a list of all countries.
+    /// - Returns: An array of Country objects.
+    /// - Throws: An error if the request fails.
+    public func getCountries() async throws -> [any Country] {
+        try await fetch(endpoint: .countries, exposing: { $0 })
     }
 
-    public func getCountries(withFilter filter: String) async throws -> [Country] {
-        try await fetchCountries(endpoint: .countriesByFilter, argument: filter)
-    }
-
-    private func fetchCountries(endpoint: APIEndpoint, argument: String? = nil) async throws -> [Country] {
-        guard let url = urlBuilder.build(endpoint: endpoint, argument: argument) else {
-            throw APIError.invalidURL
-        }
-
-        do {
-            let data = try await networkClient.fetch(url: url)
-            return try jsonDecoder.decode([CountryObject].self, from: data)
-        } catch let error as APIError {
-            throw error
-        } catch let error as DecodingError {
-            throw APIError.decodingFailed(error)
-        } catch {
-            throw APIError.networkFailed(error)
-        }
+    /// Fetches a list of countries that match the given filter.
+    /// - Parameter filter: The filter to apply to the results.
+    /// - Returns: An array of Country objects matching the filter.
+    /// - Throws: An error if the request fails.
+    public func getCountries(withFilter filter: String) async throws -> [any Country] {
+        try await fetch(endpoint: .countriesByFilter(filter: filter), exposing: { $0 })
     }
 }

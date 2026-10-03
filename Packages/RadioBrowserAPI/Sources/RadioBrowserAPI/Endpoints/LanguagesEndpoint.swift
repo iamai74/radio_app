@@ -1,44 +1,27 @@
 import Foundation
 
-open class LanguagesEndpoint: LanguagesEndpointProtocol {
-    private let networkClient: NetworkClientProtocol
-    private let urlBuilder: URLBuilder
-    private let jsonDecoder: JSONDecoderProtocol
-
+/// Endpoint for interacting with languages.
+public final class LanguagesEndpoint: BaseEndpoint<LanguageObject>, LanguagesEndpointProtocol {
     public init(networkClient: NetworkClientProtocol) {
-        self.networkClient = networkClient
-        self.urlBuilder = URLBuilder()
-        self.jsonDecoder = DefaultJSONDecoder()
+        super.init(networkClient: networkClient)
     }
 
-    init(networkClient: NetworkClientProtocol, urlBuilder: URLBuilder, jsonDecoder: JSONDecoderProtocol) {
-        self.networkClient = networkClient
-        self.urlBuilder = urlBuilder
-        self.jsonDecoder = jsonDecoder
+    override init(networkClient: NetworkClientProtocol, urlBuilder: URLBuilder, jsonDecoder: JSONDecoderProtocol) {
+        super.init(networkClient: networkClient, urlBuilder: urlBuilder, jsonDecoder: jsonDecoder)
     }
 
-    public func getLanguages() async throws -> [Language] {
-        try await fetchLanguages(endpoint: .languages)
+    /// Fetches a list of all languages.
+    /// - Returns: An array of Language objects.
+    /// - Throws: An error if the request fails.
+    public func getLanguages() async throws -> [any Language] {
+        try await fetch(endpoint: .languages, exposing: { $0 })
     }
 
-    public func getLanguages(withFilter filter: String) async throws -> [Language] {
-        try await fetchLanguages(endpoint: .languagesByFilter, argument: filter)
-    }
-
-    private func fetchLanguages(endpoint: APIEndpoint, argument: String? = nil) async throws -> [Language] {
-        guard let url = urlBuilder.build(endpoint: endpoint, argument: argument) else {
-            throw APIError.invalidURL
-        }
-
-        do {
-            let data = try await networkClient.fetch(url: url)
-            return try jsonDecoder.decode([LanguageObject].self, from: data)
-        } catch let error as APIError {
-            throw error
-        } catch let error as DecodingError {
-            throw APIError.decodingFailed(error)
-        } catch {
-            throw APIError.networkFailed(error)
-        }
+    /// Fetches a list of languages that match the given filter.
+    /// - Parameter filter: The filter to apply to the results.
+    /// - Returns: An array of Language objects matching the filter.
+    /// - Throws: An error if the request fails.
+    public func getLanguages(withFilter filter: String) async throws -> [any Language] {
+        try await fetch(endpoint: .languagesByFilter(filter: filter), exposing: { $0 })
     }
 }

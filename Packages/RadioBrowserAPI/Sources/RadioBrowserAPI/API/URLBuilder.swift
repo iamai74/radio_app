@@ -1,9 +1,9 @@
 import Foundation
 
-final class URLBuilder: Sendable {
+open class URLBuilder: Sendable {
     private let baseURL: String
 
-    init(baseURL: String = "https://de2.api.radio-browser.info") {
+    public init(baseURL: String = "https://de2.api.radio-browser.info") {
         self.baseURL = baseURL
     }
 
@@ -13,7 +13,8 @@ final class URLBuilder: Sendable {
         return components?.url
     }
 
-    func build(endpoint: APIEndpoint, argument: String? = nil, queryItems: [URLQueryItem] = []) -> URL? {
-        build(path: endpoint.path(with: argument), queryItems: queryItems)
+    func build(endpoint: APIEndpoint, queryItems: [URLQueryItem]? = nil) -> URL? {
+        let merged = (queryItems ?? endpoint.queryItems).isEmpty ? nil : (queryItems ?? endpoint.queryItems)
+        return build(path: endpoint.path, queryItems: merged ?? [])
     }
 }

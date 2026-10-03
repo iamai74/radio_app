@@ -5,6 +5,7 @@ public enum APIError: Error, LocalizedError {
     case invalidResponse
     case decodingFailed(Error)
     case networkFailed(Error)
+    case httpError(Int)
 
     public var errorDescription: String? {
         switch self {
@@ -16,6 +17,8 @@ public enum APIError: Error, LocalizedError {
             return "Failed to decode response: \(error.localizedDescription)"
         case .networkFailed(let error):
             return "Network request failed: \(error.localizedDescription)"
+        case .httpError(let statusCode):
+            return "HTTP Error \(statusCode)"
         }
     }
 }
