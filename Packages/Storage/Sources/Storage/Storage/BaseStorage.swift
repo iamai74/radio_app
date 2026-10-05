@@ -26,6 +26,8 @@ class BaseStorage<Entity: PersistentModel & StorageUpsertKey & Hashable, Filter:
             uniqueKeysWithValues: existing.map { ($0.storageKey, $0) }
         )
 
+        let savedKeys: Set<String> = Set(entities.map { $0.storageKey })
+
         for entity in entities {
             if let existingEntity = existingByStorageKey[entity.storageKey] {
                 modelContext.delete(existingEntity)
@@ -34,7 +36,7 @@ class BaseStorage<Entity: PersistentModel & StorageUpsertKey & Hashable, Filter:
         }
 
         try modelContext.save()
-        reload()
+        targetedReload(changedKeys: savedKeys)
     }
 
     /// Returns a SwiftData predicate for the filter when SQLite-level filtering is possible.
@@ -115,6 +117,27 @@ class BaseStorage<Entity: PersistentModel & StorageUpsertKey & Hashable, Filter:
             .eraseToAnyPublisher()
     }
 
+    private func targetedReload(changedKeys: Set<String>) {
+        let descriptor = FetchDescriptor<Entity>(sortBy: [SortDescriptor(sortKeyPath)])
+
+        do {
+            let results = try modelContext.fetch(descriptor)
+            subject.send(results)
+        } catch {
+            print("[Storage] reload: fetch failed for \(Entity.self): \(error)")
+        }
+
+        do {
+            var current = filteredSubjects.value
+            for filter in current.keys {
+                current[filter] = try fetchFiltered(filter)
+            }
+            filteredSubjects.send(current)
+        } catch {
+            print("[Storage] reload: filtered fetch/apply failed: \(error)")
+        }
+    }
+
     func reload() {
         let descriptor = FetchDescriptor<Entity>(sortBy: [SortDescriptor(sortKeyPath)])
 
@@ -133,6 +156,38 @@ class BaseStorage<Entity: PersistentModel & StorageUpsertKey & Hashable, Filter:
             filteredSubjects.send(current)
         } catch {
             print("[Storage] reload: filtered fetch/apply failed: \(error)")
+        }
+    }
+
+    func saveBackground(_ entities: [Entity]) async {
+        let container = modelContext.container
+
+        let task = Task.detached(priority: .utility) { [weak self, entities, container] in
+            let bgContext = ModelContext(container)
+
+            let existing = try bgContext.fetch(FetchDescriptor<Entity>())
+            let existingByStorageKey = Dictionary(
+                uniqueKeysWithValues: existing.map { ($0.storageKey, $0) }
+            )
+
+            for entity in entities {
+                if let existingEntity = existingByStorageKey[entity.storageKey] {
+                    bgContext.delete(existingEntity)
+                }
+                bgContext.insert(entity)
+            }
+
+            try bgContext.save()
+
+            await MainActor.run {
+                self?.reload()
+            }
+        }
+
+        do {
+            _ = try await task.value
+        } catch {
+            print("[Storage] saveBackground: background save failed for \(Entity.self): \(error)")
         }
     }
 

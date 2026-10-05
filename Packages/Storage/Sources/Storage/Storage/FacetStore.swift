@@ -14,6 +14,10 @@ final class FacetStore<Entity: PersistentModel & FacetEntity & StorageUpsertKey 
         try storage.save(entities)
     }
 
+    func saveAsync(_ entities: [Entity]) async {
+        await storage.saveBackground(entities)
+    }
+
     func publisher(filter: FacetFilter) -> AnyPublisher<[Entity], Never> {
         storage.filteredPublisher(filter: filter)
     }

@@ -27,6 +27,10 @@ public final class DataStore {
         try self.stations.save(stations)
     }
 
+    public func saveStationsAsync(_ stations: [some StationEntity]) async {
+        await self.stations.saveAsync(stations)
+    }
+
     public func stationsPublisher(filter: StationFilter) -> AnyPublisher<[any StationEntity], Never> {
         stations.publisher(filter: filter)
     }
@@ -34,6 +38,11 @@ public final class DataStore {
     public func saveCountries(_ countries: [some CountryEntity]) throws {
         let entities = countries.map { CountryEntityImpl.from($0) }
         try self.countries.save(entities)
+    }
+
+    public func saveCountriesAsync(_ countries: [some CountryEntity]) async {
+        let entities = countries.map { CountryEntityImpl.from($0) }
+        await self.countries.saveAsync(entities)
     }
 
     public func countriesPublisher(filter: CountryFilter) -> AnyPublisher<[any CountryEntity], Never> {
@@ -47,6 +56,11 @@ public final class DataStore {
         try self.tags.save(entities)
     }
 
+    public func saveTagsAsync(_ tags: [some TagEntity]) async {
+        let entities = tags.map { TagEntityImpl.from($0) }
+        await self.tags.saveAsync(entities)
+    }
+
     public func tagsPublisher(filter: TagFilter) -> AnyPublisher<[any TagEntity], Never> {
         self.tags.publisher(filter: filter)
             .map { $0 as [any TagEntity] }
@@ -58,6 +72,11 @@ public final class DataStore {
         try self.languages.save(entities)
     }
 
+    public func saveLanguagesAsync(_ languages: [some LanguageEntity]) async {
+        let entities = languages.map { LanguageEntityImpl.from($0) }
+        await self.languages.saveAsync(entities)
+    }
+
     public func languagesPublisher(filter: LanguageFilter) -> AnyPublisher<[any LanguageEntity], Never> {
         self.languages.publisher(filter: filter)
             .map { $0 as [any LanguageEntity] }
@@ -67,6 +86,11 @@ public final class DataStore {
     public func saveCodecs(_ codecs: [some CodecEntity]) throws {
         let entities = codecs.map { CodecEntityImpl.from($0) }
         try self.codecs.save(entities)
+    }
+
+    public func saveCodecsAsync(_ codecs: [some CodecEntity]) async {
+        let entities = codecs.map { CodecEntityImpl.from($0) }
+        await self.codecs.saveAsync(entities)
     }
 
     public func codecsPublisher(filter: CodecFilter) -> AnyPublisher<[any CodecEntity], Never> {

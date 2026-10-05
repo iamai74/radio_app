@@ -15,6 +15,11 @@ final class StationStore {
         try storage.save(entities)
     }
 
+    func saveAsync(_ stations: [some StationEntity]) async {
+        let entities = stations.map { StationEntityImpl.from($0) }
+        await storage.saveBackground(entities)
+    }
+
     func publisher(filter: StationFilter) -> AnyPublisher<[any StationEntity], Never> {
         storage.filteredPublisher(filter: filter)
     }
