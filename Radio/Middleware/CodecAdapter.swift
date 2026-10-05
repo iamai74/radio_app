@@ -2,7 +2,7 @@ import Foundation
 import RadioBrowserAPI
 import Storage
 
-struct CodecAdapter: CodecEntity {
+struct CodecAdapter: Sendable, CodecEntity {
     let name: String
     let stationCount: Int
 

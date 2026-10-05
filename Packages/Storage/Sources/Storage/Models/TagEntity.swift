@@ -5,11 +5,6 @@ extension TagEntityImpl: StorageUpsertKey {
     var storageKey: String { name }
 }
 
-public protocol TagEntity {
-    var name: String { get }
-    var stationCount: Int { get }
-}
-
 @Model
 final class TagEntityImpl: TagEntity, FacetEntity {
     @Attribute(.unique) var name: String

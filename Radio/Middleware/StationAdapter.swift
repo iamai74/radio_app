@@ -2,7 +2,7 @@ import Foundation
 import RadioBrowserAPI
 import Storage
 
-struct StationAdapter: StationEntity {
+struct StationAdapter: Sendable, StationEntity {
     let id: String
     let name: String
     let url: String

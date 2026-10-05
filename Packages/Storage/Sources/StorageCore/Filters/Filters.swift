@@ -10,7 +10,7 @@ public struct StationFilter: Hashable {
     public var orderBy: StationOrderBy = .name
     public var reverse: Bool = false
 
-    public enum StationOrderBy: String, CaseIterable, Hashable {
+    public enum StationOrderBy: String, Hashable {
         case name
         case votes
         case bitrate
@@ -22,8 +22,10 @@ public struct StationFilter: Hashable {
 
     public init() {}
 
-    var hasPostProcessing: Bool {
-        (tag != nil && !tag!.isEmpty) || orderBy == .lastCheckOk
+    /// True when some part of the filter cannot be expressed as a SwiftData
+    /// `#Predicate`, so the store has to fetch, then filter and window in memory.
+    public var hasPostProcessing: Bool {
+        (tag?.isEmpty == false) || orderBy == .lastCheckOk
     }
 }
 
@@ -33,7 +35,7 @@ public struct FacetFilter: Hashable {
     public var orderBy: FacetOrderBy = .name
     public var reverse: Bool = false
 
-    public enum FacetOrderBy: String, CaseIterable, Hashable {
+    public enum FacetOrderBy: String, Hashable {
         case name
         case stationCount
     }

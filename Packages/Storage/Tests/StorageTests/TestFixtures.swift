@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+import SwiftData
 @testable import Storage
 
 extension StationEntityImpl {
@@ -85,5 +86,19 @@ extension CodecEntityImpl {
             name: name,
             stationCount: stationCount
         )
+    }
+}
+
+extension Storage.DataStore {
+    func rowCount<Entity: PersistentModel>(_ type: Entity.Type) throws -> Int {
+        try container.mainContext.fetchCount(FetchDescriptor<Entity>())
+    }
+}
+
+extension Storage.DataStore {
+    /// In-memory store that owns its container, so tests never leak a persistent store.
+    @MainActor
+    static func makeInMemoryStore() throws -> Storage.DataStore {
+        Storage.DataStore(modelContainer: try StorageContainer.create(isInMemory: true))
     }
 }

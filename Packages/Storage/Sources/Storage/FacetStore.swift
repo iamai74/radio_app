@@ -10,19 +10,19 @@ final class FacetStore<Entity: PersistentModel & FacetEntity & StorageUpsertKey 
         self.storage = FacetStorageImpl(modelContext: modelContext)
     }
 
-    func save(_ entities: [Entity]) throws {
-        try storage.save(entities)
-    }
-
-    func saveAsync(_ entities: [Entity]) async {
-        await storage.saveBackground(entities)
+    func save(_ entities: [Entity]) async throws {
+        try await storage.save(entities)
     }
 
     func publisher(filter: FacetFilter) -> AnyPublisher<[Entity], Never> {
         storage.filteredPublisher(filter: filter)
     }
 
-    func deleteAll() throws {
-        try storage.deleteAll()
+    func sequence(filter: FacetFilter) -> StorageSequence<Entity> {
+        storage.filteredSequence(filter: filter)
+    }
+
+    func deleteAll() async throws {
+        try await storage.deleteAll()
     }
 }

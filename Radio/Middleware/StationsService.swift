@@ -33,18 +33,27 @@ final class StationsService {
         )
 
         let entities = stations.map { StationAdapter(from: $0) }
-        try dataStore.saveStations(entities)
+        try await dataStore.saveStations(entities)
     }
 
     func fetchAndSaveAllStations() async throws {
         let stations = try await api.stations.getAllStations()
-        let entities = stations.map { StationAdapter(from: $0) }
-        try dataStore.saveStations(entities)
+        // A full import maps tens of thousands of models, so the mapping runs off
+        // the main actor as well; `DataStore.saveStations` writes on a background
+        // context and only publication hops back.
+        let entities = await Self.adapt(stations)
+        try await dataStore.saveStations(entities)
     }
 
     func searchAndSaveStations(query: String, limit: Int = 100) async throws {
         let stations = try await api.stations.searchStations(query: query, limit: limit)
         let entities = stations.map { StationAdapter(from: $0) }
-        try dataStore.saveStations(entities)
+        try await dataStore.saveStations(entities)
+    }
+
+    private static func adapt(_ stations: [any Station]) async -> [StationAdapter] {
+        await Task.detached(priority: .utility) {
+            stations.map { StationAdapter(from: $0) }
+        }.value
     }
 }

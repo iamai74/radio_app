@@ -5,11 +5,6 @@ extension LanguageEntityImpl: StorageUpsertKey {
     var storageKey: String { name }
 }
 
-public protocol LanguageEntity {
-    var name: String { get }
-    var stationCount: Int { get }
-}
-
 @Model
 final class LanguageEntityImpl: LanguageEntity, FacetEntity {
     @Attribute(.unique) var name: String

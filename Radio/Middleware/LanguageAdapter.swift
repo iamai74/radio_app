@@ -2,7 +2,7 @@ import Foundation
 import RadioBrowserAPI
 import Storage
 
-struct LanguageAdapter: LanguageEntity {
+struct LanguageAdapter: Sendable, LanguageEntity {
     let name: String
     let stationCount: Int
 

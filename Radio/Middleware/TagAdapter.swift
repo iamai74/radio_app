@@ -2,7 +2,7 @@ import Foundation
 import RadioBrowserAPI
 import Storage
 
-struct TagAdapter: TagEntity {
+struct TagAdapter: Sendable, TagEntity {
     let name: String
     let stationCount: Int
 

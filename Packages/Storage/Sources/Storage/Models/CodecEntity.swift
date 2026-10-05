@@ -5,11 +5,6 @@ extension CodecEntityImpl: StorageUpsertKey {
     var storageKey: String { name }
 }
 
-public protocol CodecEntity {
-    var name: String { get }
-    var stationCount: Int { get }
-}
-
 @Model
 final class CodecEntityImpl: CodecEntity, FacetEntity {
     @Attribute(.unique) var name: String

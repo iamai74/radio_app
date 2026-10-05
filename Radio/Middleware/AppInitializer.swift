@@ -13,11 +13,8 @@ public protocol AppDependency: Dependency {
 public class AppInitializer {
     public static func initialize() async throws -> AppDependency {
         let modelContainer = try StorageContainer.create()
-        let storageDi = Storage.DIContainer.shared
-        storageDi.register(modelContainer: modelContainer)
-
         let networkClient = DefaultNetworkClient()
-        let dataStore = storageDi.dataStore
+        let dataStore = Storage.DataStore(modelContainer: modelContainer)
 
         return AppDependencyImpl(
             networkClient: networkClient,

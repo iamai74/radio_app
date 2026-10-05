@@ -15,12 +15,12 @@ final class CountriesService {
     func fetchAndSaveCountries() async throws {
         let countries = try await api.countries.getCountries()
         let entities = countries.map { CountryAdapter(from: $0) }
-        try dataStore.saveCountries(entities)
+        try await dataStore.saveCountries(entities)
     }
 
     func fetchAndSaveCountries(filter: String) async throws {
         let countries = try await api.countries.getCountries(withFilter: filter)
         let entities = countries.map { CountryAdapter(from: $0) }
-        try dataStore.saveCountries(entities)
+        try await dataStore.saveCountries(entities)
     }
 }

@@ -13,19 +13,28 @@ let package = Package(
         .library(
             name: "Storage",
             targets: ["Storage"]),
+        .library(
+            name: "StorageCore",
+            targets: ["StorageCore"]),
     ],
     dependencies: [
         .package(url: "https://github.com/SimplyDanny/SwiftLintPlugins", from: "0.65.1")
     ],
     targets: [
         .target(
-            name: "Storage",
+            name: "StorageCore",
             dependencies: [],
+            plugins: [
+                .plugin(name: "SwiftLintBuildToolPlugin", package: "SwiftLintPlugins")
+            ]),
+        .target(
+            name: "Storage",
+            dependencies: ["StorageCore"],
             plugins: [
                 .plugin(name: "SwiftLintBuildToolPlugin", package: "SwiftLintPlugins")
             ]),
         .testTarget(
             name: "StorageTests",
-            dependencies: ["Storage"]),
+            dependencies: ["Storage", "StorageCore"]),
     ]
 )

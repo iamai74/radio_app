@@ -34,7 +34,9 @@ class FacetStorageImpl<Entity: PersistentModel & FacetEntity & StorageUpsertKey 
         }
     }
 
-    override func applyFilter(_ filter: FacetFilter, to results: inout [Entity]) throws {
+    override func matching(_ filter: FacetFilter, in all: [Entity]) -> [Entity] {
+        var results = all
+
         if let name = filter.name, !name.isEmpty {
             results = results.filter { $0.name.localizedStandardContains(name) }
         }
@@ -43,15 +45,18 @@ class FacetStorageImpl<Entity: PersistentModel & FacetEntity & StorageUpsertKey 
             results = results.filter { $0.stationCount >= minCount }
         }
 
+        return results
+    }
+
+    override func ordered(_ entities: [Entity], by filter: FacetFilter) -> [Entity] {
+        let sorted: [Entity]
         switch filter.orderBy {
         case .name:
-            results.sort { $0.name.localizedCompare($1.name) == .orderedAscending }
+            sorted = entities.sorted { $0.name.localizedCompare($1.name) == .orderedAscending }
         case .stationCount:
-            results.sort { $0.stationCount > $1.stationCount }
+            sorted = entities.sorted { $0.stationCount > $1.stationCount }
         }
 
-        if filter.reverse {
-            results.reverse()
-        }
+        return filter.reverse ? sorted.reversed() : sorted
     }
 }

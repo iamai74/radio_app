@@ -1,21 +1,26 @@
 import Foundation
 import SwiftData
 import Combine
+@_exported import StorageCore
 
+/// Facade over the stores. Saves run on a background `ModelContext`; only the
+/// published results hop back to the main actor.
 @MainActor
-public final class DataStore {
+public final class DataStore: DataStoreProtocol {
+    // `ModelContext` does not retain its container, so the container must stay
+    // alive for as long as this store is used. Holding it here is what makes
+    // `DataStore(modelContainer:)` safe for callers that don't keep their own
+    // reference (previews, tests, `AppInitializer` locals).
+    private let modelContainer: ModelContainer
     private let stations: StationStore
     private let countries: FacetStore<CountryEntityImpl>
     private let tags: FacetStore<TagEntityImpl>
     private let languages: FacetStore<LanguageEntityImpl>
     private let codecs: FacetStore<CodecEntityImpl>
 
-    public static func create(di: DIContainer) -> DataStore {
-        DataStore(di: di)
-    }
-
-    public init(di: DIContainer) {
-        let context = di.modelContainer.mainContext
+    public init(modelContainer: ModelContainer) {
+        self.modelContainer = modelContainer
+        let context = modelContainer.mainContext
         self.stations = StationStore(modelContext: context)
         self.countries = FacetStore<CountryEntityImpl>(modelContext: context)
         self.tags = FacetStore<TagEntityImpl>(modelContext: context)
@@ -23,26 +28,26 @@ public final class DataStore {
         self.codecs = FacetStore<CodecEntityImpl>(modelContext: context)
     }
 
-    public func saveStations(_ stations: [some StationEntity]) throws {
-        try self.stations.save(stations)
-    }
+    /// Container backing this store. Exposed so callers can hand the same
+    /// container to SwiftUI views without keeping a duplicate reference.
+    public var container: ModelContainer { modelContainer }
 
-    public func saveStationsAsync(_ stations: [some StationEntity]) async {
-        await self.stations.saveAsync(stations)
+    public func saveStations(_ stations: [some StationEntity]) async throws {
+        try await self.stations.save(stations)
     }
 
     public func stationsPublisher(filter: StationFilter) -> AnyPublisher<[any StationEntity], Never> {
         stations.publisher(filter: filter)
+            .map { $0 as [any StationEntity] }
+            .eraseToAnyPublisher()
     }
 
-    public func saveCountries(_ countries: [some CountryEntity]) throws {
-        let entities = countries.map { CountryEntityImpl.from($0) }
-        try self.countries.save(entities)
+    public func stationsSequence(filter: StationFilter) -> StorageSequence<any StationEntity> {
+        stations.sequence(filter: filter).map { $0 as [any StationEntity] }
     }
 
-    public func saveCountriesAsync(_ countries: [some CountryEntity]) async {
-        let entities = countries.map { CountryEntityImpl.from($0) }
-        await self.countries.saveAsync(entities)
+    public func saveCountries(_ countries: [some CountryEntity]) async throws {
+        try await self.countries.save(countries.map { CountryEntityImpl.from($0) })
     }
 
     public func countriesPublisher(filter: CountryFilter) -> AnyPublisher<[any CountryEntity], Never> {
@@ -51,14 +56,12 @@ public final class DataStore {
             .eraseToAnyPublisher()
     }
 
-    public func saveTags(_ tags: [some TagEntity]) throws {
-        let entities = tags.map { TagEntityImpl.from($0) }
-        try self.tags.save(entities)
+    public func countriesSequence(filter: CountryFilter) -> StorageSequence<any CountryEntity> {
+        countries.sequence(filter: filter).map { $0 as [any CountryEntity] }
     }
 
-    public func saveTagsAsync(_ tags: [some TagEntity]) async {
-        let entities = tags.map { TagEntityImpl.from($0) }
-        await self.tags.saveAsync(entities)
+    public func saveTags(_ tags: [some TagEntity]) async throws {
+        try await self.tags.save(tags.map { TagEntityImpl.from($0) })
     }
 
     public func tagsPublisher(filter: TagFilter) -> AnyPublisher<[any TagEntity], Never> {
@@ -67,14 +70,12 @@ public final class DataStore {
             .eraseToAnyPublisher()
     }
 
-    public func saveLanguages(_ languages: [some LanguageEntity]) throws {
-        let entities = languages.map { LanguageEntityImpl.from($0) }
-        try self.languages.save(entities)
+    public func tagsSequence(filter: TagFilter) -> StorageSequence<any TagEntity> {
+        tags.sequence(filter: filter).map { $0 as [any TagEntity] }
     }
 
-    public func saveLanguagesAsync(_ languages: [some LanguageEntity]) async {
-        let entities = languages.map { LanguageEntityImpl.from($0) }
-        await self.languages.saveAsync(entities)
+    public func saveLanguages(_ languages: [some LanguageEntity]) async throws {
+        try await self.languages.save(languages.map { LanguageEntityImpl.from($0) })
     }
 
     public func languagesPublisher(filter: LanguageFilter) -> AnyPublisher<[any LanguageEntity], Never> {
@@ -83,14 +84,12 @@ public final class DataStore {
             .eraseToAnyPublisher()
     }
 
-    public func saveCodecs(_ codecs: [some CodecEntity]) throws {
-        let entities = codecs.map { CodecEntityImpl.from($0) }
-        try self.codecs.save(entities)
+    public func languagesSequence(filter: LanguageFilter) -> StorageSequence<any LanguageEntity> {
+        languages.sequence(filter: filter).map { $0 as [any LanguageEntity] }
     }
 
-    public func saveCodecsAsync(_ codecs: [some CodecEntity]) async {
-        let entities = codecs.map { CodecEntityImpl.from($0) }
-        await self.codecs.saveAsync(entities)
+    public func saveCodecs(_ codecs: [some CodecEntity]) async throws {
+        try await self.codecs.save(codecs.map { CodecEntityImpl.from($0) })
     }
 
     public func codecsPublisher(filter: CodecFilter) -> AnyPublisher<[any CodecEntity], Never> {
@@ -99,23 +98,27 @@ public final class DataStore {
             .eraseToAnyPublisher()
     }
 
-    public func deleteAllStations() throws {
-        try stations.deleteAll()
+    public func codecsSequence(filter: CodecFilter) -> StorageSequence<any CodecEntity> {
+        codecs.sequence(filter: filter).map { $0 as [any CodecEntity] }
     }
 
-    public func deleteAllCountries() throws {
-        try countries.deleteAll()
+    public func deleteAllStations() async throws {
+        try await stations.deleteAll()
     }
 
-    public func deleteAllTags() throws {
-        try tags.deleteAll()
+    public func deleteAllCountries() async throws {
+        try await countries.deleteAll()
     }
 
-    public func deleteAllLanguages() throws {
-        try languages.deleteAll()
+    public func deleteAllTags() async throws {
+        try await tags.deleteAll()
     }
 
-    public func deleteAllCodecs() throws {
-        try codecs.deleteAll()
+    public func deleteAllLanguages() async throws {
+        try await languages.deleteAll()
+    }
+
+    public func deleteAllCodecs() async throws {
+        try await codecs.deleteAll()
     }
 }

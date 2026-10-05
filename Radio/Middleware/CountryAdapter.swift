@@ -2,7 +2,7 @@ import Foundation
 import RadioBrowserAPI
 import Storage
 
-struct CountryAdapter: CountryEntity {
+struct CountryAdapter: Sendable, CountryEntity {
     let name: String
     let iso31661: String
     let stationCount: Int

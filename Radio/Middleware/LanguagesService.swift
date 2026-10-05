@@ -15,12 +15,12 @@ final class LanguagesService {
     func fetchAndSaveLanguages() async throws {
         let languages = try await api.languages.getLanguages()
         let entities = languages.map { LanguageAdapter(from: $0) }
-        try dataStore.saveLanguages(entities)
+        try await dataStore.saveLanguages(entities)
     }
 
     func fetchAndSaveLanguages(filter: String) async throws {
         let languages = try await api.languages.getLanguages(withFilter: filter)
         let entities = languages.map { LanguageAdapter(from: $0) }
-        try dataStore.saveLanguages(entities)
+        try await dataStore.saveLanguages(entities)
     }
 }
