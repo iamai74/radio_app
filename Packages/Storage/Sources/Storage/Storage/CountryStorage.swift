@@ -13,7 +13,8 @@ final class CountryStorageImpl: BaseStorage<CountryEntityImpl, CountryFilter>, C
     }
 
     func filteredPublisher(filter: CountryFilter) -> AnyPublisher<[any CountryEntity], Never> {
-        filteredSubjects
+        registerFilter(filter)
+        return filteredSubjects
             .map { $0[filter] ?? [] as [any CountryEntity] }
             .eraseToAnyPublisher()
     }

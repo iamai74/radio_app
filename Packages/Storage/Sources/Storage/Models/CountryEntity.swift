@@ -1,6 +1,10 @@
 import Foundation
 import SwiftData
 
+extension CountryEntityImpl: StorageUpsertKey {
+    var storageKey: String { name }
+}
+
 public protocol CountryEntity {
     var name: String { get }
     var iso31661: String { get }

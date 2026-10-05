@@ -13,7 +13,8 @@ final class CodecStorageImpl: BaseStorage<CodecEntityImpl, CodecFilter>, CodecSt
     }
 
     func filteredPublisher(filter: CodecFilter) -> AnyPublisher<[any CodecEntity], Never> {
-        filteredSubjects
+        registerFilter(filter)
+        return filteredSubjects
             .map { $0[filter] ?? [] as [any CodecEntity] }
             .eraseToAnyPublisher()
     }

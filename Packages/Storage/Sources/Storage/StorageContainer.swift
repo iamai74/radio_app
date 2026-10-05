@@ -2,7 +2,7 @@ import Foundation
 import SwiftData
 
 public enum StorageContainer {
-    public static func create() throws -> ModelContainer {
+    public static func create(isInMemory: Bool = false) throws -> ModelContainer {
         let schema = Schema([
             StationEntityImpl.self,
             CountryEntityImpl.self,
@@ -10,7 +10,7 @@ public enum StorageContainer {
             LanguageEntityImpl.self,
             CodecEntityImpl.self
         ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: isInMemory)
         return try ModelContainer(for: schema, configurations: [modelConfiguration])
     }
 }

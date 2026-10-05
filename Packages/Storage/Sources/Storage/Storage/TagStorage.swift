@@ -13,7 +13,8 @@ final class TagStorageImpl: BaseStorage<TagEntityImpl, TagFilter>, TagStorage {
     }
 
     func filteredPublisher(filter: TagFilter) -> AnyPublisher<[any TagEntity], Never> {
-        filteredSubjects
+        registerFilter(filter)
+        return filteredSubjects
             .map { $0[filter] ?? [] as [any TagEntity] }
             .eraseToAnyPublisher()
     }

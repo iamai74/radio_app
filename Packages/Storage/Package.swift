@@ -24,5 +24,8 @@ let package = Package(
             plugins: [
                 .plugin(name: "SwiftLintBuildToolPlugin", package: "SwiftLintPlugins")
             ]),
+        .testTarget(
+            name: "StorageTests",
+            dependencies: ["Storage"]),
     ]
 )

@@ -13,7 +13,8 @@ final class StationStorageImpl: BaseStorage<StationEntityImpl, StationFilter>, S
     }
 
     func filteredPublisher(filter: StationFilter) -> AnyPublisher<[any StationEntity], Never> {
-        filteredSubjects
+        registerFilter(filter)
+        return filteredSubjects
             .map { $0[filter] ?? [] as [any StationEntity] }
             .eraseToAnyPublisher()
     }

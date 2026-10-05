@@ -1,6 +1,10 @@
 import Foundation
 import SwiftData
 
+extension StationEntityImpl: StorageUpsertKey {
+    var storageKey: String { id }
+}
+
 public protocol StationEntity {
     var id: String { get }
     var name: String { get }

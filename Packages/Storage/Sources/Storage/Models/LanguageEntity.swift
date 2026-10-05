@@ -1,6 +1,10 @@
 import Foundation
 import SwiftData
 
+extension LanguageEntityImpl: StorageUpsertKey {
+    var storageKey: String { name }
+}
+
 public protocol LanguageEntity {
     var name: String { get }
     var stationCount: Int { get }

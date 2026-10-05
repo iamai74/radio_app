@@ -13,7 +13,8 @@ final class LanguageStorageImpl: BaseStorage<LanguageEntityImpl, LanguageFilter>
     }
 
     func filteredPublisher(filter: LanguageFilter) -> AnyPublisher<[any LanguageEntity], Never> {
-        filteredSubjects
+        registerFilter(filter)
+        return filteredSubjects
             .map { $0[filter] ?? [] as [any LanguageEntity] }
             .eraseToAnyPublisher()
     }
