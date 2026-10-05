@@ -11,7 +11,7 @@ public protocol TagEntity {
 }
 
 @Model
-final class TagEntityImpl: TagEntity {
+final class TagEntityImpl: TagEntity, FacetEntity {
     @Attribute(.unique) var name: String
     var stationCount: Int
 

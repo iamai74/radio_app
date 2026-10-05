@@ -11,7 +11,7 @@ public protocol LanguageEntity {
 }
 
 @Model
-final class LanguageEntityImpl: LanguageEntity {
+final class LanguageEntityImpl: LanguageEntity, FacetEntity {
     @Attribute(.unique) var name: String
     var stationCount: Int
 

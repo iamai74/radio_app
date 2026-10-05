@@ -21,68 +21,27 @@ public struct StationFilter: Hashable {
     public static var empty: StationFilter { StationFilter() }
 
     public init() {}
+
+    var hasPostProcessing: Bool {
+        (tag != nil && !tag!.isEmpty) || orderBy == .lastCheckOk
+    }
 }
 
-public struct CountryFilter: Hashable {
+public struct FacetFilter: Hashable {
     public var name: String?
     public var minStationCount: Int?
-    public var orderBy: CountryOrderBy = .name
+    public var orderBy: FacetOrderBy = .name
     public var reverse: Bool = false
 
-    public enum CountryOrderBy: String, CaseIterable, Hashable {
+    public enum FacetOrderBy: String, CaseIterable, Hashable {
         case name
         case stationCount
     }
 
-    public static var empty: CountryFilter { CountryFilter() }
-
-    public init() {}
+    public static var empty: FacetFilter { FacetFilter() }
 }
 
-public struct TagFilter: Hashable {
-    public var name: String?
-    public var minStationCount: Int?
-    public var orderBy: TagOrderBy = .name
-    public var reverse: Bool = false
-
-    public enum TagOrderBy: String, CaseIterable, Hashable {
-        case name
-        case stationCount
-    }
-
-    public static var empty: TagFilter { TagFilter() }
-
-    public init() {}
-}
-
-public struct LanguageFilter: Hashable {
-    public var name: String?
-    public var minStationCount: Int?
-    public var orderBy: LanguageOrderBy = .name
-    public var reverse: Bool = false
-
-    public enum LanguageOrderBy: String, CaseIterable, Hashable {
-        case name
-        case stationCount
-    }
-
-    public static var empty: LanguageFilter { LanguageFilter() }
-
-    public init() {}
-}
-
-public struct CodecFilter: Hashable {
-    public var name: String?
-    public var minStationCount: Int?
-    public var orderBy: CodecOrderBy = .name
-    public var reverse: Bool = false
-
-    public enum CodecOrderBy: String, CaseIterable, Hashable {
-        case name
-        case stationCount
-    }
-
-    public static var empty: CodecFilter { CodecFilter() }
-
-    public init() {}
-}
+public typealias CountryFilter = FacetFilter
+public typealias TagFilter = FacetFilter
+public typealias LanguageFilter = FacetFilter
+public typealias CodecFilter = FacetFilter

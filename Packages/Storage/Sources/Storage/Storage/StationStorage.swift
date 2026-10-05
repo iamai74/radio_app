@@ -19,6 +19,84 @@ final class StationStorageImpl: BaseStorage<StationEntityImpl, StationFilter>, S
             .eraseToAnyPublisher()
     }
 
+    // MARK: - SQLite Predicate Hooks
+
+    override func predicate(for filter: StationFilter) -> Predicate<StationEntityImpl>? {
+        if let name = filter.name, !name.isEmpty, let country = filter.country, let language = filter.language {
+            return #Predicate<StationEntityImpl> {
+                $0.name.localizedStandardContains(name) && $0.country == country && $0.language == language
+            }
+        } else if let name = filter.name, !name.isEmpty, let country = filter.country {
+            return #Predicate<StationEntityImpl> {
+                $0.name.localizedStandardContains(name) && $0.country == country
+            }
+        } else if let name = filter.name, !name.isEmpty, let language = filter.language {
+            return #Predicate<StationEntityImpl> {
+                $0.name.localizedStandardContains(name) && $0.language == language
+            }
+        } else if let name = filter.name, !name.isEmpty {
+            return #Predicate<StationEntityImpl> {
+                $0.name.localizedStandardContains(name)
+            }
+        } else if let country = filter.country, let language = filter.language {
+            return #Predicate<StationEntityImpl> {
+                $0.country == country && $0.language == language
+            }
+        } else if let country = filter.country {
+            return #Predicate<StationEntityImpl> {
+                $0.country == country
+            }
+        } else if let language = filter.language {
+            return #Predicate<StationEntityImpl> {
+                $0.language == language
+            }
+        }
+        return nil
+    }
+
+    override func sortDescriptors(from filter: StationFilter) -> [SortDescriptor<StationEntityImpl>]? {
+        let direction: SortOrder = filter.reverse ? .reverse : .forward
+
+        switch filter.orderBy {
+        case .name:
+            return [SortDescriptor(\StationEntityImpl.name, order: direction)]
+        case .votes:
+            return [SortDescriptor(\StationEntityImpl.votes, order: direction)]
+        case .bitrate:
+            return [SortDescriptor(\StationEntityImpl.bitrate, order: direction)]
+        case .changeCounter:
+            return [SortDescriptor(\StationEntityImpl.changeCounter, order: direction)]
+        case .lastCheckOk:
+            return nil
+        }
+    }
+
+    override func fetchOffset(from filter: StationFilter) -> Int? {
+        filter.offset
+    }
+
+    override func fetchLimit(from filter: StationFilter) -> Int? {
+        filter.limit
+    }
+
+    /// Post-process results from predicate fetch for filters/sorts not expressible in SQLite.
+    override func applyPostFilter(_ filter: StationFilter, to results: inout [StationEntityImpl]) {
+        guard filter.hasPostProcessing else { return }
+
+        if let tag = filter.tag, !tag.isEmpty {
+            results = results.filter { station in
+                station.tags?.contains(where: { $0.localizedStandardContains(tag) }) ?? false
+            }
+        }
+
+        if filter.orderBy == .lastCheckOk {
+            let sorted = results.sorted { $0.lastCheckOk && !$1.lastCheckOk }
+            results = filter.reverse ? sorted.reversed() : sorted
+        }
+    }
+
+    // MARK: - In-Memory Fallback
+
     // swiftlint:disable:next cyclomatic_complexity
     override func applyFilter(_ filter: StationFilter, to results: inout [StationEntityImpl]) throws {
         if let name = filter.name, !name.isEmpty {
@@ -35,7 +113,7 @@ final class StationStorageImpl: BaseStorage<StationEntityImpl, StationFilter>, S
 
         if let tag = filter.tag, !tag.isEmpty {
             results = results.filter { station in
-                station.tags?.contains(where: { $0.localizedCaseInsensitiveContains(tag) }) ?? false
+                station.tags?.contains(where: { $0.localizedStandardContains(tag) }) ?? false
             }
         }
 

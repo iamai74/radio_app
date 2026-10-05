@@ -4,31 +4,11 @@ import Combine
 
 @MainActor
 public final class DataStore {
-    private let stations: any StationStorage
-    private let countries: any CountryStorage
-    private let tags: any TagStorage
-    private let languages: any LanguageStorage
-    private let codecs: any CodecStorage
-
-    private var stationsPublisher: AnyPublisher<[any StationEntity], Never> {
-        stations.stationsPublisher
-    }
-
-    private var countriesPublisher: AnyPublisher<[any CountryEntity], Never> {
-        countries.countriesPublisher
-    }
-
-    private var tagsPublisher: AnyPublisher<[any TagEntity], Never> {
-        tags.tagsPublisher
-    }
-
-    private var languagesPublisher: AnyPublisher<[any LanguageEntity], Never> {
-        languages.languagesPublisher
-    }
-
-    private var codecsPublisher: AnyPublisher<[any CodecEntity], Never> {
-        codecs.codecsPublisher
-    }
+    private let stations: StationStore
+    private let countries: FacetStore<CountryEntityImpl>
+    private let tags: FacetStore<TagEntityImpl>
+    private let languages: FacetStore<LanguageEntityImpl>
+    private let codecs: FacetStore<CodecEntityImpl>
 
     public static func create(di: DIContainer) -> DataStore {
         DataStore(di: di)
@@ -36,20 +16,19 @@ public final class DataStore {
 
     public init(di: DIContainer) {
         let context = di.modelContainer.mainContext
-        self.stations = StationStorageImpl(modelContext: context)
-        self.countries = CountryStorageImpl(modelContext: context)
-        self.tags = TagStorageImpl(modelContext: context)
-        self.languages = LanguageStorageImpl(modelContext: context)
-        self.codecs = CodecStorageImpl(modelContext: context)
+        self.stations = StationStore(modelContext: context)
+        self.countries = FacetStore<CountryEntityImpl>(modelContext: context)
+        self.tags = FacetStore<TagEntityImpl>(modelContext: context)
+        self.languages = FacetStore<LanguageEntityImpl>(modelContext: context)
+        self.codecs = FacetStore<CodecEntityImpl>(modelContext: context)
     }
 
     public func saveStations(_ stations: [some StationEntity]) throws {
-        let entities = stations.map { StationEntityImpl.from($0) }
-        try self.stations.save(entities)
+        try self.stations.save(stations)
     }
 
     public func stationsPublisher(filter: StationFilter) -> AnyPublisher<[any StationEntity], Never> {
-        stations.filteredPublisher(filter: filter)
+        stations.publisher(filter: filter)
     }
 
     public func saveCountries(_ countries: [some CountryEntity]) throws {
@@ -58,7 +37,9 @@ public final class DataStore {
     }
 
     public func countriesPublisher(filter: CountryFilter) -> AnyPublisher<[any CountryEntity], Never> {
-        countries.filteredPublisher(filter: filter)
+        self.countries.publisher(filter: filter)
+            .map { $0 as [any CountryEntity] }
+            .eraseToAnyPublisher()
     }
 
     public func saveTags(_ tags: [some TagEntity]) throws {
@@ -67,7 +48,9 @@ public final class DataStore {
     }
 
     public func tagsPublisher(filter: TagFilter) -> AnyPublisher<[any TagEntity], Never> {
-        tags.filteredPublisher(filter: filter)
+        self.tags.publisher(filter: filter)
+            .map { $0 as [any TagEntity] }
+            .eraseToAnyPublisher()
     }
 
     public func saveLanguages(_ languages: [some LanguageEntity]) throws {
@@ -76,7 +59,9 @@ public final class DataStore {
     }
 
     public func languagesPublisher(filter: LanguageFilter) -> AnyPublisher<[any LanguageEntity], Never> {
-        languages.filteredPublisher(filter: filter)
+        self.languages.publisher(filter: filter)
+            .map { $0 as [any LanguageEntity] }
+            .eraseToAnyPublisher()
     }
 
     public func saveCodecs(_ codecs: [some CodecEntity]) throws {
@@ -85,7 +70,9 @@ public final class DataStore {
     }
 
     public func codecsPublisher(filter: CodecFilter) -> AnyPublisher<[any CodecEntity], Never> {
-        codecs.filteredPublisher(filter: filter)
+        self.codecs.publisher(filter: filter)
+            .map { $0 as [any CodecEntity] }
+            .eraseToAnyPublisher()
     }
 
     public func deleteAllStations() throws {

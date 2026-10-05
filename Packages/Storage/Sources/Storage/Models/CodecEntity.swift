@@ -11,7 +11,7 @@ public protocol CodecEntity {
 }
 
 @Model
-final class CodecEntityImpl: CodecEntity {
+final class CodecEntityImpl: CodecEntity, FacetEntity {
     @Attribute(.unique) var name: String
     var stationCount: Int
 

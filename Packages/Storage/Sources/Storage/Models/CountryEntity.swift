@@ -12,7 +12,7 @@ public protocol CountryEntity {
 }
 
 @Model
-final class CountryEntityImpl: CountryEntity {
+final class CountryEntityImpl: CountryEntity, FacetEntity {
     @Attribute(.unique) var name: String
     var iso31661: String
     var stationCount: Int
