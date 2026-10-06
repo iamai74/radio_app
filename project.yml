@@ -7,6 +7,9 @@ packages:
   SwiftLintPlugins:
     url: https://github.com/SimplyDanny/SwiftLintPlugins
     from: 0.65.1
+  Needle:
+    url: https://github.com/uber/needle.git
+    from: "0.1.0"
   RadioBrowserAPI:
     path: Packages/RadioBrowserAPI
   Storage:
@@ -47,6 +50,8 @@ targets:
     dependencies:
       - package: RadioBrowserAPI
       - package: Storage
+      - package: Needle
+        product: NeedleFoundation
       - package: UILibrary
     buildToolPlugins:
       - plugin: SwiftLintBuildToolPlugin
@@ -72,6 +77,8 @@ targets:
     dependencies:
       - package: RadioBrowserAPI
       - package: Storage
+      - package: Needle
+        product: NeedleFoundation
       - package: UILibrary
     buildToolPlugins:
       - plugin: SwiftLintBuildToolPlugin

@@ -1,10 +1,6 @@
 import Foundation
 import SwiftData
 
-extension CodecEntityImpl: StorageUpsertKey {
-    var storageKey: String { name }
-}
-
 @Model
 final class CodecEntityImpl: CodecEntity, FacetEntity {
     @Attribute(.unique) var name: String
@@ -16,11 +12,29 @@ final class CodecEntityImpl: CodecEntity, FacetEntity {
     }
 }
 
-extension CodecEntityImpl {
-    static func from(_ codec: some CodecEntity) -> CodecEntityImpl {
-        CodecEntityImpl(
-            name: codec.name,
-            stationCount: codec.stationCount
-        )
+extension CodecEntityImpl: StorageModel {
+    typealias DTO = CodecEntity
+
+    var storageKey: String { name }
+
+    static func persist(_ dto: CodecEntity) -> CodecEntityImpl {
+        let codec = CodecEntityImpl(name: dto.name, stationCount: 0)
+        codec.apply(from: dto)
+        return codec
+    }
+
+    func apply(from dto: CodecEntity) {
+        name = dto.name
+        stationCount = dto.stationCount
+    }
+
+    func applyUpdate(from other: CodecEntityImpl) {
+        apply(from: other)
+    }
+
+    static func predicate(forKeys keys: [String]) -> Predicate<CodecEntityImpl> {
+        #Predicate { codec in
+            keys.contains(codec.name)
+        }
     }
 }

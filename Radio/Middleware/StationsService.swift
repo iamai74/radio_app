@@ -5,9 +5,9 @@ import Storage
 @MainActor
 final class StationsService {
     private let api: RadioBrowserAPI
-    private let dataStore: DataStore
+    private let dataStore: any StationWriting
 
-    init(api: RadioBrowserAPI, dataStore: DataStore) {
+    init(api: RadioBrowserAPI, dataStore: any StationWriting) {
         self.api = api
         self.dataStore = dataStore
     }

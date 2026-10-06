@@ -3,11 +3,12 @@ import Foundation
 /// Every failure the storage layer can surface.
 ///
 /// Reads and writes report this instead of logging and continuing, so a caller
-/// can tell "the fetch broke" apart from "the write violated a constraint".
+/// can tell "the fetch broke" apart from "the write failed". Read errors reach
+/// consumers through `StorageFailures.failures` / `StorageSequence`, never by
+/// being turned into an empty result.
 public enum StorageError: Error, Equatable {
     case fetchFailed(String)
     case saveFailed(String)
-    case constraintViolation(String)
 }
 
 extension StorageError: LocalizedError {
@@ -17,8 +18,6 @@ extension StorageError: LocalizedError {
             "Storage fetch failed: \(details)"
         case let .saveFailed(details):
             "Storage save failed: \(details)"
-        case let .constraintViolation(details):
-            "Storage constraint violation: \(details)"
         }
     }
 }

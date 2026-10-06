@@ -1,10 +1,6 @@
 import Foundation
 import SwiftData
 
-extension TagEntityImpl: StorageUpsertKey {
-    var storageKey: String { name }
-}
-
 @Model
 final class TagEntityImpl: TagEntity, FacetEntity {
     @Attribute(.unique) var name: String
@@ -16,11 +12,29 @@ final class TagEntityImpl: TagEntity, FacetEntity {
     }
 }
 
-extension TagEntityImpl {
-    static func from(_ tag: some TagEntity) -> TagEntityImpl {
-        TagEntityImpl(
-            name: tag.name,
-            stationCount: tag.stationCount
-        )
+extension TagEntityImpl: StorageModel {
+    typealias DTO = TagEntity
+
+    var storageKey: String { name }
+
+    static func persist(_ dto: TagEntity) -> TagEntityImpl {
+        let tag = TagEntityImpl(name: dto.name, stationCount: 0)
+        tag.apply(from: dto)
+        return tag
+    }
+
+    func apply(from dto: TagEntity) {
+        name = dto.name
+        stationCount = dto.stationCount
+    }
+
+    func applyUpdate(from other: TagEntityImpl) {
+        apply(from: other)
+    }
+
+    static func predicate(forKeys keys: [String]) -> Predicate<TagEntityImpl> {
+        #Predicate { tag in
+            keys.contains(tag.name)
+        }
     }
 }

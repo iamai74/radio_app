@@ -18,7 +18,7 @@ public struct StorageSequence<Entity>: AsyncSequence {
     private let values: AnyPublisher<[Entity], Never>
     private let failures: AnyPublisher<StorageError, Never>
 
-    init(values: AnyPublisher<[Entity], Never>, failures: AnyPublisher<StorageError, Never>) {
+    public init(values: AnyPublisher<[Entity], Never>, failures: AnyPublisher<StorageError, Never>) {
         self.values = values
         self.failures = failures
     }
@@ -68,18 +68,20 @@ public struct StorageSequence<Entity>: AsyncSequence {
     ///
     /// A class because the task cancellation handler cannot reach the
     /// iterator's own storage. Elements arrive on the main actor, the same
-    /// isolation the publisher delivers on, so the buffer needs no lock; it is
-    /// marked `@unchecked Sendable` only so the cancellation handler can call
-    /// `cancel()`.
+    /// isolation the publisher delivers on, so the iterator itself needs no
+    /// lock; the cancellables set does, because `cancel()` runs on whatever
+    /// executor the task cancellation handler uses. Marked
+    /// `@unchecked Sendable` so that handler can call `cancel()`.
     fileprivate final class State: @unchecked Sendable {
         private var iterator: AsyncStream<Result<[Entity], StorageError>>.AsyncIterator
+        private let lock = NSLock()
         private var cancellables = Set<AnyCancellable>()
 
         init(values: AnyPublisher<[Entity], Never>, failures: AnyPublisher<StorageError, Never>) {
             let (stream, continuation) = AsyncStream<Result<[Entity], StorageError>>.makeStream()
-            values.sink { continuation.yield(.success($0)) }.store(in: &cancellables)
-            failures.sink { continuation.yield(.failure($0)) }.store(in: &cancellables)
             self.iterator = stream.makeAsyncIterator()
+            store(values.sink { continuation.yield(.success($0)) })
+            store(failures.sink { continuation.yield(.failure($0)) })
         }
 
         func next() async -> Result<[Entity], StorageError>? {
@@ -87,7 +89,19 @@ public struct StorageSequence<Entity>: AsyncSequence {
         }
 
         func cancel() {
-            cancellables.removeAll()
+            lock.lock()
+            let toCancel = cancellables
+            cancellables = []
+            lock.unlock()
+            // Cancelling outside the lock: it runs `receiveCancel` handlers,
+            // which must never be able to deadlock against this state.
+            toCancel.forEach { $0.cancel() }
+        }
+
+        private func store(_ cancellable: AnyCancellable) {
+            lock.lock()
+            cancellables.insert(cancellable)
+            lock.unlock()
         }
 
         deinit {

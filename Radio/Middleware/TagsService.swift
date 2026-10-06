@@ -5,9 +5,9 @@ import Storage
 @MainActor
 final class TagsService {
     private let api: RadioBrowserAPI
-    private let dataStore: DataStore
+    private let dataStore: any FacetWriting
 
-    init(api: RadioBrowserAPI, dataStore: DataStore) {
+    init(api: RadioBrowserAPI, dataStore: any FacetWriting) {
         self.api = api
         self.dataStore = dataStore
     }

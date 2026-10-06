@@ -1,10 +1,6 @@
 import Foundation
 import SwiftData
 
-extension CountryEntityImpl: StorageUpsertKey {
-    var storageKey: String { name }
-}
-
 @Model
 final class CountryEntityImpl: CountryEntity, FacetEntity {
     @Attribute(.unique) var name: String
@@ -18,12 +14,30 @@ final class CountryEntityImpl: CountryEntity, FacetEntity {
     }
 }
 
-extension CountryEntityImpl {
-    static func from(_ country: some CountryEntity) -> CountryEntityImpl {
-        CountryEntityImpl(
-            name: country.name,
-            iso31661: country.iso31661,
-            stationCount: country.stationCount
-        )
+extension CountryEntityImpl: StorageModel {
+    typealias DTO = CountryEntity
+
+    var storageKey: String { name }
+
+    static func persist(_ dto: CountryEntity) -> CountryEntityImpl {
+        let country = CountryEntityImpl(name: dto.name, iso31661: dto.iso31661, stationCount: 0)
+        country.apply(from: dto)
+        return country
+    }
+
+    func apply(from dto: CountryEntity) {
+        name = dto.name
+        iso31661 = dto.iso31661
+        stationCount = dto.stationCount
+    }
+
+    func applyUpdate(from other: CountryEntityImpl) {
+        apply(from: other)
+    }
+
+    static func predicate(forKeys keys: [String]) -> Predicate<CountryEntityImpl> {
+        #Predicate { country in
+            keys.contains(country.name)
+        }
     }
 }

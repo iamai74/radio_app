@@ -1,10 +1,6 @@
 import Foundation
 import SwiftData
 
-extension StationEntityImpl: StorageUpsertKey {
-    var storageKey: String { id }
-}
-
 @Model
 final class StationEntityImpl: StationEntity {
     @Attribute(.unique) var id: String
@@ -79,31 +75,49 @@ final class StationEntityImpl: StationEntity {
     }
 }
 
-extension StationEntityImpl {
-    static func from(_ station: some StationEntity) -> StationEntityImpl {
-        StationEntityImpl(
-            id: station.id,
-            name: station.name,
-            url: station.url,
-            homepage: station.homepage,
-            favicon: station.favicon,
-            tags: station.tags,
-            country: station.country,
-            state: station.state,
-            language: station.language,
-            votes: station.votes,
-            codec: station.codec,
-            bitrate: station.bitrate,
-            lastCheckOk: station.lastCheckOk,
-            lastCheckTime: station.lastCheckTime,
-            lastCheckTotal: station.lastCheckTotal,
-            lastCheckFailures: station.lastCheckFailures,
-            lastCheckDuration: station.lastCheckDuration,
-            lastCheckError: station.lastCheckError,
-            lastChangeTime: station.lastChangeTime,
-            changeCounter: station.changeCounter,
-            creationTime: station.creationTime,
-            urlResolved: station.urlResolved
-        )
+extension StationEntityImpl: StorageModel {
+    typealias DTO = StationEntity
+
+    var storageKey: String { id }
+
+    static func persist(_ dto: StationEntity) -> StationEntityImpl {
+        let station = StationEntityImpl(id: dto.id, name: dto.name, url: dto.url, country: dto.country)
+        station.apply(from: dto)
+        return station
+    }
+
+    func apply(from dto: StationEntity) {
+        id = dto.id
+        name = dto.name
+        url = dto.url
+        homepage = dto.homepage
+        favicon = dto.favicon
+        tags = dto.tags
+        country = dto.country
+        state = dto.state
+        language = dto.language
+        votes = dto.votes
+        codec = dto.codec
+        bitrate = dto.bitrate
+        lastCheckOk = dto.lastCheckOk
+        lastCheckTime = dto.lastCheckTime
+        lastCheckTotal = dto.lastCheckTotal
+        lastCheckFailures = dto.lastCheckFailures
+        lastCheckDuration = dto.lastCheckDuration
+        lastCheckError = dto.lastCheckError
+        lastChangeTime = dto.lastChangeTime
+        changeCounter = dto.changeCounter
+        creationTime = dto.creationTime
+        urlResolved = dto.urlResolved
+    }
+
+    func applyUpdate(from other: StationEntityImpl) {
+        apply(from: other)
+    }
+
+    static func predicate(forKeys keys: [String]) -> Predicate<StationEntityImpl> {
+        #Predicate { station in
+            keys.contains(station.id)
+        }
     }
 }
