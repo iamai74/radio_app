@@ -101,11 +101,19 @@ struct NetworkTests {
         #expect(endpoint.path == expectedPath)
     }
 
+    /// `APIEndpoint` carries the raw filter value and the URL builder — which sees every
+    /// route of a request — percent encodes it exactly once.
     @Test
-    func apiEndpointEncodesPathSegments() {
-        #expect(APIEndpoint.stationsByTag(tag: "hip hop").path == "/json/stations/bytag/hip%20hop")
-        #expect(APIEndpoint.tagsByFilter(filter: "love songs").path == "/json/tags/love%20songs")
-        #expect(APIEndpoint.stationByID(id: "a/b").path == "/json/stations/byuuid/a%2Fb")
+    func apiEndpointKeepsPathsRawAndTheBuilderEncodesThem() {
+        let builder = URLBuilder()
+
+        #expect(APIEndpoint.stationsByTag(tag: "hip hop").path == "/json/stations/bytag/hip hop")
+        #expect(builder.build(endpoint: APIEndpoint.stationsByTag(tag: "hip hop"))?.absoluteString
+            == "https://de2.api.radio-browser.info/json/stations/bytag/hip%20hop")
+
+        #expect(APIEndpoint.tagsByFilter(filter: "love songs").path == "/json/tags/love songs")
+        #expect(builder.build(endpoint: APIEndpoint.tagsByFilter(filter: "love songs"))?.absoluteString
+            == "https://de2.api.radio-browser.info/json/tags/love%20songs")
     }
 
     @Test

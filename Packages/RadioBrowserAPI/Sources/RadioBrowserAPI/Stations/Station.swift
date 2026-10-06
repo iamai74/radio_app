@@ -201,28 +201,15 @@ package struct StationObject: Codable, Station {
         language = try container.decodeOptionalString(forKey: .language)
         codec = try container.decodeOptionalString(forKey: .codec)
         bitrate = try container.decodeOptionalInt(forKey: .bitrate)
-        lastCheckTime = try Self.decodeDate(forKey: .lastCheckTime, using: decoder)
+        lastCheckTime = try container.decodeDate(forKey: .lastCheckTime, using: decoder)
         lastCheckTotal = try container.decodeOptionalInt(forKey: .lastCheckTotal)
         lastCheckFailures = try container.decodeOptionalInt(forKey: .lastCheckFailures)
         lastCheckDuration = try container.decodeOptionalInt(forKey: .lastCheckDuration)
         lastCheckError = try container.decodeOptionalString(forKey: .lastCheckError)
-        lastChangeTime = try Self.decodeDate(forKey: .lastChangeTime, using: decoder)
+        lastChangeTime = try container.decodeDate(forKey: .lastChangeTime, using: decoder)
         changeCounter = try container.decodeOptionalInt(forKey: .changeCounter)
-        creationTime = try Self.decodeDate(forKey: .creationTime, using: decoder)
+        creationTime = try container.decodeDate(forKey: .creationTime, using: decoder)
         urlResolved = try container.decodeOptionalString(forKey: .urlResolved)
-    }
-
-    /// Prefers the ISO 8601 flavour of a timestamp, falling back to the zone-less one.
-    private static func decodeDate(forKey key: CodingKeys, using decoder: Decoder) throws -> Date? {
-        if let isoKey = ISO8601DateKeys(canonicalKey: key),
-           let isoContainer = try? decoder.container(keyedBy: ISO8601DateKeys.self),
-           let date = try? isoContainer.decodeIfPresent(Date.self, forKey: isoKey) {
-            return date
-        }
-
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-
-        return try? container.decodeIfPresent(Date.self, forKey: key)
     }
 
     internal enum CodingKeys: String, CodingKey, CaseIterable {
@@ -248,16 +235,5 @@ package struct StationObject: Codable, Station {
         case changeCounter = "changecounter"
         case creationTime = "creationtime"
         case urlResolved = "url_resolved"
-    }
-}
-
-/// ISO 8601 twins the service adds to every timestamp it reports.
-private enum ISO8601DateKeys: String, CodingKey {
-    case lastCheckTime = "lastchecktime_iso8601"
-    case lastChangeTime = "lastchangetime_iso8601"
-    case creationTime = "creationtime_iso8601"
-
-    init?(canonicalKey: StationObject.CodingKeys) {
-        self.init(rawValue: canonicalKey.rawValue + "_iso8601")
     }
 }

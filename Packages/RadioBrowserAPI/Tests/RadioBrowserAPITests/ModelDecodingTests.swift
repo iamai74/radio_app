@@ -227,7 +227,7 @@ struct ModelDecodingTests {
 
     @Test
     func languageDecoding() throws {
-        let language = try DefaultJSONDecoder().decode(LanguageObject.self, from: MockData.json(named: "language"))
+        let language = try DefaultJSONDecoder().decode(CountedObject.self, from: MockData.json(named: "language"))
 
         #expect(language.name == "English")
         #expect(language.stationCount == 3200)
@@ -235,7 +235,7 @@ struct ModelDecodingTests {
 
     @Test
     func tagDecoding() throws {
-        let tag = try DefaultJSONDecoder().decode(TagObject.self, from: MockData.json(named: "tag"))
+        let tag = try DefaultJSONDecoder().decode(CountedObject.self, from: MockData.json(named: "tag"))
 
         #expect(tag.name == "rock")
         #expect(tag.stationCount == 500)
@@ -243,7 +243,7 @@ struct ModelDecodingTests {
 
     @Test
     func codecDecoding() throws {
-        let codec = try DefaultJSONDecoder().decode(CodecObject.self, from: MockData.json(named: "codec"))
+        let codec = try DefaultJSONDecoder().decode(CountedObject.self, from: MockData.json(named: "codec"))
 
         #expect(codec.name == "MP3")
         #expect(codec.stationCount == 2500)
@@ -254,9 +254,9 @@ struct ModelDecodingTests {
         let decoder = DefaultJSONDecoder()
 
         #expect(try decoder.decode([CountryObject].self, from: MockData.json(named: "countries")).map(\.iso31661) == ["US", "DE"])
-        #expect(try decoder.decode([LanguageObject].self, from: MockData.json(named: "languages")).map(\.name) == ["English", "German"])
-        #expect(try decoder.decode([TagObject].self, from: MockData.json(named: "tags")).map(\.name) == ["rock", "jazz"])
-        #expect(try decoder.decode([CodecObject].self, from: MockData.json(named: "codecs")).map(\.name) == ["MP3", "AAC"])
+        #expect(try decoder.decode([CountedObject].self, from: MockData.json(named: "languages")).map(\.name) == ["English", "German"])
+        #expect(try decoder.decode([CountedObject].self, from: MockData.json(named: "tags")).map(\.name) == ["rock", "jazz"])
+        #expect(try decoder.decode([CountedObject].self, from: MockData.json(named: "codecs")).map(\.name) == ["MP3", "AAC"])
     }
 
     @Test

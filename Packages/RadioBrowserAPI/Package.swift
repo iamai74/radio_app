@@ -19,6 +19,7 @@ let package = Package(
     targets: [
         .target(
             name: "RadioBrowserAPI",
+            swiftSettings: [.enableExperimentalFeature("StrictConcurrency=complete")],
             plugins: [
                 .plugin(name: "SwiftLintBuildToolPlugin", package: "SwiftLintPlugins")
             ]),
@@ -26,6 +27,7 @@ let package = Package(
             name: "RadioBrowserAPITests",
             dependencies: ["RadioBrowserAPI"],
             resources: [.process("Mocks/Data")],
+            swiftSettings: [.enableExperimentalFeature("StrictConcurrency=complete")],
             plugins: [
                 .plugin(name: "SwiftLintBuildToolPlugin", package: "SwiftLintPlugins")
             ])

@@ -9,6 +9,7 @@ struct APIErrorTests {
     @Test(arguments: [
         (APIError.invalidURL, nil),
         (APIError.invalidResponse, nil),
+        (APIError.cancelled, nil),
         (APIError.httpError(404), 404),
         (APIError.httpError(503), 503),
         (APIError.decodingFailed(URLError(.badURL)), nil)
@@ -20,6 +21,7 @@ struct APIErrorTests {
     @Test(arguments: [
         (APIError.invalidURL, false),
         (APIError.invalidResponse, true),
+        (APIError.cancelled, false),
         (APIError.decodingFailed(URLError(.badURL)), false),
         (APIError.undetermined(URLError(.badURL)), false),
         (APIError.httpError(404), false),
@@ -36,9 +38,23 @@ struct APIErrorTests {
         #expect(error.isRetryable == expected)
     }
 
+    /// Both spellings of a cancellation reach the caller as the typed `cancelled` case,
+    /// while every other transport and payload failure keeps its own category.
+    @Test
+    func transportAndPayloadFailuresAreMappedToTheContract() {
+        #expect(APIError.fromTransport(CancellationError()) == .cancelled)
+        #expect(APIError.fromTransport(URLError(.cancelled)) == .cancelled)
+        #expect(APIError.fromTransport(URLError(.timedOut)) == .networkFailed(URLError(.timedOut)))
+        #expect(APIError.fromTransport(APIError.httpError(503)) == .httpError(503))
+
+        #expect(APIError.fromPayload(CancellationError()) == .cancelled)
+        #expect(APIError.fromPayload(APIError.httpError(404)) == .httpError(404))
+    }
+
     @Test
     func equalCasesCompareEqual() {
         #expect(APIError.invalidURL == .invalidURL)
+        #expect(APIError.cancelled == .cancelled)
         #expect(APIError.httpError(503) == .httpError(503))
         #expect(APIError.decodingFailed(URLError(.badURL)) == .decodingFailed(URLError(.badURL)))
     }
@@ -47,12 +63,14 @@ struct APIErrorTests {
     func differentCasesNeverCompareEqual() {
         #expect(APIError.httpError(503) != .httpError(504))
         #expect(APIError.httpError(503) != .invalidURL)
+        #expect(APIError.cancelled != .networkFailed(CancellationError()))
         #expect(APIError.networkFailed(URLError(.timedOut)) != .undetermined(URLError(.timedOut)))
     }
 
     @Test(arguments: [
         APIError.invalidURL,
         APIError.invalidResponse,
+        APIError.cancelled,
         APIError.decodingFailed(URLError(.badURL)),
         APIError.networkFailed(URLError(.timedOut)),
         APIError.undetermined(URLError(.badURL)),

@@ -27,18 +27,6 @@ final class MockStationsEndpoint: StationsEndpointProtocol {
         try result()
     }
 
-    func getStationsByCountry(_: String, limit _: Int) async throws -> [any Station] {
-        try result()
-    }
-
-    func getStationsByLanguage(_: String, limit _: Int) async throws -> [any Station] {
-        try result()
-    }
-
-    func getStationsByTag(_: String, limit _: Int) async throws -> [any Station] {
-        try result()
-    }
-
     func searchStations(query _: String, limit _: Int) async throws -> [any Station] {
         try result()
     }

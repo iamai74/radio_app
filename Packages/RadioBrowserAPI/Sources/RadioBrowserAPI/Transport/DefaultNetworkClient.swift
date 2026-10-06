@@ -19,21 +19,17 @@ public final class DefaultNetworkClient: NetworkClientProtocol {
     /// - Parameter request: The request to perform.
     /// - Returns: The response body.
     /// - Throws: `APIError.httpError` for any non 2xx status, `APIError.invalidResponse` when
-    /// the response is not an HTTP response and `APIError.networkFailed` for transport errors.
-    /// A cancellation is rethrown as is, so a cancelled task stays cancelled instead of being
-    /// reported as a transport failure.
+    /// the response is not an HTTP response, `APIError.networkFailed` for transport errors
+    /// and `APIError.cancelled` for a cancelled task — a cancellation stays a typed
+    /// `APIError` instead of escaping as a bare `CancellationError`.
     public func fetch(request: URLRequest) async throws -> Data {
         let data: Data
         let response: URLResponse
 
         do {
             (data, response) = try await session.data(for: request)
-        } catch let error as CancellationError {
-            throw error
-        } catch let error as APIError {
-            throw error
         } catch {
-            throw APIError.networkFailed(error)
+            throw APIError.fromTransport(error)
         }
 
         guard let httpResponse = response as? HTTPURLResponse else {

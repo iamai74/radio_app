@@ -26,7 +26,7 @@ struct RadioBrowserAPITests {
         #expect(api.stations is MockStationsEndpoint)
         #expect(api.countries is MockResourceEndpoint<any Country>)
         #expect(api.languages is MockResourceEndpoint<any Language>)
-        #expect(api.tags is MockResourceEndpoint<RadioTag>)
+        #expect(api.tags is MockResourceEndpoint<any StationTag>)
         #expect(api.codecs is MockResourceEndpoint<any Codec>)
     }
 

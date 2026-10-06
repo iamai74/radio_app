@@ -140,37 +140,26 @@ struct StationsEndpointTests {
         #expect(url.queryPairs == ["q=jazz", "limit=5"])
     }
 
+    /// The service's filter routes stay reachable as values; querying them is the job of
+    /// `StationQuery` — the endpoint itself only takes criteria, not a method per filter.
     @Test
-    func stationLookupsUseTheirOwnPaths() async throws {
-        let client = MockNetworkClient(data: try MockData.json(named: "stations"))
-        let endpoint = StationsEndpoint(networkClient: client)
-
-        _ = try await endpoint.getStationsByCountry("United States", limit: 5)
-        #expect(try lastRequestURL(of: client).path == "/json/stations/bycountry/United States")
-        #expect(try lastRequestURL(of: client).queryPairs == ["limit=5"])
-
-        _ = try await endpoint.getStationsByLanguage("english", limit: 5)
-        #expect(try lastRequestURL(of: client).path == "/json/stations/bylanguage/english")
-        #expect(try lastRequestURL(of: client).queryPairs == ["limit=5"])
-
-        _ = try await endpoint.getStationsByTag("rock", limit: 5)
-        #expect(try lastRequestURL(of: client).path == "/json/stations/bytag/rock")
-        #expect(try lastRequestURL(of: client).queryPairs == ["limit=5"])
+    func filterRoutesKeepTheirPaths() {
+        #expect(APIEndpoint.stationsByCountry(countryCode: "United States").path == "/json/stations/bycountry/United States")
+        #expect(APIEndpoint.stationsByLanguage(languageCode: "english").path == "/json/stations/bylanguage/english")
+        #expect(APIEndpoint.stationsByTag(tag: "rock").path == "/json/stations/bytag/rock")
+        #expect(APIEndpoint.stationsByCountry(countryCode: "US").queryItems.isEmpty)
     }
 
     @Test
-    func stationLookupsOmitNonPositiveLimit() async throws {
+    func stationCriteriaGoThroughStationQuery() async throws {
         let client = MockNetworkClient(data: try MockData.json(named: "stations"))
         let endpoint = StationsEndpoint(networkClient: client)
 
-        _ = try await endpoint.getStationsByCountry("United States", limit: 0)
-        #expect(try lastRequestURL(of: client).queryPairs.isEmpty)
+        _ = try await endpoint.getStations(matching: StationQuery(country: "United States", limit: 5))
 
-        _ = try await endpoint.getStationsByLanguage("english", limit: -1)
-        #expect(try lastRequestURL(of: client).queryPairs.isEmpty)
-
-        _ = try await endpoint.getStationsByTag("rock", limit: 0)
-        #expect(try lastRequestURL(of: client).queryPairs.isEmpty)
+        #expect(try lastRequestURL(of: client).path == "/json/stations")
+        #expect(try lastRequestURL(of: client).queryPairs.contains("country=United States"))
+        #expect(try lastRequestURL(of: client).queryPairs.contains("limit=5"))
     }
 
     // MARK: - Failures

@@ -10,16 +10,18 @@ package protocol RadioBrowserAPIComponentProtocol: Sendable {
     var stations: StationsEndpointProtocol { get }
     var countries: any ResourceFiltering<Country> { get }
     var languages: any ResourceFiltering<Language> { get }
-    var tags: any ResourceFiltering<Tag> { get }
+    var tags: any ResourceFiltering<StationTag> { get }
     var codecs: any ResourceEndpointProtocol<Codec> { get }
+    var executor: any EndpointExecuting { get }
 }
 
 internal struct RadioBrowserAPIComponent: RadioBrowserAPIComponentProtocol {
     let stations: StationsEndpointProtocol
     let countries: any ResourceFiltering<Country>
     let languages: any ResourceFiltering<Language>
-    let tags: any ResourceFiltering<Tag>
+    let tags: any ResourceFiltering<StationTag>
     let codecs: any ResourceEndpointProtocol<Codec>
+    let executor: any EndpointExecuting
 
     /// - Parameters:
     ///   - configuration: The mirrors and request policy every endpoint uses.
@@ -36,5 +38,6 @@ internal struct RadioBrowserAPIComponent: RadioBrowserAPIComponentProtocol {
         self.languages = LanguagesEndpoint(executor: executor)
         self.tags = TagsEndpoint(executor: executor)
         self.codecs = CodecsEndpoint(executor: executor)
+        self.executor = executor
     }
 }

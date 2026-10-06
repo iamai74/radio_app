@@ -6,7 +6,7 @@ struct TagAdapter: Sendable, TagEntity {
     let name: String
     let stationCount: Int
 
-    init(from tag: some Tag) {
+    init(from tag: some StationTag) {
         self.name = tag.name
         self.stationCount = tag.stationCount
     }

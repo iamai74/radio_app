@@ -123,35 +123,43 @@ final class StubURLProtocol: URLProtocol, @unchecked Sendable {
         case failure(Error)
     }
 
-    private static let lock = NSLock()
-    private static var outcome: Outcome?
-    private static var recordedRequest: URLRequest?
+    /// The shared state of the stub, guarded by `lock`: one immutable reference instead of
+    /// mutable statics, which is what strict concurrency asks for of global state.
+    private final class State: @unchecked Sendable {
+        let lock = NSLock()
+        var outcome: Outcome?
+        var recordedRequest: URLRequest?
+
+        /// `@unchecked` because the two fields are only ever touched under `lock`.
+    }
+
+    private static let state = State()
 
     /// Request the stub was asked to perform, or `nil` before the first call.
     static var lastRequest: URLRequest? {
-        lock.withLock { recordedRequest }
+        state.lock.withLock { state.recordedRequest }
     }
 
     /// Answers every subsequent request with `statusCode` and `body`.
     static func stub(statusCode: Int, body: Data) {
-        lock.withLock { outcome = .response(statusCode: statusCode, body: body) }
+        state.lock.withLock { state.outcome = .response(statusCode: statusCode, body: body) }
     }
 
     /// Answers with a response that is not an `HTTPURLResponse`.
     static func stubNonHTTPResponse() {
-        lock.withLock { outcome = .nonHTTPResponse }
+        state.lock.withLock { state.outcome = .nonHTTPResponse }
     }
 
     /// Fails every subsequent request with `error`.
     static func stub(error: Error) {
-        lock.withLock { outcome = .failure(error) }
+        state.lock.withLock { state.outcome = .failure(error) }
     }
 
     /// Forgets the configured outcome and the recorded request.
     static func reset() {
-        lock.withLock {
-            outcome = nil
-            recordedRequest = nil
+        state.lock.withLock {
+            state.outcome = nil
+            state.recordedRequest = nil
         }
     }
 
@@ -164,9 +172,9 @@ final class StubURLProtocol: URLProtocol, @unchecked Sendable {
     }
 
     override func startLoading() {
-        let current = Self.lock.withLock { () -> Outcome in
-            Self.recordedRequest = request
-            return Self.outcome ?? .failure(URLError(.unsupportedURL))
+        let current = Self.state.lock.withLock { () -> Outcome in
+            Self.state.recordedRequest = request
+            return Self.state.outcome ?? .failure(URLError(.unsupportedURL))
         }
 
         let url = request.url ?? URL(fileURLWithPath: "/")
