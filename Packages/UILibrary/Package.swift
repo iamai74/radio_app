@@ -13,15 +13,11 @@ let package = Package(
             targets: ["UILibrary"]),
     ],
     dependencies: [
-        .package(path: "../Resources"),
         .package(url: "https://github.com/SimplyDanny/SwiftLintPlugins", from: "0.65.1")
     ],
     targets: [
         .target(
             name: "UILibrary",
-            dependencies: [
-                .product(name: "Resources", package: "Resources")
-            ],
             plugins: [
                 .plugin(name: "SwiftLintBuildToolPlugin", package: "SwiftLintPlugins")
             ]),

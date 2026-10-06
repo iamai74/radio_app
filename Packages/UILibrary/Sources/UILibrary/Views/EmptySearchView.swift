@@ -1,11 +1,24 @@
 import SwiftUI
-import Resources
 
 public struct EmptySearchView: View {
     let searchText: String
+    let title: String
+    let subtitle: String
+    let noResultsTitle: String
+    let noResultsSubtitle: (String) -> String
 
-    public init(searchText: String) {
+    public init(
+        searchText: String,
+        title: String,
+        subtitle: String,
+        noResultsTitle: String,
+        noResultsSubtitle: @escaping (String) -> String
+    ) {
         self.searchText = searchText
+        self.title = title
+        self.subtitle = subtitle
+        self.noResultsTitle = noResultsTitle
+        self.noResultsSubtitle = noResultsSubtitle
     }
 
     public var body: some View {
@@ -15,16 +28,16 @@ public struct EmptySearchView: View {
                 .foregroundStyle(.secondary)
 
             if searchText.isEmpty {
-                Text(R.string.localizable.empty_search_title())
+                Text(title)
                     .font(.title2)
                     .fontWeight(.semibold)
-                Text(R.string.localizable.empty_search_subtitle())
+                Text(subtitle)
                     .foregroundStyle(.secondary)
             } else {
-                Text(R.string.localizable.empty_search_no_results_title())
+                Text(noResultsTitle)
                     .font(.title2)
                     .fontWeight(.semibold)
-                Text(R.string.localizable.empty_search_no_results_subtitle(searchText))
+                Text(noResultsSubtitle(searchText))
                     .foregroundStyle(.secondary)
             }
         }
@@ -33,5 +46,11 @@ public struct EmptySearchView: View {
 }
 
 #Preview {
-    EmptySearchView(searchText: "")
+    EmptySearchView(
+        searchText: "",
+        title: UILibraryStrings.emptySearchTitle,
+        subtitle: UILibraryStrings.emptySearchSubtitle,
+        noResultsTitle: UILibraryStrings.emptySearchNoResultsTitle,
+        noResultsSubtitle: UILibraryStrings.emptySearchNoResultsSubtitle
+    )
 }

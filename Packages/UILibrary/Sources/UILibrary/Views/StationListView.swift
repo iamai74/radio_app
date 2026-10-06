@@ -1,28 +1,38 @@
 import SwiftUI
-import Resources
 
 public enum StationFilter: String, CaseIterable {
     case all
     case favorites
-
-    public var displayName: String {
-        switch self {
-        case .all:
-            return R.string.localizable.filter_all()
-        case .favorites:
-            return R.string.localizable.filter_favorites()
-        }
-    }
 }
 
 public struct StationListView: View {
     let stations: [any Station]
-    @State private var selectedFilter: StationFilter = .all
+    let filterAllTitle: String
+    let filterFavoritesTitle: String
     let searchView: SearchView
+    @State private var selectedFilter: StationFilter = .all
 
-    public init(stations: [any Station]) {
+    public init(
+        stations: [any Station],
+        filterAllTitle: String,
+        filterFavoritesTitle: String,
+        searchPlaceholder: String,
+        emptySearchTitle: String,
+        emptySearchSubtitle: String,
+        emptySearchNoResultsTitle: String,
+        emptySearchNoResultsSubtitle: @escaping (String) -> String
+    ) {
         self.stations = stations
-        self.searchView = SearchView(stations: stations)
+        self.filterAllTitle = filterAllTitle
+        self.filterFavoritesTitle = filterFavoritesTitle
+        self.searchView = SearchView(
+            stations: stations,
+            searchPlaceholder: searchPlaceholder,
+            emptySearchTitle: emptySearchTitle,
+            emptySearchSubtitle: emptySearchSubtitle,
+            emptySearchNoResultsTitle: emptySearchNoResultsTitle,
+            emptySearchNoResultsSubtitle: emptySearchNoResultsSubtitle
+        )
     }
 
     private var filteredStations: [any Station] {
@@ -34,11 +44,18 @@ public struct StationListView: View {
         }
     }
 
+    private var filterDisplayName: [StationFilter: String] {
+        [
+            .all: filterAllTitle,
+            .favorites: filterFavoritesTitle
+        ]
+    }
+
     public var body: some View {
         VStack(spacing: 0) {
             Picker("Filter", selection: $selectedFilter) {
                 ForEach(StationFilter.allCases, id: \.self) { filter in
-                    Text(filter.displayName).tag(filter)
+                    Text(filterDisplayName[filter] ?? filter.rawValue).tag(filter)
                 }
             }
             .pickerStyle(.segmented)
@@ -67,5 +84,14 @@ public struct StationListView: View {
 }
 
 #Preview {
-    StationListView(stations: MockStations.all)
+    StationListView(
+        stations: MockStations.all,
+        filterAllTitle: UILibraryStrings.filterAll,
+        filterFavoritesTitle: UILibraryStrings.filterFavorites,
+        searchPlaceholder: UILibraryStrings.searchPlaceholder,
+        emptySearchTitle: UILibraryStrings.emptySearchTitle,
+        emptySearchSubtitle: UILibraryStrings.emptySearchSubtitle,
+        emptySearchNoResultsTitle: UILibraryStrings.emptySearchNoResultsTitle,
+        emptySearchNoResultsSubtitle: UILibraryStrings.emptySearchNoResultsSubtitle
+    )
 }

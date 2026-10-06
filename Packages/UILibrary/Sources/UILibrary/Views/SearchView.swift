@@ -1,13 +1,29 @@
 import SwiftUI
-import Resources
 
 public struct SearchView: View {
     let stations: [any Station]
+    let searchPlaceholder: String
+    let emptySearchTitle: String
+    let emptySearchSubtitle: String
+    let emptySearchNoResultsTitle: String
+    let emptySearchNoResultsSubtitle: (String) -> String
     @State private var searchText: String = ""
     @State private var selectedTags: Set<String> = []
 
-    public init(stations: [any Station]) {
+    public init(
+        stations: [any Station],
+        searchPlaceholder: String,
+        emptySearchTitle: String,
+        emptySearchSubtitle: String,
+        emptySearchNoResultsTitle: String,
+        emptySearchNoResultsSubtitle: @escaping (String) -> String
+    ) {
         self.stations = stations
+        self.searchPlaceholder = searchPlaceholder
+        self.emptySearchTitle = emptySearchTitle
+        self.emptySearchSubtitle = emptySearchSubtitle
+        self.emptySearchNoResultsTitle = emptySearchNoResultsTitle
+        self.emptySearchNoResultsSubtitle = emptySearchNoResultsSubtitle
     }
 
     private var allTags: [String] {
@@ -45,7 +61,13 @@ public struct SearchView: View {
     public var body: some View {
         VStack(spacing: 0) {
             if filteredStations.isEmpty {
-                EmptySearchView(searchText: searchText)
+                EmptySearchView(
+                    searchText: searchText,
+                    title: emptySearchTitle,
+                    subtitle: emptySearchSubtitle,
+                    noResultsTitle: emptySearchNoResultsTitle,
+                    noResultsSubtitle: emptySearchNoResultsSubtitle
+                )
             } else {
                 List(filteredStations, id: \.id) { station in
                     StationRowView(station: station)
@@ -92,7 +114,13 @@ public struct SearchView: View {
             }
 
             if filteredStations.isEmpty {
-                EmptySearchView(searchText: searchText)
+                EmptySearchView(
+                    searchText: searchText,
+                    title: emptySearchTitle,
+                    subtitle: emptySearchSubtitle,
+                    noResultsTitle: emptySearchNoResultsTitle,
+                    noResultsSubtitle: emptySearchNoResultsSubtitle
+                )
             } else {
                 List(filteredStations, id: \.id) { station in
                     StationRowView(station: station)
@@ -107,7 +135,7 @@ public struct SearchView: View {
         HStack {
             Image(systemName: "magnifyingglass")
                 .foregroundStyle(.secondary)
-            TextField(R.string.localizable.search_placeholder(), text: $searchText)
+            TextField(searchPlaceholder, text: $searchText)
                 .textFieldStyle(.roundedBorder)
         }
         .padding()
@@ -115,5 +143,12 @@ public struct SearchView: View {
 }
 
 #Preview {
-    SearchView(stations: MockStations.all)
+    SearchView(
+        stations: MockStations.all,
+        searchPlaceholder: UILibraryStrings.searchPlaceholder,
+        emptySearchTitle: UILibraryStrings.emptySearchTitle,
+        emptySearchSubtitle: UILibraryStrings.emptySearchSubtitle,
+        emptySearchNoResultsTitle: UILibraryStrings.emptySearchNoResultsTitle,
+        emptySearchNoResultsSubtitle: UILibraryStrings.emptySearchNoResultsSubtitle
+    )
 }
