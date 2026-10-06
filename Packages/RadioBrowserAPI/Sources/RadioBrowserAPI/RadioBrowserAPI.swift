@@ -24,29 +24,21 @@ public final class RadioBrowserAPI {
         self.codecs = component.codecs
     }
 
-    /// Initializes the API with a provided network client.
-    /// - Parameter networkClient: The network client to use for requests. Defaults to `DefaultNetworkClient`.
-    public convenience init(networkClient: NetworkClientProtocol = DefaultNetworkClient()) {
-        self.init(
-            stations: StationsEndpoint(networkClient: networkClient),
-            countries: CountriesEndpoint(networkClient: networkClient),
-            languages: LanguagesEndpoint(networkClient: networkClient),
-            tags: TagsEndpoint(networkClient: networkClient),
-            codecs: CodecsEndpoint(networkClient: networkClient)
-        )
-    }
-
-    init(
-        stations: StationsEndpointProtocol,
-        countries: CountriesEndpointProtocol,
-        languages: LanguagesEndpointProtocol,
-        tags: TagsEndpointProtocol,
-        codecs: CodecsEndpointProtocol
+    /// Initializes the API from a configuration.
+    ///
+    /// This is the entry point every consumer should use: the configuration decides which
+    /// mirrors are tried, which user agent is sent and how requests are timed out, while
+    /// the transport can still be replaced wholesale.
+    /// - Parameters:
+    ///   - configuration: The mirrors and request policy to use.
+    ///   - networkClient: The transport performing the requests. Pass `nil` — the default —
+    ///     to let the configuration build it, or inject your own to take over transport.
+    public convenience init(
+        configuration: RadioBrowserConfiguration = .default,
+        networkClient: NetworkClientProtocol? = nil
     ) {
-        self.stations = stations
-        self.countries = countries
-        self.languages = languages
-        self.tags = tags
-        self.codecs = codecs
+        self.init(
+            component: RadioBrowserApiComponent(configuration: configuration, networkClient: networkClient)
+        )
     }
 }

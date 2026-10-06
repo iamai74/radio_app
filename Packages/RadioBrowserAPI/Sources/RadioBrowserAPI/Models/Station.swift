@@ -1,7 +1,11 @@
 import Foundation
 
 /// A protocol representing a radio station.
-public protocol Station: Decodable, Sendable {
+///
+/// Decoding deliberately stays off the read model: only ``StationObject`` knows how to
+/// turn the payload of the service into a station, while consumers depend on the value
+/// properties below.
+public protocol Station: Sendable {
     /// The unique identifier of the station.
     var id: String { get }
 

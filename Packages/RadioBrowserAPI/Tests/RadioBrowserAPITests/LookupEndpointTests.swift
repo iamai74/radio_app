@@ -126,7 +126,8 @@ struct LookupEndpointTests {
             }
         }
 
-        #expect(client.requests.count == 1)
+        // The failure is retryable, so every mirror of the configuration was tried once.
+        #expect(client.requests.count == RadioBrowserConfiguration.defaultBaseURLs.count)
     }
 
     @Test

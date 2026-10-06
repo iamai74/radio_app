@@ -1,15 +1,9 @@
 import Foundation
 
-/// A protocol representing an language.
-public protocol Language: Decodable, Sendable {
-    /// The name of the codec.
-    var name: String { get }
+/// A protocol representing a language.
+public protocol Language: StationCounted {}
 
-    /// The number of stations broadcasting in this language.
-    var stationCount: Int { get }
-}
-
-/// An internal struct implementing the Language protocol with Codable conformance.
+/// The payload of the service, implementing ``Language`` with a Codable conformance.
 package struct LanguageObject: Codable, Language {
     public let name: String
     public let stationCount: Int

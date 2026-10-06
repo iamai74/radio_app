@@ -1,43 +1,74 @@
 import Foundation
 
-/// Represents all available API endpoints for the Radio Browser service.
-public enum APIEndpoint: Sendable {
-    case stations
-    case stationByID(id: String)
-    case stationsSearch(query: String)
-    case stationsByCountry(countryCode: String)
-    case stationsByLanguage(languageCode: String)
-    case stationsByTag(tag: String)
-    case countries
-    case countriesByFilter(filter: String)
-    case languages
-    case languagesByFilter(filter: String)
-    case tags
-    case tagsByFilter(filter: String)
-    case codecs
+/// The routes of the Radio Browser service used by this package.
+///
+/// A route is a value, not a case of a closed enum: `APIEndpoint(path:)` builds any route
+/// the service exposes, so new ones do not require changing this type.
+public struct APIEndpoint: EndpointDefinition, Equatable {
+    public let path: String
+    public let queryItems: [URLQueryItem]
 
-    /// Returns the API path for the endpoint.
-    internal var path: String {
-        switch self {
-        case .stations: return "/json/stations"
-        case .stationByID(let id): return "/json/stations/byuuid/\(Self.pathSegment(id))"
-        case .stationsSearch: return "/json/stations/search"
-        case .stationsByCountry(let code): return "/json/stations/bycountry/\(Self.pathSegment(code))"
-        case .stationsByLanguage(let code): return "/json/stations/bylanguage/\(Self.pathSegment(code))"
-        case .stationsByTag(let tag): return "/json/stations/bytag/\(Self.pathSegment(tag))"
-        case .countries: return "/json/countries"
-        case .countriesByFilter(let filter): return "/json/countries/\(Self.pathSegment(filter))"
-        case .languages: return "/json/languages"
-        case .languagesByFilter(let filter): return "/json/languages/\(Self.pathSegment(filter))"
-        case .tags: return "/json/tags"
-        case .tagsByFilter(let filter): return "/json/tags/\(Self.pathSegment(filter))"
-        case .codecs: return "/json/codecs"
-        }
+    /// - Parameters:
+    ///   - path: The API path, starting with a slash.
+    ///   - queryItems: The query items the route requires.
+    public init(path: String, queryItems: [URLQueryItem] = []) {
+        self.path = path
+        self.queryItems = queryItems
     }
 
-    /// Percent encodes a value interpolated into the path, so filters such as `hip hop`
-    /// reach the service as a single path segment.
-    private static func pathSegment(_ value: String) -> String {
+    /// Every radio station, filtered through the query items of the request.
+    public static let stations = APIEndpoint(path: "/json/stations")
+
+    /// A single station. Radio Browser has no single object route: this path answers with
+    /// a list holding the requested station, and an empty list when it is unknown.
+    public static func stationByID(id: String) -> APIEndpoint {
+        APIEndpoint(path: "/json/stations/byuuid/\(pathSegment(id))")
+    }
+
+    /// Stations matching a free text query.
+    public static func stationsSearch(query: String) -> APIEndpoint {
+        APIEndpoint(path: "/json/stations/search", queryItems: [URLQueryItem(name: "q", value: query)])
+    }
+
+    /// Stations broadcasting from a country.
+    public static func stationsByCountry(countryCode: String) -> APIEndpoint {
+        APIEndpoint(path: "/json/stations/bycountry/\(pathSegment(countryCode))")
+    }
+
+    /// Stations broadcasting in a language.
+    public static func stationsByLanguage(languageCode: String) -> APIEndpoint {
+        APIEndpoint(path: "/json/stations/bylanguage/\(pathSegment(languageCode))")
+    }
+
+    /// Stations carrying a tag.
+    public static func stationsByTag(tag: String) -> APIEndpoint {
+        APIEndpoint(path: "/json/stations/bytag/\(pathSegment(tag))")
+    }
+
+    public static let countries = APIEndpoint(path: "/json/countries")
+
+    public static func countriesByFilter(filter: String) -> APIEndpoint {
+        APIEndpoint(path: "/json/countries/\(pathSegment(filter))")
+    }
+
+    public static let languages = APIEndpoint(path: "/json/languages")
+
+    public static func languagesByFilter(filter: String) -> APIEndpoint {
+        APIEndpoint(path: "/json/languages/\(pathSegment(filter))")
+    }
+
+    public static let tags = APIEndpoint(path: "/json/tags")
+
+    public static func tagsByFilter(filter: String) -> APIEndpoint {
+        APIEndpoint(path: "/json/tags/\(pathSegment(filter))")
+    }
+
+    public static let codecs = APIEndpoint(path: "/json/codecs")
+
+    /// Percent encodes a value interpolated into a path, so filters such as `hip hop`
+    /// reach the service as a single path segment. Exposed for callers building their own
+    /// routes.
+    public static func pathSegment(_ value: String) -> String {
         value.addingPercentEncoding(withAllowedCharacters: pathSegmentAllowed) ?? value
     }
 
@@ -46,14 +77,4 @@ public enum APIEndpoint: Sendable {
         allowed.remove(charactersIn: "/?#")
         return allowed
     }()
-
-    /// Returns the query items for the endpoint if applicable.
-    internal var queryItems: [URLQueryItem] {
-        switch self {
-        case .stationsSearch(let query):
-            return [URLQueryItem(name: "q", value: query)]
-        default:
-            return []
-        }
-    }
 }

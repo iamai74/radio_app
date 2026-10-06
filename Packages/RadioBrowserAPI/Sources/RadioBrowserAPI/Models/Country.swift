@@ -1,18 +1,12 @@
 import Foundation
 
 /// A protocol representing a country.
-public protocol Country: Decodable, Sendable {
-    /// The full name of the country, as reported by the API.
-    var name: String { get }
-
+public protocol Country: StationCounted {
     /// The ISO 3166-1 alpha-2 code of the country, mirroring the `iso_3166_1` API field.
     var iso31661: String { get }
-
-    /// The number of stations in this country.
-    var stationCount: Int { get }
 }
 
-/// An internal struct implementing the Country protocol with Codable conformance.
+/// The payload of the service, implementing ``Country`` with a Codable conformance.
 package struct CountryObject: Codable, Country {
     public let name: String
     public let iso31661: String

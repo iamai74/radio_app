@@ -4,51 +4,53 @@ import Foundation
 ///
 /// The class is generic over the concrete `Model` used for decoding, which keeps the
 /// decoding implementation details (e.g. `StationObject`) inside the package while
-/// subclasses may still expose either of the two flavours to their callers:
-/// - concrete structs via `fetch(endpoint:queryItems:)`;
-/// - model protocols via `fetch(endpoint:queryItems:exposing:)`, which erases the
-///   decoded structs into the protocol abstraction the client consumes.
-internal class BaseEndpoint<Model: Decodable> {
-    let networkClient: NetworkClientProtocol
-    let urlBuilder: URLBuilder
-    let jsonDecoder: JSONDecoderProtocol
+/// subclasses expose the model protocols their callers consume.
+///
+/// Every request walks the mirrors of the ``RadioBrowserConfiguration`` in order and only
+/// gives up on the first failure that is not retryable.
+internal class BaseEndpoint<Model: Decodable>: @unchecked Sendable {
+    private let networkClient: NetworkClientProtocol
+    private let urlBuilders: [URLBuilder]
+    private let jsonDecoder: JSONDecoderProtocol
+    private let timeout: TimeInterval
+    private let cachePolicy: URLRequest.CachePolicy
 
     /// Initializes the endpoint with its collaborators.
     /// - Parameters:
     ///   - networkClient: The client performing the HTTP requests.
-    ///   - urlBuilder: The builder turning an endpoint into a `URL`.
+    ///   - configuration: The service mirrors and request policy to use.
     ///   - jsonDecoder: The decoder turning the response into models.
-    internal init(networkClient: NetworkClientProtocol, urlBuilder: URLBuilder = URLBuilder(), jsonDecoder: JSONDecoderProtocol = DefaultJSONDecoder()) {
+    internal init(
+        networkClient: NetworkClientProtocol,
+        configuration: RadioBrowserConfiguration = .default,
+        jsonDecoder: JSONDecoderProtocol = DefaultJSONDecoder()
+    ) {
         self.networkClient = networkClient
-        self.urlBuilder = urlBuilder
+        self.urlBuilders = configuration.baseURLs.map { URLBuilder(baseURL: $0) }
         self.jsonDecoder = jsonDecoder
+        self.timeout = configuration.timeout
+        self.cachePolicy = configuration.cachePolicy
     }
 
-    /// Fetches and decodes a list of concrete models from the given endpoint.
+    /// Fetches and decodes a list of models from the given endpoint.
     /// - Parameters:
     ///   - endpoint: The API endpoint to fetch data from.
     ///   - queryItems: Optional query parameters appended to the endpoint's own ones.
-    /// - Returns: Decoded concrete models of type `Model`.
+    /// - Returns: Decoded models of type `Model`.
     /// - Throws: `APIError` for invalid URL, decoding failures and network failures.
     @discardableResult
-    func fetch(endpoint: APIEndpoint, queryItems: [URLQueryItem] = []) async throws -> [Model] {
-        try await fetchData(endpoint: endpoint, queryItems: queryItems, decode: { try self.jsonDecoder.decode([Model].self, from: $0) })
-    }
+    func fetch(endpoint: any EndpointDefinition, queryItems: [URLQueryItem] = []) async throws -> [Model] {
+        let data = try await fetchData(endpoint: endpoint, queryItems: queryItems)
 
-    /// Fetches and decodes a list of concrete models and erases them into the model protocol.
-    /// - Parameters:
-    ///   - endpoint: The API endpoint to fetch data from.
-    ///   - queryItems: Optional query parameters appended to the endpoint's own ones.
-    ///   - exposing: Converts a decoded concrete model into the protocol returned to the client.
-    /// - Returns: Decoded models converted to the protocol abstraction.
-    /// - Throws: `APIError` for invalid URL, decoding failures and network failures.
-    @discardableResult
-    func fetch<Output>(
-        endpoint: APIEndpoint,
-        queryItems: [URLQueryItem] = [],
-        exposing transform: (Model) throws -> Output
-    ) async throws -> [Output] {
-        try await fetch(endpoint: endpoint, queryItems: queryItems).map(transform)
+        do {
+            return try jsonDecoder.decode([Model].self, from: data)
+        } catch let error as DecodingError {
+            throw APIError.decodingFailed(error)
+        } catch let error as APIError {
+            throw error
+        } catch {
+            throw APIError.undetermined(error)
+        }
     }
 
     /// Fetches the first object of an endpoint that answers with a list.
@@ -60,47 +62,48 @@ internal class BaseEndpoint<Model: Decodable> {
     ///   - queryItems: Optional query parameters appended to the endpoint's own ones.
     /// - Returns: The first decoded model, or `nil` when the service answered with an empty list.
     /// - Throws: `APIError` for invalid URL, decoding failures and network failures.
-    func fetchFirst(endpoint: APIEndpoint, queryItems: [URLQueryItem] = []) async throws -> Model? {
+    func fetchFirst(endpoint: any EndpointDefinition, queryItems: [URLQueryItem] = []) async throws -> Model? {
         try await fetch(endpoint: endpoint, queryItems: queryItems).first
     }
 
-    /// Performs the request and hands the raw payload over for decoding.
-    private func fetchData<Result>(
-        endpoint: APIEndpoint,
-        queryItems: [URLQueryItem] = [],
-        decode: (Data) throws -> Result
-    ) async throws -> Result {
-        let url = try makeURL(endpoint: endpoint, queryItems: queryItems)
-        let data = try await fetchData(from: url)
+    /// Performs the request against the first mirror that accepts it.
+    ///
+    /// A mirror is skipped while the failure it reported is retryable, so an unreachable or
+    /// briefly failing server costs one attempt instead of the whole call.
+    private func fetchData(endpoint: any EndpointDefinition, queryItems: [URLQueryItem]) async throws -> Data {
+        var lastFailure: APIError = .invalidURL
 
-        do {
-            return try decode(data)
-        } catch let error as DecodingError {
-            throw APIError.decodingFailed(error)
-        } catch let error as APIError {
-            throw error
-        } catch {
-            throw APIError.networkFailed(error)
+        for (index, urlBuilder) in urlBuilders.enumerated() {
+            let isLastMirror = index == urlBuilders.count - 1
+
+            guard let url = urlBuilder.build(endpoint: endpoint, queryItems: queryItems) else {
+                lastFailure = .invalidURL
+
+                if isLastMirror {
+                    break
+                }
+
+                continue
+            }
+
+            var request = URLRequest(url: url)
+            request.timeoutInterval = timeout
+            request.cachePolicy = cachePolicy
+
+            do {
+                return try await networkClient.fetch(request: request)
+            } catch let error as CancellationError {
+                throw error
+            } catch {
+                let failure = error as? APIError ?? APIError.networkFailed(error)
+                lastFailure = failure
+
+                if isLastMirror || !failure.isRetryable {
+                    throw failure
+                }
+            }
         }
-    }
 
-    /// Performs the request, reporting every transport failure as `APIError.networkFailed`.
-    private func fetchData(from url: URL) async throws -> Data {
-        do {
-            return try await networkClient.fetch(request: URLRequest(url: url))
-        } catch let error as APIError {
-            throw error
-        } catch {
-            throw APIError.networkFailed(error)
-        }
-    }
-
-    /// Builds the request URL, appending the given query items to the endpoint's ones.
-    private func makeURL(endpoint: APIEndpoint, queryItems: [URLQueryItem] = []) throws -> URL {
-        guard let url = urlBuilder.build(endpoint: endpoint, queryItems: queryItems) else {
-            throw APIError.invalidURL
-        }
-
-        return url
+        throw lastFailure
     }
 }

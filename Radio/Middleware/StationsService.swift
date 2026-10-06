@@ -21,15 +21,17 @@ final class StationsService {
         offset: Int = 0
     ) async throws {
         let stations = try await api.stations.getStations(
-            country: country,
-            language: language,
-            tag: tag,
-            name: name,
-            limit: limit,
-            offset: offset,
-            hideBreaks: true,
-            order: "votes",
-            reverse: true
+            matching: StationQuery(
+                country: country,
+                language: language,
+                tag: tag,
+                name: name,
+                limit: limit,
+                offset: offset,
+                hideBreaks: true,
+                order: .votes,
+                reverse: true
+            )
         )
 
         let entities = stations.map { StationAdapter(from: $0) }

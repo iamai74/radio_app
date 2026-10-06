@@ -33,7 +33,7 @@ struct RadioBrowserAPITests {
     @Test
     func componentBuildsEndpointsForInjectedNetworkClient() {
         let component = RadioBrowserApiComponent(
-            dependency: StubDependency(networkClient: MockNetworkClient(data: Data()))
+            networkClient: MockNetworkClient(data: Data())
         )
 
         #expect(component.stations is StationsEndpoint)
@@ -41,7 +41,6 @@ struct RadioBrowserAPITests {
         #expect(component.languages is LanguagesEndpoint)
         #expect(component.tags is TagsEndpoint)
         #expect(component.codecs is CodecsEndpoint)
-        #expect(component.radioBrowserAPI.countries is CountriesEndpoint)
     }
 
     // MARK: - Fixtures

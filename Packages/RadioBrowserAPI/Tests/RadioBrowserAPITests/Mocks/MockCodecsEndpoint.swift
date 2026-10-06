@@ -14,14 +14,18 @@ final class MockCodecsEndpoint: CodecsEndpointProtocol {
         self.codecs = codecs
         self.error = error
     }
-    
-    /// Fetches a list of all audio codecs.
-    /// - Returns: Array of Codec objects representing all audio codecs.
-    /// - Throws: APIError if request fails.
-    func getAudioCodecs() async throws -> [any Codec] {
-        if let error = error {
+
+    /// Answers every route with the fixture this mock was built with.
+    /// - Parameters:
+    ///   - endpoint: The route that was requested; the mock answers all of them alike.
+    ///   - queryItems: The query items of the request, ignored by the mock.
+    /// - Returns: The codecs this mock was built with.
+    /// - Throws: The configured error, if any.
+    func fetch(_ endpoint: APIEndpoint, queryItems: [URLQueryItem]) async throws -> [any Codec] {
+        if let error {
             throw error
         }
+
         return codecs
     }
 }

@@ -14,25 +14,18 @@ final class MockTagsEndpoint: TagsEndpointProtocol {
         self.tags = tags
         self.error = error
     }
-    
-    /// Fetches a list of all tags.
-    /// - Returns: Array of Tag objects representing all tags.
-    /// - Throws: APIError if request fails.
-    func getTags() async throws -> [any Tag] {
-        if let error = error {
+
+    /// Answers every route with the fixture this mock was built with.
+    /// - Parameters:
+    ///   - endpoint: The route that was requested; the mock answers all of them alike.
+    ///   - queryItems: The query items of the request, ignored by the mock.
+    /// - Returns: The tags this mock was built with.
+    /// - Throws: The configured error, if any.
+    func fetch(_ endpoint: APIEndpoint, queryItems: [URLQueryItem]) async throws -> [any Tag] {
+        if let error {
             throw error
         }
-        return tags
-    }
-    
-    /// Fetches tags with the given filter.
-    /// - Parameter filter: The filter to apply (e.g. by name or code)
-    /// - Returns: Array of Tag objects matching the filter
-    /// - Throws: APIError if request fails
-    func getTags(withFilter filter: String) async throws -> [any Tag] {
-        if let error = error {
-            throw error
-        }
+
         return tags
     }
 }

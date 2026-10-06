@@ -24,31 +24,22 @@ struct LiveServiceTests {
 
     /// Stations by votes, with the checks that would hide broken streams enabled.
     private func popularStations(limit: Int) async throws -> [any Station] {
-        try await makeAPI().stations.getStations(
-            country: nil,
-            language: nil,
-            tag: nil,
-            name: nil,
+        try await makeAPI().stations.getStations(matching: StationQuery(
             limit: limit,
-            offset: 0,
             hideBreaks: true,
-            order: "votes",
+            order: .votes,
             reverse: true
-        )
+        ))
     }
 
     private func stations(tagged tag: String, limit: Int) async throws -> [any Station] {
-        try await makeAPI().stations.getStations(
-            country: nil,
-            language: nil,
+        try await makeAPI().stations.getStations(matching: StationQuery(
             tag: tag,
-            name: nil,
             limit: limit,
-            offset: 0,
             hideBreaks: true,
-            order: "votes",
+            order: .votes,
             reverse: true
-        )
+        ))
     }
 
     @Test

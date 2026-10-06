@@ -13,7 +13,7 @@ struct StationsEndpointTests {
         let client = MockNetworkClient(data: try MockData.json(named: "stations"))
         let endpoint = StationsEndpoint(networkClient: client)
 
-        let stations = try await endpoint.getStations(
+        let stations = try await endpoint.getStations(matching: StationQuery(
             country: "United States",
             language: "english",
             tag: "rock",
@@ -21,9 +21,9 @@ struct StationsEndpointTests {
             limit: 50,
             offset: 10,
             hideBreaks: true,
-            order: "votes",
+            order: .votes,
             reverse: true
-        )
+        ))
 
         #expect(stations.map(\.id) == ["7c1f5a2e-6b6d-4f9a-9d0f-2b1c3d4e5f60", "second-station-id", "third-station-id"])
 
@@ -64,7 +64,7 @@ struct StationsEndpointTests {
         let client = MockNetworkClient(data: try MockData.json(named: "stations"))
         let endpoint = StationsEndpoint(networkClient: client)
 
-        _ = try await endpoint.getStations(country: "", language: "", tag: "", name: "")
+        _ = try await endpoint.getStations(matching: StationQuery(country: "", language: "", tag: "", name: ""))
 
         #expect(try lastRequestURL(of: client).queryPairs == [
             "limit=100",
@@ -96,7 +96,7 @@ struct StationsEndpointTests {
         let client = MockNetworkClient(data: try MockData.json(named: "station-by-id"))
         let endpoint = StationsEndpoint(networkClient: client)
 
-        let station = try await #require(try await endpoint.getStation(byID: "7c1f5a2e-6b6d-4f9a-9d0f-2b1c3d4e5f60"))
+        let station = try #require(try await endpoint.getStation(byID: "7c1f5a2e-6b6d-4f9a-9d0f-2b1c3d4e5f60"))
 
         #expect(station.id == "7c1f5a2e-6b6d-4f9a-9d0f-2b1c3d4e5f60")
         #expect(station.name == "Test Radio Station")
@@ -194,11 +194,10 @@ struct StationsEndpointTests {
     @Test
     func malformedBaseURLFailsWithInvalidURLError() async throws {
         let client = MockNetworkClient(data: Data())
-        let endpoint = StationsEndpoint(
-            networkClient: client,
-            urlBuilder: URLBuilder(baseURL: "https://api.example.com:not-a-port"),
-            jsonDecoder: DefaultJSONDecoder()
-        )
+        let configuration = RadioBrowserConfiguration(baseURLs: [
+            URL(string: "ftp://api.example.com") ?? RadioBrowserConfiguration.defaultBaseURL
+        ])
+        let endpoint = StationsEndpoint(networkClient: client, configuration: configuration)
 
         do {
             _ = try await endpoint.getAllStations()

@@ -14,25 +14,18 @@ final class MockLanguagesEndpoint: LanguagesEndpointProtocol {
         self.languages = languages
         self.error = error
     }
-    
-    /// Fetches a list of all languages.
-    /// - Returns: Array of Language objects representing all languages.
-    /// - Throws: APIError if request fails.
-    func getLanguages() async throws -> [any Language] {
-        if let error = error {
+
+    /// Answers every route with the fixture this mock was built with.
+    /// - Parameters:
+    ///   - endpoint: The route that was requested; the mock answers all of them alike.
+    ///   - queryItems: The query items of the request, ignored by the mock.
+    /// - Returns: The languages this mock was built with.
+    /// - Throws: The configured error, if any.
+    func fetch(_ endpoint: APIEndpoint, queryItems: [URLQueryItem]) async throws -> [any Language] {
+        if let error {
             throw error
         }
-        return languages
-    }
-    
-    /// Fetches languages that match the given filter.
-    /// - Parameter filter: The filter to apply (e.g. by name or code)
-    /// - Returns: Array of Language objects matching the filter
-    /// - Throws: APIError if request fails
-    func getLanguages(withFilter filter: String) async throws -> [any Language] {
-        if let error = error {
-            throw error
-        }
+
         return languages
     }
 }

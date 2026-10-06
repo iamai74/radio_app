@@ -14,25 +14,18 @@ final class MockCountriesEndpoint: CountriesEndpointProtocol {
         self.countries = countries
         self.error = error
     }
-    
-    /// Fetches a list of all countries.
-    /// - Returns: Array of Country objects representing all countries.
-    /// - Throws: APIError if request fails.
-    func getCountries() async throws -> [any Country] {
-        if let error = error {
+
+    /// Answers every route with the fixture this mock was built with.
+    /// - Parameters:
+    ///   - endpoint: The route that was requested; the mock answers all of them alike.
+    ///   - queryItems: The query items of the request, ignored by the mock.
+    /// - Returns: The countries this mock was built with.
+    /// - Throws: The configured error, if any.
+    func fetch(_ endpoint: APIEndpoint, queryItems: [URLQueryItem]) async throws -> [any Country] {
+        if let error {
             throw error
         }
-        return countries
-    }
-    
-    /// Fetches countries with the given filter.
-    /// - Parameter filter: The filter to apply (e.g. by name or code)
-    /// - Returns: Array of Country objects matching the filter
-    /// - Throws: APIError if request fails
-    func getCountries(withFilter filter: String) async throws -> [any Country] {
-        if let error = error {
-            throw error
-        }
+
         return countries
     }
 }

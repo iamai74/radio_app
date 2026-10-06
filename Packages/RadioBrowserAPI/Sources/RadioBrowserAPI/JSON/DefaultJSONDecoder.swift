@@ -5,11 +5,16 @@ import Foundation
 /// Models map their API counterparts explicitly (`stationuuid`, `iso_3166_1`,
 /// `url_resolved`, ...), so JSON keys are consumed verbatim: a snake case conversion
 /// strategy rewrites those keys and silently breaks the mapping.
+///
+/// The package owns the payload layout, so a caller supplied `JSONDecoder` is reconfigured
+/// with the strategies below. Settings that say nothing about the layout —
+/// `outputFormatting`, `userInfo` — are kept.
 public final class DefaultJSONDecoder: JSONDecoderProtocol {
     private let decoder: JSONDecoder
 
-    public init() {
-        decoder = JSONDecoder()
+    /// - Parameter decoder: The decoder to configure and use, defaults to a fresh one.
+    public init(decoder: JSONDecoder = JSONDecoder()) {
+        self.decoder = decoder
         decoder.keyDecodingStrategy = .useDefaultKeys
         decoder.dateDecodingStrategy = .custom { decoder in
             let container = try decoder.singleValueContainer()
@@ -24,11 +29,6 @@ public final class DefaultJSONDecoder: JSONDecoderProtocol {
 
             return date
         }
-    }
-
-    public init(decoder: JSONDecoder = JSONDecoder()) {
-        self.decoder = decoder
-        // Keep caller-provided strategies if explicitly set; otherwise apply sensible defaults.
     }
 
     public func decode<T: Decodable>(_ type: T.Type, from data: Data) throws -> T {

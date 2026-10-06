@@ -40,14 +40,14 @@ struct NetworkTests {
 
     @Test
     func urlBuilderBuildWithEndpoint() throws {
-        let url = try #require(URLBuilder().build(endpoint: .stations))
+        let url = try #require(URLBuilder().build(endpoint: APIEndpoint.stations))
 
         #expect(url.path == "/json/stations")
     }
 
     @Test
     func urlBuilderBuildWithEndpointUsesEndpointQueryItems() throws {
-        let url = try #require(URLBuilder().build(endpoint: .stationsSearch(query: "jazz")))
+        let url = try #require(URLBuilder().build(endpoint: APIEndpoint.stationsSearch(query: "jazz")))
 
         #expect(url.path == "/json/stations/search")
         #expect(url.queryPairs == ["q=jazz"])
@@ -56,7 +56,7 @@ struct NetworkTests {
     @Test
     func urlBuilderKeepsEndpointQueryItemsWhenAddingMore() throws {
         let queryItems = [URLQueryItem(name: "limit", value: "5")]
-        let url = try #require(URLBuilder().build(endpoint: .stationsSearch(query: "jazz"), queryItems: queryItems))
+        let url = try #require(URLBuilder().build(endpoint: APIEndpoint.stationsSearch(query: "jazz"), queryItems: queryItems))
 
         #expect(url.queryPairs == ["q=jazz", "limit=5"])
     }
@@ -64,7 +64,7 @@ struct NetworkTests {
     @Test
     func urlBuilderOverridesEndpointQueryItemsWithTheSameName() throws {
         let queryItems = [URLQueryItem(name: "q", value: "blues"), URLQueryItem(name: "limit", value: "5")]
-        let url = try #require(URLBuilder().build(endpoint: .stationsSearch(query: "jazz"), queryItems: queryItems))
+        let url = try #require(URLBuilder().build(endpoint: APIEndpoint.stationsSearch(query: "jazz"), queryItems: queryItems))
 
         #expect(url.queryPairs == ["q=blues", "limit=5"])
     }

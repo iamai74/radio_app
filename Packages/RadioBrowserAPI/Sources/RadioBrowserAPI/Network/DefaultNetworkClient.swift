@@ -11,8 +11,12 @@ public final class DefaultNetworkClient: NetworkClientProtocol {
 
     /// - Parameters:
     ///   - session: The session performing the requests.
-    ///   - userAgent: The user agent header value, required by the service to accept requests.
-    public init(session: URLSession = .shared, userAgent: String = "RadioApp/1.0") {
+    ///   - userAgent: The user agent header value, required by the service to accept
+    ///     requests. Defaults to the one declared by ``RadioBrowserConfiguration``.
+    public init(
+        session: URLSession = .shared,
+        userAgent: String = RadioBrowserConfiguration.default.userAgent
+    ) {
         self.session = session
         self.userAgent = userAgent
     }
@@ -22,6 +26,8 @@ public final class DefaultNetworkClient: NetworkClientProtocol {
     /// - Returns: The response body.
     /// - Throws: `APIError.httpError` for any non 2xx status, `APIError.invalidResponse` when
     /// the response is not an HTTP response and `APIError.networkFailed` for transport errors.
+    /// A cancellation is rethrown as is, so a cancelled task stays cancelled instead of being
+    /// reported as a transport failure.
     public func fetch(request: URLRequest) async throws -> Data {
         var request = request
         request.setValue(userAgent, forHTTPHeaderField: "User-Agent")
@@ -31,6 +37,8 @@ public final class DefaultNetworkClient: NetworkClientProtocol {
 
         do {
             (data, response) = try await session.data(for: request)
+        } catch let error as CancellationError {
+            throw error
         } catch let error as APIError {
             throw error
         } catch {
