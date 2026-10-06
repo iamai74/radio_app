@@ -38,7 +38,7 @@ final class FacadeCacheTests {
     @Test
     func repeatedSubscribeCancelCyclesLeaveNoCachedFilters() async throws {
         let store = try Storage.DataStore.makeInMemoryStore()
-        try await store.saveStations([StationEntityImpl.fixture()])
+        try await store.saveStations([StationDTO.fixture()])
 
         for _ in 0..<25 {
             var cancellable: AnyCancellable? = store.stationsPublisher(filter: .empty).sink { _ in }

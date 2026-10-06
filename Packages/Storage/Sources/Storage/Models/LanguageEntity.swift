@@ -2,7 +2,7 @@ import Foundation
 import SwiftData
 
 @Model
-final class LanguageEntityImpl: LanguageEntity, FacetEntity {
+final class LanguageEntityImpl: FacetEntity {
     @Attribute(.unique) var name: String
     var stationCount: Int
 
@@ -10,6 +10,13 @@ final class LanguageEntityImpl: LanguageEntity, FacetEntity {
         self.name = name
         self.stationCount = stationCount
     }
+}
+
+/// Concrete DTO for LanguageEntity protocol.
+/// Used to bridge between non-Sendable SwiftData models and the public Sendable protocol.
+struct LanguageDTO: LanguageEntity {
+    let name: String
+    let stationCount: Int
 }
 
 extension LanguageEntityImpl: StorageModel {
@@ -29,7 +36,12 @@ extension LanguageEntityImpl: StorageModel {
     }
 
     func applyUpdate(from other: LanguageEntityImpl) {
-        apply(from: other)
+        name = other.name
+        stationCount = other.stationCount
+    }
+
+    func toDTO() -> LanguageEntity {
+        LanguageDTO(name: name, stationCount: stationCount)
     }
 
     static func predicate(forKeys keys: [String]) -> Predicate<LanguageEntityImpl> {

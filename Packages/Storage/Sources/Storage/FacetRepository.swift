@@ -1,6 +1,7 @@
 import Foundation
 import SwiftData
 import Combine
+import StorageCore
 
 /// Read/write access to one facet kind: DTO mapping plus the filtering
 /// pipeline. All four facets (country, tag, language, codec) share this
@@ -12,7 +13,7 @@ import Combine
 /// `DataStore`, and two entries in `StorageContainer`'s schema.
 @MainActor
 final class FacetRepository<Impl, DTO>
-where Impl: PersistentModel & FacetEntity & StorageModel & Hashable, Impl.DTO == DTO {
+where Impl: PersistentModel & FacetEntity & StorageModel & Hashable, Impl.DTO == DTO, DTO: Sendable {
     private let storage: EntityStorage<Impl, FacetFilter>
 
     init(modelContext: ModelContext) {
@@ -23,12 +24,17 @@ where Impl: PersistentModel & FacetEntity & StorageModel & Hashable, Impl.DTO ==
         try await storage.save(dtos.map { Impl.persist($0) })
     }
 
-    func publisher(filter: FacetFilter) -> AnyPublisher<[Impl], Never> {
+    func publisher(filter: FacetFilter) -> AnyPublisher<[DTO], Never> {
         storage.filteredPublisher(filter: filter)
+            .map { $0.map { $0.toDTO() } }
+            .eraseToAnyPublisher()
     }
 
-    func sequence(filter: FacetFilter) -> StorageSequence<Impl> {
-        storage.filteredSequence(filter: filter)
+    func sequence(filter: FacetFilter) -> StorageSequence<DTO> {
+        let publisher = storage.filteredPublisher(filter: filter)
+            .map { $0.map { $0.toDTO() } }
+            .eraseToAnyPublisher()
+        return StorageSequence(values: publisher, failures: storage.failureSubject.eraseToAnyPublisher())
     }
 
     func deleteAll() async throws {

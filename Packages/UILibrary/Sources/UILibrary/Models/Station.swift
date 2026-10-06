@@ -1,6 +1,6 @@
 import Foundation
 
-public protocol Station: Identifiable, Hashable {
+public protocol Station: Identifiable, Hashable, Sendable {
     var id: String { get }
     var name: String { get }
     var url: String { get }

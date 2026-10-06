@@ -11,9 +11,8 @@ import Combine
 /// `Combine` remains available for callers that want it, but it is the adapter
 /// here, not the other way round: both views are fed by the same reload path,
 /// so they cannot disagree.
-public struct StorageSequence<Entity>: AsyncSequence {
+public struct StorageSequence<Entity: Sendable>: AsyncSequence, @unchecked Sendable {
     public typealias Element = [Entity]
-    public typealias Failure = StorageError
 
     private let values: AnyPublisher<[Entity], Never>
     private let failures: AnyPublisher<StorageError, Never>
@@ -24,12 +23,15 @@ public struct StorageSequence<Entity>: AsyncSequence {
     }
 
     public func makeAsyncIterator() -> Iterator {
-        Iterator(state: State(values: values, failures: failures))
+        Iterator(state: State(
+            values: values,
+            failures: failures
+        ))
     }
 
     /// Element-wise transform, used to lift a concrete entity type to the public
     /// DTO existential that `DataStore` hands out.
-    public func map<Other>(_ transform: @escaping ([Entity]) -> [Other]) -> StorageSequence<Other> {
+    public func map<Other>(_ transform: @escaping @Sendable ([Entity]) -> [Other]) -> StorageSequence<Other> {
         StorageSequence<Other>(
             values: values.map(transform).eraseToAnyPublisher(),
             failures: failures
@@ -38,23 +40,16 @@ public struct StorageSequence<Entity>: AsyncSequence {
 
     public struct Iterator: AsyncIteratorProtocol {
         public typealias Failure = StorageError
+        private let state: State<[Entity]>
 
-        private let state: State
-
-        fileprivate init(state: State) {
+        init(state: State<[Entity]>) {
             self.state = state
         }
 
         public mutating func next() async throws -> [Entity]? {
-            let event = await withTaskCancellationHandler {
-                await state.next()
-            } onCancel: {
-                state.cancel()
-            }
-
+            let event = await state.next()
             switch event {
             case .none:
-                state.cancel()
                 return nil
             case let .success(value):
                 return value
@@ -65,27 +60,30 @@ public struct StorageSequence<Entity>: AsyncSequence {
     }
 
     /// Owns one iterator's Combine subscriptions and its element buffer.
-    ///
-    /// A class because the task cancellation handler cannot reach the
-    /// iterator's own storage. Elements arrive on the main actor, the same
-    /// isolation the publisher delivers on, so the iterator itself needs no
-    /// lock; the cancellables set does, because `cancel()` runs on whatever
-    /// executor the task cancellation handler uses. Marked
-    /// `@unchecked Sendable` so that handler can call `cancel()`.
-    fileprivate final class State: @unchecked Sendable {
-        private var iterator: AsyncStream<Result<[Entity], StorageError>>.AsyncIterator
+    final class State<T: Sendable>: @unchecked Sendable {
         private let lock = NSLock()
         private var cancellables = Set<AnyCancellable>()
+        private var iterator: AsyncStream<Result<T, StorageError>>.AsyncIterator
+        private let continuation: AsyncStream<Result<T, StorageError>>.Continuation
 
-        init(values: AnyPublisher<[Entity], Never>, failures: AnyPublisher<StorageError, Never>) {
-            let (stream, continuation) = AsyncStream<Result<[Entity], StorageError>>.makeStream()
-            self.iterator = stream.makeAsyncIterator()
-            store(values.sink { continuation.yield(.success($0)) })
-            store(failures.sink { continuation.yield(.failure($0)) })
+        init(values: AnyPublisher<T, Never>, failures: AnyPublisher<StorageError, Never>) {
+            let (strm, cont) = AsyncStream<Result<T, StorageError>>.makeStream()
+            self.iterator = strm.makeAsyncIterator()
+            self.continuation = cont
+            store(values.sink { [weak self] value in
+                self?.yield(.success(value))
+            })
+            store(failures.sink { [weak self] error in
+                self?.yield(.failure(error))
+            })
         }
 
-        func next() async -> Result<[Entity], StorageError>? {
+        func next() async -> Result<T, StorageError>? {
             await iterator.next()
+        }
+
+        func yield(_ value: sending Result<T, StorageError>) {
+            continuation.yield(value)
         }
 
         func cancel() {
@@ -93,9 +91,8 @@ public struct StorageSequence<Entity>: AsyncSequence {
             let toCancel = cancellables
             cancellables = []
             lock.unlock()
-            // Cancelling outside the lock: it runs `receiveCancel` handlers,
-            // which must never be able to deadlock against this state.
             toCancel.forEach { $0.cancel() }
+            continuation.finish()
         }
 
         private func store(_ cancellable: AnyCancellable) {

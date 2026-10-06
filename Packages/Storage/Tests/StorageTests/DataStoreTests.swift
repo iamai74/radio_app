@@ -8,20 +8,20 @@ final class DataStoreTests {
     func saveFreshStationsWithSameIdsDoesNotThrow() async throws {
         let store = try Storage.DataStore.makeInMemoryStore()
 
-        let batch1: [StationEntityImpl] = [
-            StationEntityImpl.fixture(id: "s1", name: "Station One"),
-            StationEntityImpl.fixture(id: "s2", name: "Station Two"),
-            StationEntityImpl.fixture(id: "s3", name: "Station Three")
+        let batch1: [StationDTO] = [
+            StationDTO.fixture(id: "s1", name: "Station One"),
+            StationDTO.fixture(id: "s2", name: "Station Two"),
+            StationDTO.fixture(id: "s3", name: "Station Three")
         ]
 
         // First save should work
         try await store.saveStations(batch1)
 
         // Second save with *new* instances (simulating re-import) — should not throw or duplicate
-        let batch2: [StationEntityImpl] = [
-            StationEntityImpl.fixture(id: "s1", name: "Station One Updated"),
-            StationEntityImpl.fixture(id: "s2", name: "Station Two"),
-            StationEntityImpl.fixture(id: "s3", name: "Station Three")
+        let batch2: [StationDTO] = [
+            StationDTO.fixture(id: "s1", name: "Station One Updated"),
+            StationDTO.fixture(id: "s2", name: "Station Two"),
+            StationDTO.fixture(id: "s3", name: "Station Three")
         ]
 
         try await store.saveStations(batch2)
@@ -33,8 +33,8 @@ final class DataStoreTests {
     func reimportUpdatesExistingRowsOnBackgroundWrite() async throws {
         let store = try Storage.DataStore.makeInMemoryStore()
 
-        try await store.saveStations([StationEntityImpl.fixture(id: "s1", name: "Before", votes: 1)])
-        try await store.saveStations([StationEntityImpl.fixture(id: "s1", name: "After", votes: 42)])
+        try await store.saveStations([StationDTO.fixture(id: "s1", name: "Before", votes: 1)])
+        try await store.saveStations([StationDTO.fixture(id: "s1", name: "After", votes: 42)])
 
         var emitted: [any StationEntity] = []
         var cancellable: AnyCancellable?
@@ -54,8 +54,8 @@ final class DataStoreTests {
         let store = try Storage.DataStore.makeInMemoryStore()
 
         try await store.saveStations([
-            StationEntityImpl.fixture(id: "s1", name: "One"),
-            StationEntityImpl.fixture(id: "s2", name: "Two")
+            StationDTO.fixture(id: "s1", name: "One"),
+            StationDTO.fixture(id: "s2", name: "Two")
         ])
 
         try await store.deleteAllStations()
@@ -75,7 +75,7 @@ final class DataStoreTests {
         let store = try Storage.DataStore.makeInMemoryStore()
 
         let batch = (1...2_000).map {
-            StationEntityImpl.fixture(id: "s\($0)", name: "Station \($0)")
+            StationDTO.fixture(id: "s\($0)", name: "Station \($0)")
         }
         try await store.saveStations(batch)
 
@@ -98,9 +98,9 @@ final class DataStoreTests {
 
         try await withThrowingTaskGroup(of: Void.self) { group in
             for index in 0 ..< 8 {
-                group.addTask { @MainActor in
+                group.addTask {
                     try await store.saveTags([
-                        TagEntityImpl.fixture(name: "tag-\(index)", stationCount: index)
+                        TagDTO.fixture(name: "tag-\(index)", stationCount: index)
                     ])
                 }
             }

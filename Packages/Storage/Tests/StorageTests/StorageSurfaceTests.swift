@@ -45,7 +45,17 @@ final class StorageSurfaceTests {
             strategy: .station
         )
 
-        var iterator = storage.filteredSequence(filter: .empty).makeAsyncIterator()
+        let basePublisher = storage.filteredPublisher(filter: .empty)
+            let publisher = basePublisher
+                .compactMap { (entities: [StationEntityImpl]) -> [StationDTO] in
+                    entities.map { StationDTO.from($0) }
+                }
+                .eraseToAnyPublisher()
+        let sequence = StorageSequence<StationDTO>(
+            values: publisher,
+            failures: storage.failureSubject.eraseToAnyPublisher()
+        )
+        var iterator = sequence.makeAsyncIterator()
         #expect(try await iterator.next() == [], "replays the current (empty) value first")
 
         storage.failureSubject.send(.fetchFailed(details: "simulated"))

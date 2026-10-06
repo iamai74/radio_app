@@ -13,17 +13,15 @@ final class FilteredStorageTests {
         var filter = StationFilter.empty
         filter.name = "test"
         var cancellable: AnyCancellable?
-        var emitted: [StationEntityImpl] = []
+        var emitted: [any StationEntity] = []
 
         cancellable = store.stationsPublisher(filter: filter)
-            .sink { result in
-                emitted = result.compactMap { $0 as? StationEntityImpl }
-            }
+            .sink { emitted = $0 }
 
-        let stations: [StationEntityImpl] = [
-            .fixture(id: "s1", name: "test station"),
-            .fixture(id: "s2", name: "another test"),
-            .fixture(id: "s3", name: "unrelated")
+        let stations: [StationDTO] = [
+            StationDTO.fixture(id: "s1", name: "test station"),
+            StationDTO.fixture(id: "s2", name: "another test"),
+            StationDTO.fixture(id: "s3", name: "unrelated")
         ]
 
         try await store.saveStations(stations)
@@ -31,7 +29,7 @@ final class FilteredStorageTests {
         #expect(emitted.count == 2)
         #expect(emitted.allSatisfy { $0.name.localizedCaseInsensitiveContains("test") })
 
-        let moreStation: StationEntityImpl = .fixture(id: "s4", name: "third test station")
+        let moreStation: StationDTO = StationDTO.fixture(id: "s4", name: "third test station")
         try await store.saveStations([moreStation])
 
         #expect(emitted.count == 3)
@@ -44,10 +42,10 @@ final class FilteredStorageTests {
         let container = try StorageContainer.create(isInMemory: true)
         let store = Storage.DataStore(modelContainer: container)
 
-        let stations: [StationEntityImpl] = [
-            .fixture(id: "s1", name: "Station One"),
-            .fixture(id: "s2", name: "Station Two"),
-            .fixture(id: "s3", name: "Station Three")
+        let stations: [StationDTO] = [
+            StationDTO.fixture(id: "s1", name: "Station One"),
+            StationDTO.fixture(id: "s2", name: "Station Two"),
+            StationDTO.fixture(id: "s3", name: "Station Three")
         ]
 
         try await store.saveStations(stations)
@@ -76,17 +74,15 @@ final class FilteredStorageTests {
         var filter = StationFilter.empty
         filter.country = "US"
         var cancellable: AnyCancellable?
-        var emitted: [StationEntityImpl] = []
+        var emitted: [any StationEntity] = []
 
         cancellable = store.stationsPublisher(filter: filter)
-            .sink { result in
-                emitted = result.compactMap { $0 as? StationEntityImpl }
-            }
+            .sink { emitted = $0 }
 
-        let stations: [StationEntityImpl] = [
-            .fixture(id: "s1", name: "US Station", country: "US"),
-            .fixture(id: "s2", name: "UK Station", country: "GB"),
-            .fixture(id: "s3", name: "Another US", country: "US")
+        let stations: [StationDTO] = [
+            StationDTO.fixture(id: "s1", name: "US Station", country: "US"),
+            StationDTO.fixture(id: "s2", name: "UK Station", country: "GB"),
+            StationDTO.fixture(id: "s3", name: "Another US", country: "US")
         ]
 
         try await store.saveStations(stations)
@@ -106,18 +102,16 @@ final class FilteredStorageTests {
         filter.country = "US"
         filter.language = "English"
         var cancellable: AnyCancellable?
-        var emitted: [StationEntityImpl] = []
+        var emitted: [any StationEntity] = []
 
         cancellable = store.stationsPublisher(filter: filter)
-            .sink { result in
-                emitted = result.compactMap { $0 as? StationEntityImpl }
-            }
+            .sink { emitted = $0 }
 
-        let stations: [StationEntityImpl] = [
-            .fixture(id: "s1", name: "US English", country: "US", language: "English"),
-            .fixture(id: "s2", name: "US Spanish", country: "US", language: "Spanish"),
-            .fixture(id: "s3", name: "UK English", country: "GB", language: "English"),
-            .fixture(id: "s4", name: "US English 2", country: "US", language: "English")
+        let stations: [StationDTO] = [
+            StationDTO.fixture(id: "s1", name: "US English", country: "US", language: "English"),
+            StationDTO.fixture(id: "s2", name: "US Spanish", country: "US", language: "Spanish"),
+            StationDTO.fixture(id: "s3", name: "UK English", country: "GB", language: "English"),
+            StationDTO.fixture(id: "s4", name: "US English 2", country: "US", language: "English")
         ]
 
         try await store.saveStations(stations)
@@ -136,18 +130,16 @@ final class FilteredStorageTests {
         filter.limit = 2
         filter.offset = 1
         var cancellable: AnyCancellable?
-        var emitted: [StationEntityImpl] = []
+        var emitted: [any StationEntity] = []
 
         cancellable = store.stationsPublisher(filter: filter)
-            .sink { result in
-                emitted = result.compactMap { $0 as? StationEntityImpl }
-            }
+            .sink { emitted = $0 }
 
-        let stations: [StationEntityImpl] = [
-            .fixture(id: "s1", name: "First"),
-            .fixture(id: "s2", name: "Second"),
-            .fixture(id: "s3", name: "Third"),
-            .fixture(id: "s4", name: "Fourth")
+        let stations: [StationDTO] = [
+            StationDTO.fixture(id: "s1", name: "First"),
+            StationDTO.fixture(id: "s2", name: "Second"),
+            StationDTO.fixture(id: "s3", name: "Third"),
+            StationDTO.fixture(id: "s4", name: "Fourth")
         ]
 
         try await store.saveStations(stations)
@@ -165,17 +157,15 @@ final class FilteredStorageTests {
         var filter = StationFilter.empty
         filter.tag = "jazz"
         var cancellable: AnyCancellable?
-        var emitted: [StationEntityImpl] = []
+        var emitted: [any StationEntity] = []
 
         cancellable = store.stationsPublisher(filter: filter)
-            .sink { result in
-                emitted = result.compactMap { $0 as? StationEntityImpl }
-            }
+            .sink { emitted = $0 }
 
-        let stations: [StationEntityImpl] = [
-            .fixture(id: "s1", name: "Jazz Station", tags: ["jazz", "live"]),
-            .fixture(id: "s2", name: "Rock Station", tags: ["rock", "live"]),
-            .fixture(id: "s3", name: "Smooth Jazz", tags: ["jazz", "chill"])
+        let stations: [StationDTO] = [
+            StationDTO.fixture(id: "s1", name: "Jazz Station", tags: ["jazz", "live"]),
+            StationDTO.fixture(id: "s2", name: "Rock Station", tags: ["rock", "live"]),
+            StationDTO.fixture(id: "s3", name: "Smooth Jazz", tags: ["jazz", "chill"])
         ]
 
         try await store.saveStations(stations)
@@ -196,17 +186,15 @@ final class FilteredStorageTests {
         var filter = StationFilter.empty
         filter.orderBy = .lastCheckOk
         var cancellable: AnyCancellable?
-        var emitted: [StationEntityImpl] = []
+        var emitted: [any StationEntity] = []
 
         cancellable = store.stationsPublisher(filter: filter)
-            .sink { result in
-                emitted = result.compactMap { $0 as? StationEntityImpl }
-            }
+            .sink { emitted = $0 }
 
-        let stations: [StationEntityImpl] = [
-            .fixture(id: "s1", name: "Bad", lastCheckOk: false),
-            .fixture(id: "s2", name: "Good", lastCheckOk: true),
-            .fixture(id: "s3", name: "Good 2", lastCheckOk: true)
+        let stations: [StationDTO] = [
+            StationDTO.fixture(id: "s1", name: "Bad", lastCheckOk: false),
+            StationDTO.fixture(id: "s2", name: "Good", lastCheckOk: true),
+            StationDTO.fixture(id: "s3", name: "Good 2", lastCheckOk: true)
         ]
 
         try await store.saveStations(stations)

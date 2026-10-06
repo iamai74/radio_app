@@ -7,7 +7,7 @@ import Combine
 @Test
 func asyncSequenceReplaysCurrentValueToLateSubscribers() async throws {
     let store = try Storage.DataStore.makeInMemoryStore()
-    try await store.saveTags([TagEntityImpl.fixture(name: "replayed")])
+    try await store.saveTags([TagDTO.fixture(name: "replayed")])
 
     var iterator = store.tagsSequence(filter: .empty).makeAsyncIterator()
     let first = try await iterator.next()
@@ -19,7 +19,7 @@ func asyncSequenceReplaysCurrentValueToLateSubscribers() async throws {
 @Test
 func asyncSequenceDeliversLaterUpdates() async throws {
     let store = try Storage.DataStore.makeInMemoryStore()
-    try await store.saveTags([TagEntityImpl.fixture(name: "first")])
+    try await store.saveTags([TagDTO.fixture(name: "first")])
 
     let sequence = store.tagsSequence(filter: .empty)
     let task = Task { () -> [String] in
@@ -31,7 +31,7 @@ func asyncSequenceDeliversLaterUpdates() async throws {
         return names
     }
 
-    try await store.saveTags([TagEntityImpl.fixture(name: "second", stationCount: 1)])
+    try await store.saveTags([TagDTO.fixture(name: "second", stationCount: 1)])
 
     #expect(try await task.value == ["first", "second"])
 }
@@ -61,7 +61,7 @@ func asyncSequenceReportsFailuresAsStorageError() async throws {
 @Test
 func deletingEverythingClearsPublishedResults() async throws {
     let store = try Storage.DataStore.makeInMemoryStore()
-    try await store.saveTags([TagEntityImpl.fixture(name: "gone")])
+    try await store.saveTags([TagDTO.fixture(name: "gone")])
 
     var iterator = store.tagsSequence(filter: .empty).makeAsyncIterator()
     #expect(try await iterator.next()?.isEmpty == false)
@@ -81,7 +81,7 @@ func deletingEverythingClearsPublishedResults() async throws {
 @Test
 func cancellingAnInFlightSequenceReturnsCleanly() async throws {
     let store = try Storage.DataStore.makeInMemoryStore()
-    try await store.saveTags([TagEntityImpl.fixture(name: "a")])
+    try await store.saveTags([TagDTO.fixture(name: "a")])
 
     let task = Task { () -> Bool in
         var iterator = store.tagsSequence(filter: .empty).makeAsyncIterator()
@@ -102,7 +102,7 @@ func cancellingAnInFlightSequenceReturnsCleanly() async throws {
 @Test
 func rapidCancellationCyclesDoNotLeakFilterCaches() async throws {
     let store = try Storage.DataStore.makeInMemoryStore()
-    try await store.saveTags([TagEntityImpl.fixture(name: "a")])
+    try await store.saveTags([TagDTO.fixture(name: "a")])
 
     for _ in 0..<25 {
         let task = Task { () -> Void in

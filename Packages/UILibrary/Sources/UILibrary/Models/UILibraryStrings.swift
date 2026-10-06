@@ -5,7 +5,7 @@ public struct UILibraryStrings {
     public static let emptySearchTitle = "No Stations"
     public static let emptySearchSubtitle = "Start searching to find your favorite radio stations"
     public static let emptySearchNoResultsTitle = "No Results Found"
-    public static let emptySearchNoResultsSubtitle = { (query: String) -> String in
+    public static let emptySearchNoResultsSubtitle: @Sendable (String) -> String = { query in
         "No stations match \"\(query)\""
     }
 }

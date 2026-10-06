@@ -25,6 +25,9 @@ protocol StorageModel: PersistentModel & StorageUpsertKey {
     /// Used by the writer to update matched rows while keeping row identity.
     func applyUpdate(from other: Self)
 
+    /// Converts this model instance to its DTO representation.
+    func toDTO() -> DTO
+
     /// Fetch predicate selecting rows whose unique key is contained in `keys`.
     /// Built per model because only the model knows its concrete stored key
     /// property — `#Predicate` cannot follow key paths into protocols.

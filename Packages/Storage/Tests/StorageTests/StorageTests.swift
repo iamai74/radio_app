@@ -17,7 +17,7 @@ func inMemoryStoresAreIsolatedFromEachOther() async throws {
     let first = Storage.DataStore(modelContainer: try StorageContainer.create(isInMemory: true))
     let second = Storage.DataStore(modelContainer: try StorageContainer.create(isInMemory: true))
 
-    try await first.saveTags([TagEntityImpl.fixture(name: "only-in-first")])
+    try await first.saveTags([TagDTO.fixture(name: "only-in-first")])
 
     #expect(try first.rowCount(TagEntityImpl.self) == 1)
     #expect(try second.rowCount(TagEntityImpl.self) == 0)

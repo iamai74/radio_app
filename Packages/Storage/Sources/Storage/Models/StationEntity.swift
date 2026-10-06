@@ -1,8 +1,9 @@
 import Foundation
 import SwiftData
+import StorageCore
 
 @Model
-final class StationEntityImpl: StationEntity {
+final class StationEntityImpl: StationEntityBase {
     @Attribute(.unique) var id: String
     var name: String
     var url: String
@@ -112,12 +113,92 @@ extension StationEntityImpl: StorageModel {
     }
 
     func applyUpdate(from other: StationEntityImpl) {
-        apply(from: other)
+        id = other.id
+        name = other.name
+        url = other.url
+        homepage = other.homepage
+        favicon = other.favicon
+        tags = other.tags
+        country = other.country
+        state = other.state
+        language = other.language
+        votes = other.votes
+        codec = other.codec
+        bitrate = other.bitrate
+        lastCheckOk = other.lastCheckOk
+        lastCheckTime = other.lastCheckTime
+        lastCheckTotal = other.lastCheckTotal
+        lastCheckFailures = other.lastCheckFailures
+        lastCheckDuration = other.lastCheckDuration
+        lastCheckError = other.lastCheckError
+        lastChangeTime = other.lastChangeTime
+        changeCounter = other.changeCounter
+        creationTime = other.creationTime
+        urlResolved = other.urlResolved
+    }
+
+    func toDTO() -> StationEntity {
+        StationDTO.from(self)
     }
 
     static func predicate(forKeys keys: [String]) -> Predicate<StationEntityImpl> {
         #Predicate { station in
             keys.contains(station.id)
         }
+    }
+}
+
+/// Lightweight DTO that conforms to `StationEntity` for publishing results.
+/// `StationEntityImpl` cannot conform to `StationEntity` directly because
+/// SwiftData `@Model` classes cannot be `Sendable`.
+struct StationDTO: StationEntity, Equatable {
+    let id: String
+    let name: String
+    let url: String
+    let homepage: String?
+    let favicon: String?
+    let tags: [String]?
+    let country: String
+    let state: String?
+    let language: String?
+    let votes: Int
+    let codec: String?
+    let bitrate: Int?
+    let lastCheckOk: Bool
+    let lastCheckTime: Date?
+    let lastCheckTotal: Int
+    let lastCheckFailures: Int
+    let lastCheckDuration: Int
+    let lastCheckError: String?
+    let lastChangeTime: Date?
+    let changeCounter: Int
+    let creationTime: Date?
+    let urlResolved: String?
+
+    static func from(_ impl: StationEntityImpl) -> StationDTO {
+        StationDTO(
+            id: impl.id,
+            name: impl.name,
+            url: impl.url,
+            homepage: impl.homepage,
+            favicon: impl.favicon,
+            tags: impl.tags,
+            country: impl.country,
+            state: impl.state,
+            language: impl.language,
+            votes: impl.votes,
+            codec: impl.codec,
+            bitrate: impl.bitrate,
+            lastCheckOk: impl.lastCheckOk,
+            lastCheckTime: impl.lastCheckTime,
+            lastCheckTotal: impl.lastCheckTotal,
+            lastCheckFailures: impl.lastCheckFailures,
+            lastCheckDuration: impl.lastCheckDuration,
+            lastCheckError: impl.lastCheckError,
+            lastChangeTime: impl.lastChangeTime,
+            changeCounter: impl.changeCounter,
+            creationTime: impl.creationTime,
+            urlResolved: impl.urlResolved
+        )
     }
 }

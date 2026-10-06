@@ -2,7 +2,7 @@ import Foundation
 import SwiftData
 
 @Model
-final class CodecEntityImpl: CodecEntity, FacetEntity {
+final class CodecEntityImpl: FacetEntity {
     @Attribute(.unique) var name: String
     var stationCount: Int
 
@@ -10,6 +10,13 @@ final class CodecEntityImpl: CodecEntity, FacetEntity {
         self.name = name
         self.stationCount = stationCount
     }
+}
+
+/// Concrete DTO for CodecEntity protocol.
+/// Used to bridge between non-Sendable SwiftData models and the public Sendable protocol.
+struct CodecDTO: CodecEntity {
+    let name: String
+    let stationCount: Int
 }
 
 extension CodecEntityImpl: StorageModel {
@@ -29,7 +36,12 @@ extension CodecEntityImpl: StorageModel {
     }
 
     func applyUpdate(from other: CodecEntityImpl) {
-        apply(from: other)
+        name = other.name
+        stationCount = other.stationCount
+    }
+
+    func toDTO() -> CodecEntity {
+        CodecDTO(name: name, stationCount: stationCount)
     }
 
     static func predicate(forKeys keys: [String]) -> Predicate<CodecEntityImpl> {

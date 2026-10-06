@@ -9,8 +9,8 @@ final class FacetStorageTests {
         let store = try Storage.DataStore.makeInMemoryStore()
 
         try await store.saveCountries([
-            CountryEntityImpl.fixture(name: "United States", iso31661: "US", stationCount: 100),
-            CountryEntityImpl.fixture(name: "Germany", iso31661: "DE", stationCount: 50)
+            CountryDTO.fixture(name: "United States", iso31661: "US", stationCount: 100),
+            CountryDTO.fixture(name: "Germany", iso31661: "DE", stationCount: 50)
         ])
 
         var emitted: [any CountryEntity] = []
@@ -29,9 +29,9 @@ final class FacetStorageTests {
         let store = try Storage.DataStore.makeInMemoryStore()
 
         try await store.saveTags([
-            TagEntityImpl.fixture(name: "jazz", stationCount: 30),
-            TagEntityImpl.fixture(name: "jazz fusion", stationCount: 5),
-            TagEntityImpl.fixture(name: "rock", stationCount: 90)
+            TagDTO.fixture(name: "jazz", stationCount: 30),
+            TagDTO.fixture(name: "jazz fusion", stationCount: 5),
+            TagDTO.fixture(name: "rock", stationCount: 90)
         ])
 
         var filter = FacetFilter.empty
@@ -54,9 +54,9 @@ final class FacetStorageTests {
         let store = try Storage.DataStore.makeInMemoryStore()
 
         try await store.saveCodecs([
-            CodecEntityImpl.fixture(name: "MP3", stationCount: 300),
-            CodecEntityImpl.fixture(name: "AAC", stationCount: 10),
-            CodecEntityImpl.fixture(name: "Ogg", stationCount: 120)
+            CodecDTO.fixture(name: "MP3", stationCount: 300),
+            CodecDTO.fixture(name: "AAC", stationCount: 10),
+            CodecDTO.fixture(name: "Ogg", stationCount: 120)
         ])
 
         var filter = FacetFilter.empty
@@ -77,8 +77,8 @@ final class FacetStorageTests {
         let store = try Storage.DataStore.makeInMemoryStore()
 
         try await store.saveLanguages([
-            LanguageEntityImpl.fixture(name: "English", stationCount: 200),
-            LanguageEntityImpl.fixture(name: "Spanish", stationCount: 50)
+            LanguageDTO.fixture(name: "English", stationCount: 200),
+            LanguageDTO.fixture(name: "Spanish", stationCount: 50)
         ])
 
         var filter = FacetFilter.empty
@@ -99,8 +99,8 @@ final class FacetStorageTests {
     func reimportUpdatesFacetsInPlace() async throws {
         let store = try Storage.DataStore.makeInMemoryStore()
 
-        try await store.saveTags([TagEntityImpl.fixture(name: "jazz", stationCount: 30)])
-        try await store.saveTags([TagEntityImpl.fixture(name: "jazz", stationCount: 31)])
+        try await store.saveTags([TagDTO.fixture(name: "jazz", stationCount: 30)])
+        try await store.saveTags([TagDTO.fixture(name: "jazz", stationCount: 31)])
 
         var emitted: [any TagEntity] = []
         var cancellable: AnyCancellable?
@@ -117,7 +117,7 @@ final class FacetStorageTests {
     func deleteAllTagsClearsStore() async throws {
         let store = try Storage.DataStore.makeInMemoryStore()
 
-        try await store.saveTags([TagEntityImpl.fixture(name: "jazz")])
+        try await store.saveTags([TagDTO.fixture(name: "jazz")])
         try await store.deleteAllTags()
 
         var emitted: [any TagEntity] = []

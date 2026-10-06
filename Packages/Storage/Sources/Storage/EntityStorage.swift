@@ -28,7 +28,7 @@ final class EntityStorage<Entity: PersistentModel & StorageModel & Hashable, Fil
 
     /// One filter's published results. Held weakly by the registry; strongly
     /// by the publisher chain that created it (see `filteredValues(filter:)`).
-    private final class FilterState {
+    private final class FilterState: @unchecked Sendable {
         let filter: Filter
         let subject: CurrentValueSubject<[Entity], Never>
 
@@ -38,7 +38,7 @@ final class EntityStorage<Entity: PersistentModel & StorageModel & Hashable, Fil
         }
     }
 
-    private struct WeakFilterState {
+    private struct WeakFilterState: Sendable {
         weak var state: FilterState?
     }
 
@@ -121,22 +121,11 @@ final class EntityStorage<Entity: PersistentModel & StorageModel & Hashable, Fil
         subject.eraseToAnyPublisher()
     }
 
-    /// Async view of the unfiltered results.
-    var sequence: StorageSequence<Entity> {
-        StorageSequence(values: publisher, failures: failureSubject.eraseToAnyPublisher())
-    }
-
     /// Publishes `filter`'s results. The filter is registered (and fetched)
     /// synchronously on first use, so a subscriber always receives the current
     /// value immediately instead of an empty array followed by a refetch.
     func filteredPublisher(filter: Filter) -> AnyPublisher<[Entity], Never> {
         filteredValues(filter: filter).eraseToAnyPublisher()
-    }
-
-    /// Async counterpart of `filteredPublisher(filter:)`, carrying
-    /// `StorageError` instead of swallowing it.
-    func filteredSequence(filter: Filter) -> StorageSequence<Entity> {
-        StorageSequence(values: filteredValues(filter: filter), failures: failureSubject.eraseToAnyPublisher())
     }
 
     private func filteredValues(filter: Filter) -> AnyPublisher<[Entity], Never> {

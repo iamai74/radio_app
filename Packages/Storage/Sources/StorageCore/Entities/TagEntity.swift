@@ -1,3 +1,3 @@
 import Foundation
 
-public protocol TagEntity: FacetEntity {}
+public protocol TagEntity: FacetEntity, Sendable {}

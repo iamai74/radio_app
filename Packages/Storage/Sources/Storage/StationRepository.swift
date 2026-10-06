@@ -1,6 +1,7 @@
 import Foundation
 import SwiftData
 import Combine
+import StorageCore
 
 /// Read/write access to stations: DTO mapping plus the filtering pipeline.
 ///
@@ -18,12 +19,20 @@ final class StationRepository {
         try await storage.save(stations.map { StationEntityImpl.persist($0) })
     }
 
-    func publisher(filter: StationFilter) -> AnyPublisher<[StationEntityImpl], Never> {
+    func publisher(filter: StationFilter) -> AnyPublisher<[any StationEntity], Never> {
         storage.filteredPublisher(filter: filter)
+            .map { $0.map { $0.toDTO() } }
+            .eraseToAnyPublisher()
     }
 
-    func sequence(filter: StationFilter) -> StorageSequence<StationEntityImpl> {
-        storage.filteredSequence(filter: filter)
+    func sequence(filter: StationFilter) -> StorageSequence<any StationEntity> {
+        let base = StorageSequence(
+            values: storage.filteredPublisher(filter: filter)
+                .map { $0.map { $0.toDTO() } }
+                .eraseToAnyPublisher(),
+            failures: storage.failureSubject.eraseToAnyPublisher()
+        )
+        return base.map { $0 as [any StationEntity] }
     }
 
     func deleteAll() async throws {

@@ -1,3 +1,3 @@
 import Foundation
 
-public protocol CodecEntity: FacetEntity {}
+public protocol CodecEntity: FacetEntity, Sendable {}

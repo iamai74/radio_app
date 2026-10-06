@@ -2,7 +2,7 @@ import Foundation
 import SwiftData
 
 @Model
-final class TagEntityImpl: TagEntity, FacetEntity {
+final class TagEntityImpl: FacetEntity {
     @Attribute(.unique) var name: String
     var stationCount: Int
 
@@ -10,6 +10,13 @@ final class TagEntityImpl: TagEntity, FacetEntity {
         self.name = name
         self.stationCount = stationCount
     }
+}
+
+/// Concrete DTO for TagEntity protocol.
+/// Used to bridge between non-Sendable SwiftData models and the public Sendable protocol.
+struct TagDTO: TagEntity {
+    let name: String
+    let stationCount: Int
 }
 
 extension TagEntityImpl: StorageModel {
@@ -29,7 +36,12 @@ extension TagEntityImpl: StorageModel {
     }
 
     func applyUpdate(from other: TagEntityImpl) {
-        apply(from: other)
+        name = other.name
+        stationCount = other.stationCount
+    }
+
+    func toDTO() -> TagEntity {
+        TagDTO(name: name, stationCount: stationCount)
     }
 
     static func predicate(forKeys keys: [String]) -> Predicate<TagEntityImpl> {

@@ -2,7 +2,7 @@ import Foundation
 import SwiftData
 
 @Model
-final class CountryEntityImpl: CountryEntity, FacetEntity {
+final class CountryEntityImpl: FacetEntity {
     @Attribute(.unique) var name: String
     var iso31661: String
     var stationCount: Int
@@ -12,6 +12,14 @@ final class CountryEntityImpl: CountryEntity, FacetEntity {
         self.iso31661 = iso31661
         self.stationCount = stationCount
     }
+}
+
+/// Concrete DTO for CountryEntity protocol.
+/// Used to bridge between non-Sendable SwiftData models and the public Sendable protocol.
+struct CountryDTO: CountryEntity {
+    let name: String
+    let iso31661: String
+    let stationCount: Int
 }
 
 extension CountryEntityImpl: StorageModel {
@@ -32,7 +40,13 @@ extension CountryEntityImpl: StorageModel {
     }
 
     func applyUpdate(from other: CountryEntityImpl) {
-        apply(from: other)
+        name = other.name
+        iso31661 = other.iso31661
+        stationCount = other.stationCount
+    }
+
+    func toDTO() -> CountryEntity {
+        CountryDTO(name: name, iso31661: iso31661, stationCount: stationCount)
     }
 
     static func predicate(forKeys keys: [String]) -> Predicate<CountryEntityImpl> {
