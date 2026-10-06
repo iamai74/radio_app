@@ -1,18 +1,19 @@
 import Foundation
-import Architecture
-import NeedleFoundation
 
-public class ModuleResolver<C: NeedleFoundation.Component> {
-    private let component: C
+public class ModuleResolver: DependencyResolver {
+    private var registrations: [ObjectIdentifier: Any] = [:]
 
-    public init(component: C) {
-        self.component = component
+    public init() {}
+
+    public func register<T>(_ instance: T, forKey key: ObjectIdentifier) {
+        registrations[key] = instance
     }
 
-    public func resolve<M: Module>() -> M.CoordinatorType? where M.Component == C {
-        guard let module = component.resolve(M.self) as? M else {
-            return nil
-        }
-        return module.makeCoordinator(component: component)
+    public func register<T>(_ instance: T) {
+        registrations[ObjectIdentifier(T.self)] = instance
+    }
+
+    public func resolve<T>(_ type: T.Type) -> T? {
+        registrations[ObjectIdentifier(type)] as? T
     }
 }

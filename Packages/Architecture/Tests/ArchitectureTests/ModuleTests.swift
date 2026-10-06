@@ -1,31 +1,82 @@
 import XCTest
-import NeedleFoundation
+import Combine
+
 @testable import Architecture
 
 final class ModuleTests: XCTestCase {
+    class MockNavigator: NavigatorProtocol {
+        func push<V: ViewProtocol>(view: V) {}
+        func present<V: ViewProtocol>(view: V) {}
+        func pop() {}
+    }
+
+    class MockViewModel: ViewModelProtocol {
+        typealias Input = String
+        typealias Output = Bool
+
+        func transform(input: AnyPublisher<String, Never>) -> AnyPublisher<Bool, Never> {
+            input.map { _ in true }.eraseToAnyPublisher()
+        }
+    }
+
+    class MockView: ViewProtocol {
+        var viewModel: MockViewModel = MockViewModel()
+    }
+
+    class MockCoordinator: CoordinatorProtocol {
+        var navigator: NavigatorProtocol
+        init(navigator: NavigatorProtocol) {
+            self.navigator = navigator
+        }
+        func start() {}
+    }
+
+    class MockModule: ModuleProtocol {
+        func makeCoordinator(navigator: NavigatorProtocol) -> MockCoordinator {
+            MockCoordinator(navigator: navigator)
+        }
+    }
+
     func testModuleCoordinatorCreation() {
-        // This is a conceptual test as we cannot easily run full Needle registration in a unit test without setup.
-        // But we can test the protocol structure.
+        let navigator = MockNavigator()
+        let module = MockModule()
+        let coordinator = module.makeCoordinator(navigator: navigator)
 
-        class MockComponent: NeedleFoundation.Component {
-            // Mocking component
-        }
+        XCTAssertNotNil(coordinator)
+        XCTAssertTrue(coordinator is MockCoordinator)
+    }
 
-        class MockCoordinator: Coordinator {
-            func start() {}
-        }
+    func testModuleResolverRegistrationAndResolution() {
+        let resolver = ModuleResolver()
 
-        class MockModule: Module {
-            typealias Component = MockComponent
-            typealias CoordinatorType = MockCoordinator
-
-            func makeCoordinator(component: MockComponent) -> MockCoordinator {
-                MockCoordinator()
+        class SomeModule: ModuleProtocol {
+            func makeCoordinator(navigator: NavigatorProtocol) -> SomeCoordinator {
+                fatalError("Not used in this test")
             }
         }
 
-        // Verification of the logic
-        // In a real scenario, we would use Needle to resolve the module.
-        // Here we just ensure the protocol implementation works.
+        class SomeCoordinator: CoordinatorProtocol {
+            var navigator: NavigatorProtocol = MockNavigator()
+            func start() {}
+        }
+
+        let module = SomeModule()
+        resolver.register(module)
+
+        let resolved = resolver.resolve(SomeModule.self)
+        XCTAssertNotNil(resolved)
+    }
+
+    func testDefaultModuleFactory() {
+        let resolver = ModuleResolver()
+
+        resolver.register(MockModule())
+
+        let factory = DefaultModuleFactory(resolver: resolver)
+        let navigator = MockNavigator()
+        let coordinator = factory.makeCoordinator(for: MockModule.self, navigator: navigator)
+
+        XCTAssertNotNil(coordinator)
+        XCTAssertTrue(coordinator is MockCoordinator)
     }
 }

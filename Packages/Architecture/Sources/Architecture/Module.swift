@@ -1,10 +1,7 @@
 import Foundation
-import Architecture
-import NeedleFoundation
 
-public protocol Module<Component> {
-    associatedtype Component: NeedleFoundation.Component
-    associatedtype CoordinatorType: Coordinator
+public protocol ModuleProtocol: AnyObject {
+    associatedtype CoordinatorType: CoordinatorProtocol
 
-    func makeCoordinator(component: Component) -> CoordinatorType
+    func makeCoordinator(navigator: NavigatorProtocol) -> CoordinatorType
 }

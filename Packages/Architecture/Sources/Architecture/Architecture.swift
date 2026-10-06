@@ -1,36 +1,34 @@
 import Foundation
 import Combine
-import NeedleFoundation
 
-/// Protocol for a ViewModel in MVVM
-public protocol ViewModel: AnyObject {
+public protocol DependencyResolver {
+    func resolve<T>(_ type: T.Type) -> T?
+}
+
+public protocol DependencyProvider: AnyObject {
+    associatedtype Resolver: DependencyResolver
+    var resolver: Resolver { get }
+}
+
+public protocol ViewModelProtocol: AnyObject {
     associatedtype Input
     associatedtype Output
 
     func transform(input: AnyPublisher<Input, Never>) -> AnyPublisher<Output, Never>
 }
 
-/// Protocol for a View in MVVM
-public protocol View: AnyObject {
-    associatedtype ViewModelType: ViewModel
+public protocol ViewProtocol: AnyObject {
+    associatedtype ViewModelType: ViewModelProtocol
     var viewModel: ViewModelType { get set }
 }
 
-/// Protocol for a Coordinator in MVVM+C
-public protocol Coordinator: AnyObject {
-    var navigationController: Any { get } // Will be cast to platform-specific navigator
-    func start()
-}
-
-/// Protocol for a Navigator to abstract platform-specific navigation
-public protocol Navigator: AnyObject {
-    func push<V: View>(view: V) where V.ViewModelType: ViewModel
-    func present<V: View>(view: V) where V.ViewModelType: ViewModel
+public protocol NavigatorProtocol: AnyObject {
+    func push<V: ViewProtocol>(view: V)
+    func present<V: ViewProtocol>(view: V)
     func pop()
 }
 
-/// Protocol for a DI Container using Needle
-public protocol DependencyContainer: AnyObject {
-    associatedtype Component: NeedleFoundation.Component
-    var component: Component { get }
+public protocol CoordinatorProtocol: AnyObject {
+    var navigator: NavigatorProtocol { get set }
+    func start()
 }
