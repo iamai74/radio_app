@@ -5,7 +5,46 @@ import Foundation
 /// A consumer depending on this protocol declares that it browses the catalogue; it does
 /// not get the lookup and search surface of ``StationSearching`` and ``StationLookup``
 /// pushed onto it.
-public protocol StationFetching: StationRequesting {}
+///
+/// The filtering routes are requirements rather than defaults over a route-executing
+/// primitive: the primitive stays inside the package, and a conformer — the real endpoint
+/// or a test double — implements the handful of capabilities its callers actually use.
+public protocol StationFetching: Sendable {
+    /// Fetches stations matching the given criteria.
+    /// - Parameter query: The criteria, paging and ordering of the request.
+    /// - Returns: The matching stations.
+    /// - Throws: `APIError` if the request fails.
+    func getStations(matching query: StationQuery) async throws -> [any Station]
+
+    /// Fetches all radio stations.
+    /// - Returns: Every station the service knows about.
+    /// - Throws: `APIError` if the request fails.
+    func getAllStations() async throws -> [any Station]
+
+    /// Fetches stations from a specific country.
+    /// - Parameters:
+    ///   - country: Country code filter.
+    ///   - limit: Maximum number of stations to return, `0` for no limit.
+    /// - Returns: The stations of the country.
+    /// - Throws: `APIError` if the request fails.
+    func getStationsByCountry(_ country: String, limit: Int) async throws -> [any Station]
+
+    /// Fetches stations in a specific language.
+    /// - Parameters:
+    ///   - language: Language code filter.
+    ///   - limit: Maximum number of stations to return, `0` for no limit.
+    /// - Returns: The stations of the language.
+    /// - Throws: `APIError` if the request fails.
+    func getStationsByLanguage(_ language: String, limit: Int) async throws -> [any Station]
+
+    /// Fetches stations with a specific tag.
+    /// - Parameters:
+    ///   - tag: Tag filter.
+    ///   - limit: Maximum number of stations to return, `0` for no limit.
+    /// - Returns: The stations carrying the tag.
+    /// - Throws: `APIError` if the request fails.
+    func getStationsByTag(_ tag: String, limit: Int) async throws -> [any Station]
+}
 
 public extension StationFetching {
     /// Fetches stations with the default criteria.
@@ -15,49 +54,28 @@ public extension StationFetching {
         try await getStations(matching: StationQuery())
     }
 
-    /// Fetches stations matching the given criteria.
-    /// - Parameter query: The criteria, paging and ordering of the request.
-    /// - Returns: The matching stations.
-    /// - Throws: `APIError` if the request fails.
-    func getStations(matching query: StationQuery) async throws -> [any Station] {
-        try await fetch(.stations, queryItems: query.queryItems)
-    }
-
-    /// Fetches all radio stations.
-    /// - Returns: Every station the service knows about.
-    /// - Throws: `APIError` if the request fails.
-    func getAllStations() async throws -> [any Station] {
-        try await fetch(.stations, queryItems: [])
-    }
-
-    /// Fetches stations from a specific country.
-    /// - Parameters:
-    ///   - country: Country code filter.
-    ///   - limit: Maximum number of stations to return, `0` for no limit.
+    /// Fetches stations from a specific country, without limiting the result set.
+    /// - Parameter country: Country code filter.
     /// - Returns: The stations of the country.
     /// - Throws: `APIError` if the request fails.
-    func getStationsByCountry(_ country: String, limit: Int) async throws -> [any Station] {
-        try await fetch(.stationsByCountry(countryCode: country), queryItems: QueryItems.limit(limit))
+    func getStationsByCountry(_ country: String) async throws -> [any Station] {
+        try await getStationsByCountry(country, limit: 0)
     }
 
-    /// Fetches stations in a specific language.
-    /// - Parameters:
-    ///   - language: Language code filter.
-    ///   - limit: Maximum number of stations to return, `0` for no limit.
+    /// Fetches stations in a specific language, without limiting the result set.
+    /// - Parameter language: Language code filter.
     /// - Returns: The stations of the language.
     /// - Throws: `APIError` if the request fails.
-    func getStationsByLanguage(_ language: String, limit: Int) async throws -> [any Station] {
-        try await fetch(.stationsByLanguage(languageCode: language), queryItems: QueryItems.limit(limit))
+    func getStationsByLanguage(_ language: String) async throws -> [any Station] {
+        try await getStationsByLanguage(language, limit: 0)
     }
 
-    /// Fetches stations with a specific tag.
-    /// - Parameters:
-    ///   - tag: Tag filter.
-    ///   - limit: Maximum number of stations to return, `0` for no limit.
+    /// Fetches stations with a specific tag, without limiting the result set.
+    /// - Parameter tag: Tag filter.
     /// - Returns: The stations carrying the tag.
     /// - Throws: `APIError` if the request fails.
-    func getStationsByTag(_ tag: String, limit: Int) async throws -> [any Station] {
-        try await fetch(.stationsByTag(tag: tag), queryItems: QueryItems.limit(limit))
+    func getStationsByTag(_ tag: String) async throws -> [any Station] {
+        try await getStationsByTag(tag, limit: 0)
     }
 
     /// Walks a result set page by page instead of loading it in one request.

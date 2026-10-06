@@ -1,6 +1,6 @@
 import Foundation
 
-/// Decoder shared by every endpoint.
+/// Decoder shared by every endpoint of a client.
 ///
 /// Models map their API counterparts explicitly (`stationuuid`, `iso_3166_1`,
 /// `url_resolved`, ...), so JSON keys are consumed verbatim: a snake case conversion
@@ -9,6 +9,10 @@ import Foundation
 /// The package owns the payload layout, so a caller supplied `JSONDecoder` is reconfigured
 /// with the strategies below. Settings that say nothing about the layout —
 /// `outputFormatting`, `userInfo` — are kept.
+///
+/// The strategies are assigned once, at initialisation, and `decode` only reads afterwards;
+/// with `JSONDecoder` conforming to `Sendable` in the current SDK, a single configured
+/// instance is safe to share between the concurrent requests of an endpoint.
 public final class DefaultJSONDecoder: JSONDecoderProtocol {
     private let decoder: JSONDecoder
 

@@ -6,7 +6,7 @@ import Foundation
 /// single object route, so the answer is the first element of a list, and a test double
 /// holding a handful of stations can answer the lookup from its own fixtures instead of
 /// relying on that convention.
-public protocol StationLookup: StationRequesting {
+public protocol StationLookup: Sendable {
     /// Fetches a specific station by its ID.
     ///
     /// Radio Browser exposes no single station route, so the request goes to

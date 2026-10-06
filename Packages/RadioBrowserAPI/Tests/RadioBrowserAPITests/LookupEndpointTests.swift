@@ -12,11 +12,11 @@ struct LookupEndpointTests {
     // MARK: - Countries
 
     @Test
-    func getCountriesDecodesList() async throws {
+    func getResourcesDecodesList() async throws {
         let client = MockNetworkClient(data: try MockData.json(named: "countries"))
         let endpoint = CountriesEndpoint(networkClient: client)
 
-        let countries = try await endpoint.getCountries()
+        let countries = try await endpoint.getResources()
 
         #expect(countries.map(\.iso31661) == ["US", "DE"])
         #expect(countries.first?.name == "United States")
@@ -24,11 +24,11 @@ struct LookupEndpointTests {
     }
 
     @Test
-    func getCountriesWithFilterUsesFilterPath() async throws {
+    func resourceFilterUsesFilterPath() async throws {
         let client = MockNetworkClient(data: try MockData.json(named: "countries"))
         let endpoint = CountriesEndpoint(networkClient: client)
 
-        _ = try await endpoint.getCountries(withFilter: "german")
+        _ = try await endpoint.getResources(withFilter: "german")
 
         #expect(try lastRequestURL(of: client).path == "/json/countries/german")
     }
@@ -40,7 +40,7 @@ struct LookupEndpointTests {
         let client = MockNetworkClient(data: try MockData.json(named: "languages"))
         let endpoint = LanguagesEndpoint(networkClient: client)
 
-        let languages = try await endpoint.getLanguages()
+        let languages = try await endpoint.getResources()
 
         #expect(languages.map(\.name) == ["English", "German"])
         #expect(languages.first?.stationCount == 3200)
@@ -48,11 +48,11 @@ struct LookupEndpointTests {
     }
 
     @Test
-    func getLanguagesWithFilterUsesFilterPath() async throws {
+    func getLanguagesFilterUsesFilterPath() async throws {
         let client = MockNetworkClient(data: try MockData.json(named: "languages"))
         let endpoint = LanguagesEndpoint(networkClient: client)
 
-        _ = try await endpoint.getLanguages(withFilter: "english")
+        _ = try await endpoint.getResources(withFilter: "english")
 
         #expect(try lastRequestURL(of: client).path == "/json/languages/english")
     }
@@ -64,7 +64,7 @@ struct LookupEndpointTests {
         let client = MockNetworkClient(data: try MockData.json(named: "tags"))
         let endpoint = TagsEndpoint(networkClient: client)
 
-        let tags = try await endpoint.getTags()
+        let tags = try await endpoint.getResources()
 
         #expect(tags.map(\.name) == ["rock", "jazz"])
         #expect(tags.last?.stationCount == 320)
@@ -72,11 +72,11 @@ struct LookupEndpointTests {
     }
 
     @Test
-    func getTagsWithFilterUsesFilterPath() async throws {
+    func getTagsFilterUsesFilterPath() async throws {
         let client = MockNetworkClient(data: try MockData.json(named: "tags"))
         let endpoint = TagsEndpoint(networkClient: client)
 
-        _ = try await endpoint.getTags(withFilter: "rock")
+        _ = try await endpoint.getResources(withFilter: "rock")
 
         #expect(try lastRequestURL(of: client).path == "/json/tags/rock")
     }
@@ -84,11 +84,11 @@ struct LookupEndpointTests {
     // MARK: - Codecs
 
     @Test
-    func getAudioCodecsDecodesList() async throws {
+    func codecListDecodes() async throws {
         let client = MockNetworkClient(data: try MockData.json(named: "codecs"))
         let endpoint = CodecsEndpoint(networkClient: client)
 
-        let codecs = try await endpoint.getAudioCodecs()
+        let codecs = try await endpoint.getResources()
 
         #expect(codecs.map(\.name) == ["MP3", "AAC"])
         #expect(codecs.last?.stationCount == 1800)
@@ -105,10 +105,10 @@ struct LookupEndpointTests {
         let tags = TagsEndpoint(networkClient: client)
         let codecs = CodecsEndpoint(networkClient: client)
 
-        await #expect(throws: APIError.self) { _ = try await countries.getCountries() }
-        await #expect(throws: APIError.self) { _ = try await languages.getLanguages() }
-        await #expect(throws: APIError.self) { _ = try await tags.getTags() }
-        await #expect(throws: APIError.self) { _ = try await codecs.getAudioCodecs() }
+        await #expect(throws: APIError.self) { _ = try await countries.getResources() }
+        await #expect(throws: APIError.self) { _ = try await languages.getResources() }
+        await #expect(throws: APIError.self) { _ = try await tags.getResources() }
+        await #expect(throws: APIError.self) { _ = try await codecs.getResources() }
     }
 
     @Test
@@ -117,8 +117,8 @@ struct LookupEndpointTests {
         let endpoint = CountriesEndpoint(networkClient: client)
 
         do {
-            _ = try await endpoint.getCountries()
-            Issue.record("Expected getCountries() to fail on a transport error")
+            _ = try await endpoint.getResources()
+            Issue.record("Expected getResources() to fail on a transport error")
         } catch let error as APIError {
             guard case .networkFailed = error else {
                 Issue.record("Expected APIError.networkFailed, got \(error)")
@@ -135,7 +135,7 @@ struct LookupEndpointTests {
         let client = MockNetworkClient(data: try MockData.json(named: "tags"))
         let endpoint = TagsEndpoint(networkClient: client)
 
-        _ = try await endpoint.getTags(withFilter: "hip hop")
+        _ = try await endpoint.getResources(withFilter: "hip hop")
 
         let url = try lastRequestURL(of: client)
         #expect(url.path == "/json/tags/hip hop")

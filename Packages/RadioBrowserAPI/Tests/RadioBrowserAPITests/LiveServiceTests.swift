@@ -19,7 +19,10 @@ private enum LiveTests {
 @Suite(.serialized, .enabled(if: LiveTests.isEnabled))
 struct LiveServiceTests {
     private func makeAPI() -> RadioBrowserAPI {
-        RadioBrowserAPI(networkClient: DefaultNetworkClient(userAgent: "RadioBrowserAPITests/live"))
+        RadioBrowserAPI(
+            configuration: RadioBrowserConfiguration(userAgent: "RadioBrowserAPITests/live"),
+            networkClient: DefaultNetworkClient()
+        )
     }
 
     /// Stations by votes, with the checks that would hide broken streams enabled.
@@ -84,10 +87,10 @@ struct LiveServiceTests {
     @Test
     func lookupsDecode() async throws {
         let api = makeAPI()
-        let countries = try await api.countries.getCountries()
-        let languages = try await api.languages.getLanguages()
-        let tags = try await api.tags.getTags()
-        let codecs = try await api.codecs.getAudioCodecs()
+        let countries = try await api.countries.getResources()
+        let languages = try await api.languages.getResources()
+        let tags = try await api.tags.getResources()
+        let codecs = try await api.codecs.getResources()
 
         // The service reports one country without a name, its code is always present.
         #expect(!countries.isEmpty && countries.allSatisfy { !$0.iso31661.isEmpty && $0.stationCount >= 0 })

@@ -71,11 +71,11 @@ public struct StationQuery: Sendable, Equatable {
         items.append(contentsOf: Self.criterion(tag, name: "tag"))
         items.append(contentsOf: Self.criterion(name, name: "name"))
 
-        items.append(URLQueryItem(name: "limit", value: String(limit)))
+        items.append(contentsOf: QueryItems.pagingLimit(limit))
         items.append(URLQueryItem(name: "offset", value: String(offset)))
-        items.append(URLQueryItem(name: "hide_breaks", value: hideBreaks ? "true" : "false"))
+        items.append(.bool(hideBreaks, name: "hide_breaks"))
         items.append(URLQueryItem(name: "order", value: order.rawValue))
-        items.append(URLQueryItem(name: "reverse", value: reverse ? "true" : "false"))
+        items.append(.bool(reverse, name: "reverse"))
 
         return items
     }

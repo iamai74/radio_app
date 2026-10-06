@@ -6,17 +6,17 @@ public final class RadioBrowserAPI {
     /// Endpoint for interacting with radio stations.
     public let stations: StationsEndpointProtocol
     /// Endpoint for interacting with countries.
-    public let countries: CountriesEndpointProtocol
+    public let countries: any ResourceFiltering<Country>
     /// Endpoint for interacting with languages.
-    public let languages: LanguagesEndpointProtocol
+    public let languages: any ResourceFiltering<Language>
     /// Endpoint for interacting with tags.
-    public let tags: TagsEndpointProtocol
+    public let tags: any ResourceFiltering<Tag>
     /// Endpoint for interacting with audio codecs.
-    public let codecs: CodecsEndpointProtocol
+    public let codecs: any ResourceEndpointProtocol<Codec>
 
     /// Initializes the API with a dependency injection component.
     /// - Parameter component: The DI component containing necessary dependencies.
-    package init(component: RadioBrowserApiComponentProtocol) {
+    package init(component: RadioBrowserAPIComponentProtocol) {
         self.stations = component.stations
         self.countries = component.countries
         self.languages = component.languages
@@ -32,13 +32,13 @@ public final class RadioBrowserAPI {
     /// - Parameters:
     ///   - configuration: The mirrors and request policy to use.
     ///   - networkClient: The transport performing the requests. Pass `nil` — the default —
-    ///     to let the configuration build it, or inject your own to take over transport.
+    ///     to let the package build it, or inject your own to take over transport.
     public convenience init(
         configuration: RadioBrowserConfiguration = .default,
         networkClient: NetworkClientProtocol? = nil
     ) {
         self.init(
-            component: RadioBrowserApiComponent(configuration: configuration, networkClient: networkClient)
+            component: RadioBrowserAPIComponent(configuration: configuration, networkClient: networkClient)
         )
     }
 }

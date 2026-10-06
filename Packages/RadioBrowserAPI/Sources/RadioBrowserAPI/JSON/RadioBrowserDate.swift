@@ -22,13 +22,16 @@ enum RadioBrowserDate {
         return utcDate(from: value)
     }
 
-    private static let iso8601Formatter: ISO8601DateFormatter = {
+    /// Both formatters are configured once, inside their initialiser closures, and only
+    /// read afterwards; `nonisolated(unsafe)` pins that conclusion instead of paying for
+    /// a formatter per parsed timestamp.
+    nonisolated(unsafe) private static let iso8601Formatter: ISO8601DateFormatter = {
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withInternetDateTime]
         return formatter
     }()
 
-    private static let iso8601FormatterWithFractionalSeconds: ISO8601DateFormatter = {
+    nonisolated(unsafe) private static let iso8601FormatterWithFractionalSeconds: ISO8601DateFormatter = {
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
         return formatter

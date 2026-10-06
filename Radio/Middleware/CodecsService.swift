@@ -13,7 +13,7 @@ final class CodecsService {
     }
 
     func fetchAndSaveCodecs() async throws {
-        let codecs = try await api.codecs.getAudioCodecs()
+        let codecs = try await api.codecs.getResources()
         let entities = codecs.map { CodecAdapter(from: $0) }
         try await dataStore.saveCodecs(entities)
     }

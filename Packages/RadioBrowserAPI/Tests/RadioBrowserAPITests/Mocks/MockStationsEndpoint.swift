@@ -2,31 +2,45 @@ import Foundation
 import RadioBrowserAPI
 
 /// Mock implementation of StationsEndpointProtocol for testing purposes.
+///
+/// With the route-executing primitive gone from the public surface, the double implements
+/// the capability methods its callers use; they all answer from the same fixture, the
+/// shared `result()` keeps the repetition down to one line per method.
 final class MockStationsEndpoint: StationsEndpointProtocol {
     private let stations: [Station]
     private let error: Error?
 
     /// Initializes the mock stations endpoint with specific data and potential error.
     /// - Parameters:
-    ///   - stations: The stations to return from fetch operations, or empty array if no stations.
-    ///   - error: The error to throw from fetch operations, or nil if no error.
+    ///   - stations: The stations to return from list operations, or empty array if no stations.
+    ///   - error: The error to throw from list operations, or nil if no error.
     init(stations: [Station] = [], error: Error? = nil) {
         self.stations = stations
         self.error = error
     }
 
-    /// Answers every route with the fixture this mock was built with.
-    /// - Parameters:
-    ///   - endpoint: The route that was requested; the mock answers all of them alike.
-    ///   - queryItems: The query items of the request, ignored by the mock.
-    /// - Returns: The stations this mock was built with.
-    /// - Throws: The configured error, if any.
-    func fetch(_ endpoint: APIEndpoint, queryItems: [URLQueryItem]) async throws -> [any Station] {
-        if let error {
-            throw error
-        }
+    func getStations(matching _: StationQuery) async throws -> [any Station] {
+        try result()
+    }
 
-        return stations
+    func getAllStations() async throws -> [any Station] {
+        try result()
+    }
+
+    func getStationsByCountry(_: String, limit _: Int) async throws -> [any Station] {
+        try result()
+    }
+
+    func getStationsByLanguage(_: String, limit _: Int) async throws -> [any Station] {
+        try result()
+    }
+
+    func getStationsByTag(_: String, limit _: Int) async throws -> [any Station] {
+        try result()
+    }
+
+    func searchStations(query _: String, limit _: Int) async throws -> [any Station] {
+        try result()
     }
 
     /// Looks the station up in the fixture instead of relying on the list convention the
@@ -40,5 +54,13 @@ final class MockStationsEndpoint: StationsEndpointProtocol {
         }
 
         return stations.first { $0.id == id }
+    }
+
+    private func result() throws -> [any Station] {
+        if let error {
+            throw error
+        }
+
+        return stations
     }
 }

@@ -13,25 +13,16 @@ struct DefaultNetworkClientTests {
         URLRequest(url: URL(string: "https://de2.api.radio-browser.info/json/stations") ?? URL(fileURLWithPath: "/"))
     }
 
+    /// The user agent is no longer the client's concern — `RequestBuilder` attaches it
+    /// before the transport sees the request; see `RequestBuilderTests`.
     @Test
-    func successfulResponseReturnsBodyAndSendsUserAgent() async throws {
-        let client = makeClient(userAgent: "RadioApp/1.0")
+    func successfulResponseReturnsBody() async throws {
+        let client = makeClient()
         StubURLProtocol.stub(statusCode: 200, body: Data("[{\"stationuuid\": \"abc\"}]".utf8))
 
         let data = try await client.fetch(request: request)
 
         #expect(String(bytes: data, encoding: .utf8) == "[{\"stationuuid\": \"abc\"}]")
-        #expect(StubURLProtocol.lastRequest?.value(forHTTPHeaderField: "User-Agent") == "RadioApp/1.0")
-    }
-
-    @Test
-    func configuredUserAgentIsSent() async throws {
-        let client = makeClient(userAgent: "Radio/2.0 (test)")
-        StubURLProtocol.stub(statusCode: 200, body: Data())
-
-        _ = try await client.fetch(request: request)
-
-        #expect(StubURLProtocol.lastRequest?.value(forHTTPHeaderField: "User-Agent") == "Radio/2.0 (test)")
     }
 
     @Test(arguments: [400, 401, 404, 429, 500, 503])
@@ -113,13 +104,13 @@ struct DefaultNetworkClientTests {
 
     // MARK: - Helpers
 
-    private func makeClient(userAgent: String = "RadioApp/1.0") -> DefaultNetworkClient {
+    private func makeClient() -> DefaultNetworkClient {
         StubURLProtocol.reset()
 
         let configuration = URLSessionConfiguration.ephemeral
         configuration.protocolClasses = [StubURLProtocol.self]
 
-        return DefaultNetworkClient(session: URLSession(configuration: configuration), userAgent: userAgent)
+        return DefaultNetworkClient(session: URLSession(configuration: configuration))
     }
 }
 

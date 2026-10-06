@@ -2,23 +2,17 @@ import Foundation
 
 /// Performs the HTTP requests against the Radio Browser service.
 ///
-/// The client owns the transport level contract: it attaches the user agent the service asks
-/// for and translates every non successful response into an `APIError`, so the endpoints only
-/// deal with decoding.
+/// The client owns only the transport level contract: it sends the request it is given and
+/// translates every non successful response into an `APIError`, so the endpoints only deal
+/// with decoding. Everything a request carries — URL, query, timeout, cache policy and the
+/// `User-Agent` the service asks for — is applied by ``RequestBuilder`` before the client
+/// ever sees it.
 public final class DefaultNetworkClient: NetworkClientProtocol {
     private let session: URLSession
-    private let userAgent: String
 
-    /// - Parameters:
-    ///   - session: The session performing the requests.
-    ///   - userAgent: The user agent header value, required by the service to accept
-    ///     requests. Defaults to the one declared by ``RadioBrowserConfiguration``.
-    public init(
-        session: URLSession = .shared,
-        userAgent: String = RadioBrowserConfiguration.default.userAgent
-    ) {
+    /// - Parameter session: The session performing the requests.
+    public init(session: URLSession = .shared) {
         self.session = session
-        self.userAgent = userAgent
     }
 
     /// Performs the request and returns the payload.
@@ -29,9 +23,6 @@ public final class DefaultNetworkClient: NetworkClientProtocol {
     /// A cancellation is rethrown as is, so a cancelled task stays cancelled instead of being
     /// reported as a transport failure.
     public func fetch(request: URLRequest) async throws -> Data {
-        var request = request
-        request.setValue(userAgent, forHTTPHeaderField: "User-Agent")
-
         let data: Data
         let response: URLResponse
 

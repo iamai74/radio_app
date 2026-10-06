@@ -24,15 +24,15 @@ struct RadioBrowserAPITests {
         let api = RadioBrowserAPI(component: component)
 
         #expect(api.stations is MockStationsEndpoint)
-        #expect(api.countries is MockCountriesEndpoint)
-        #expect(api.languages is MockLanguagesEndpoint)
-        #expect(api.tags is MockTagsEndpoint)
-        #expect(api.codecs is MockCodecsEndpoint)
+        #expect(api.countries is MockResourceEndpoint<any Country>)
+        #expect(api.languages is MockResourceEndpoint<any Language>)
+        #expect(api.tags is MockResourceEndpoint<RadioTag>)
+        #expect(api.codecs is MockResourceEndpoint<any Codec>)
     }
 
     @Test
     func componentBuildsEndpointsForInjectedNetworkClient() {
-        let component = RadioBrowserApiComponent(
+        let component = RadioBrowserAPIComponent(
             networkClient: MockNetworkClient(data: Data())
         )
 

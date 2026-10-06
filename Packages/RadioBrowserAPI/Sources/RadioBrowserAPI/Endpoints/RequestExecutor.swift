@@ -1,45 +1,44 @@
 import Foundation
 
-/// Base class for endpoint implementations that handles common API communication logic.
+/// Runs the routes of the service and decodes the answers.
 ///
-/// The class is generic over the concrete `Model` used for decoding, which keeps the
-/// decoding implementation details (e.g. `StationObject`) inside the package while
-/// subclasses expose the model protocols their callers consume.
-///
-/// Every request walks the mirrors of the ``RadioBrowserConfiguration`` in order and only
-/// gives up on the first failure that is not retryable.
-internal class BaseEndpoint<Model: Decodable>: @unchecked Sendable {
+/// The executor owns the whole request pipeline of an endpoint — building the request,
+/// walking the mirrors, decoding — so the endpoints themselves only name a route and a
+/// payload type. Every stored value is immutable, which makes the executor `Sendable`
+/// without annotation: one instance is built per client and shared by all its endpoints.
+internal struct RequestExecutor: Sendable {
     private let networkClient: NetworkClientProtocol
-    private let urlBuilders: [URLBuilder]
+    private let requestBuilders: [RequestBuilder]
     private let jsonDecoder: JSONDecoderProtocol
-    private let timeout: TimeInterval
-    private let cachePolicy: URLRequest.CachePolicy
 
-    /// Initializes the endpoint with its collaborators.
     /// - Parameters:
-    ///   - networkClient: The client performing the HTTP requests.
-    ///   - configuration: The service mirrors and request policy to use.
-    ///   - jsonDecoder: The decoder turning the response into models.
+    ///   - networkClient: The transport performing the requests.
+    ///   - configuration: The mirrors and request policy of every attempt.
+    ///   - jsonDecoder: The decoder turning responses into models.
     internal init(
         networkClient: NetworkClientProtocol,
         configuration: RadioBrowserConfiguration = .default,
         jsonDecoder: JSONDecoderProtocol = DefaultJSONDecoder()
     ) {
         self.networkClient = networkClient
-        self.urlBuilders = configuration.baseURLs.map { URLBuilder(baseURL: $0) }
+        self.requestBuilders = configuration.baseURLs.map { RequestBuilder(mirror: $0, configuration: configuration) }
         self.jsonDecoder = jsonDecoder
-        self.timeout = configuration.timeout
-        self.cachePolicy = configuration.cachePolicy
     }
 
     /// Fetches and decodes a list of models from the given endpoint.
     /// - Parameters:
-    ///   - endpoint: The API endpoint to fetch data from.
-    ///   - queryItems: Optional query parameters appended to the endpoint's own ones.
+    ///   - type: The payload model the service answers with — the package's decode types,
+    ///     not the read models the callers consume.
+    ///   - endpoint: The route to perform.
+    ///   - queryItems: Query items appended to the ones the route declares.
     /// - Returns: Decoded models of type `Model`.
-    /// - Throws: `APIError` for invalid URL, decoding failures and network failures.
+    /// - Throws: `APIError` for invalid URL, HTTP, decoding and network failures.
     @discardableResult
-    func fetch(endpoint: any EndpointDefinition, queryItems: [URLQueryItem] = []) async throws -> [Model] {
+    func fetch<Model: Decodable>(
+        _ type: Model.Type,
+        endpoint: any EndpointDefinition,
+        queryItems: [URLQueryItem] = []
+    ) async throws -> [Model] {
         let data = try await fetchData(endpoint: endpoint, queryItems: queryItems)
 
         do {
@@ -58,12 +57,17 @@ internal class BaseEndpoint<Model: Decodable>: @unchecked Sendable {
     /// Radio Browser has no single object route: `/json/stations/byuuid/{id}` returns a list
     /// holding the requested station, and an empty list when the station is unknown.
     /// - Parameters:
-    ///   - endpoint: The API endpoint to fetch data from.
-    ///   - queryItems: Optional query parameters appended to the endpoint's own ones.
+    ///   - type: The payload model the service answers with.
+    ///   - endpoint: The route to perform.
+    ///   - queryItems: Query items appended to the ones the route declares.
     /// - Returns: The first decoded model, or `nil` when the service answered with an empty list.
-    /// - Throws: `APIError` for invalid URL, decoding failures and network failures.
-    func fetchFirst(endpoint: any EndpointDefinition, queryItems: [URLQueryItem] = []) async throws -> Model? {
-        try await fetch(endpoint: endpoint, queryItems: queryItems).first
+    /// - Throws: `APIError` for invalid URL, HTTP, decoding and network failures.
+    func fetchFirst<Model: Decodable>(
+        _ type: Model.Type,
+        endpoint: any EndpointDefinition,
+        queryItems: [URLQueryItem] = []
+    ) async throws -> Model? {
+        try await fetch(type, endpoint: endpoint, queryItems: queryItems).first
     }
 
     /// Performs the request against the first mirror that accepts it.
@@ -73,10 +77,10 @@ internal class BaseEndpoint<Model: Decodable>: @unchecked Sendable {
     private func fetchData(endpoint: any EndpointDefinition, queryItems: [URLQueryItem]) async throws -> Data {
         var lastFailure: APIError = .invalidURL
 
-        for (index, urlBuilder) in urlBuilders.enumerated() {
-            let isLastMirror = index == urlBuilders.count - 1
+        for (index, requestBuilder) in requestBuilders.enumerated() {
+            let isLastMirror = index == requestBuilders.count - 1
 
-            guard let url = urlBuilder.build(endpoint: endpoint, queryItems: queryItems) else {
+            guard let request = requestBuilder.request(for: endpoint, queryItems: queryItems) else {
                 lastFailure = .invalidURL
 
                 if isLastMirror {
@@ -85,10 +89,6 @@ internal class BaseEndpoint<Model: Decodable>: @unchecked Sendable {
 
                 continue
             }
-
-            var request = URLRequest(url: url)
-            request.timeoutInterval = timeout
-            request.cachePolicy = cachePolicy
 
             do {
                 return try await networkClient.fetch(request: request)

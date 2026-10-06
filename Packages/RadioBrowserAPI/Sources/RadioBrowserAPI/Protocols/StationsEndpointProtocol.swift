@@ -4,7 +4,7 @@ import Foundation
 ///
 /// The protocol is a composition of capabilities: a consumer that only searches declares
 /// `any StationSearching`, one that browses declares `any StationFetching`, and the
-/// facade exposes the composition. Every capability except ``StationLookup`` is provided
-/// as a default implementation over ``StationRequesting``, so conformers implement two
-/// methods at most.
+/// facade exposes the composition. Conformers implement the capability methods themselves —
+/// the route-executing primitive stayed behind the package boundary, so a consumer or a
+/// test double sees only the calls it can actually make.
 public protocol StationsEndpointProtocol: StationFetching, StationSearching, StationLookup {}

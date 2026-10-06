@@ -15,6 +15,10 @@ public enum APIError: Error, LocalizedError, Equatable {
     /// The request never reached the service.
     case networkFailed(Error)
     /// The failure belongs to none of the other categories.
+    ///
+    /// The safety net for custom ``JSONDecoderProtocol`` implementations: a decoder that
+    /// throws something which is neither a `DecodingError` nor an `APIError` still reaches
+    /// the caller as a typed failure instead of escaping the error contract.
     case undetermined(Error)
     /// The service answered with a non 2xx status code.
     case httpError(Int)
@@ -68,8 +72,9 @@ public enum APIError: Error, LocalizedError, Equatable {
         }
     }
 
-    /// Underlying errors are compared by their description: `Error` itself is not equatable
-    /// and the payloads crossing this boundary carry no identity worth comparing.
+    /// Underlying errors are compared by a stable identity — domain and code of the
+    /// bridged `NSError` — instead of their description: `localizedDescription` varies
+    /// with the system language, so comparing it would make equality locale dependent.
     public static func == (lhs: APIError, rhs: APIError) -> Bool {
         switch (lhs, rhs) {
         case (.invalidURL, .invalidURL), (.invalidResponse, .invalidResponse):
@@ -79,9 +84,18 @@ public enum APIError: Error, LocalizedError, Equatable {
         case (.decodingFailed(let lhsError), .decodingFailed(let rhsError)),
              (.networkFailed(let lhsError), .networkFailed(let rhsError)),
              (.undetermined(let lhsError), .undetermined(let rhsError)):
-            return lhsError.localizedDescription == rhsError.localizedDescription
+            return sameIdentity(lhsError, rhsError)
         default:
             return false
         }
+    }
+
+    /// Whether two errors are the same failure: equal `NSError` domain and code after
+    /// bridging, which is stable across locales and process runs.
+    private static func sameIdentity(_ lhs: Error, _ rhs: Error) -> Bool {
+        let lhsError = lhs as NSError
+        let rhsError = rhs as NSError
+
+        return lhsError.domain == rhsError.domain && lhsError.code == rhsError.code
     }
 }
