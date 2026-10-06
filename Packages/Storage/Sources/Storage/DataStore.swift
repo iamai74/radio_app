@@ -152,4 +152,17 @@ public final class DataStore: DataStoreProtocol {
     public func deleteAllCodecs() async throws {
         try await codecs.deleteAll()
     }
+
+    // MARK: - Diagnostics
+
+    /// Live per-filter caches across every repository. Prunes first, so a
+    /// dropped publisher disappears from the count. Test hook: pins that the
+    /// facade's publisher/sequence wrappers still anchor the weak registry.
+    var cachedFilterCount: Int {
+        stations.cachedFilterCount
+            + countries.cachedFilterCount
+            + tags.cachedFilterCount
+            + languages.cachedFilterCount
+            + codecs.cachedFilterCount
+    }
 }

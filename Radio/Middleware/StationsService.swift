@@ -34,7 +34,7 @@ final class StationsService {
             )
         )
 
-        let entities = stations.map { StationAdapter(from: $0) }
+        let entities = stations.map { StationRecord(from: $0) }
         try await dataStore.saveStations(entities)
     }
 
@@ -49,13 +49,13 @@ final class StationsService {
 
     func searchAndSaveStations(query: String, limit: Int = 100) async throws {
         let stations = try await api.stations.searchStations(query: query, limit: limit)
-        let entities = stations.map { StationAdapter(from: $0) }
+        let entities = stations.map { StationRecord(from: $0) }
         try await dataStore.saveStations(entities)
     }
 
-    private static func adapt(_ stations: [any Station]) async -> [StationAdapter] {
+    private static func adapt(_ stations: [any Station]) async -> [StationRecord] {
         await Task.detached(priority: .utility) {
-            stations.map { StationAdapter(from: $0) }
+            stations.map { StationRecord(from: $0) }
         }.value
     }
 }

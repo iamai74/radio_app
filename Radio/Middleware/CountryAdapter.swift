@@ -2,14 +2,12 @@ import Foundation
 import RadioBrowserAPI
 import Storage
 
-struct CountryAdapter: Sendable, CountryEntity {
-    let name: String
-    let iso31661: String
-    let stationCount: Int
-
+extension CountryRecord {
     init(from country: some Country) {
-        self.name = country.name
-        self.iso31661 = country.iso31661
-        self.stationCount = country.stationCount
+        self.init(
+            name: country.name,
+            iso31661: country.iso31661,
+            stationCount: country.stationCount
+        )
     }
 }

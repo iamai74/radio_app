@@ -47,13 +47,13 @@ func asyncSequenceReportsFailuresAsStorageError() async throws {
     var iterator = sequence.makeAsyncIterator()
     #expect(try await iterator.next() == ["ok"])
 
-    failures.send(.fetchFailed("simulated"))
+    failures.send(.fetchFailed(details: "simulated"))
 
     do {
         _ = try await iterator.next()
         Issue.record("expected the failure to surface as a thrown StorageError")
     } catch let error as StorageError {
-        #expect(error == .fetchFailed("simulated"))
+        #expect(error == .fetchFailed(details: "simulated"))
     }
 }
 
@@ -69,4 +69,51 @@ func deletingEverythingClearsPublishedResults() async throws {
     try await store.deleteAllTags()
 
     #expect(try await iterator.next()?.isEmpty == true)
+}
+
+// MARK: - Cancellation semantics
+
+/// Cancelling while waiting for the next update must end the iteration
+/// cleanly — no hang, no crash — because `StorageSequence.State` cancels its
+/// Combine subscriptions and `AsyncStream` ends iteration for a cancelled
+/// consuming task.
+@MainActor
+@Test
+func cancellingAnInFlightSequenceReturnsCleanly() async throws {
+    let store = try Storage.DataStore.makeInMemoryStore()
+    try await store.saveTags([TagEntityImpl.fixture(name: "a")])
+
+    let task = Task { () -> Bool in
+        var iterator = store.tagsSequence(filter: .empty).makeAsyncIterator()
+        _ = try await iterator.next()
+        _ = try await iterator.next()
+        return true
+    }
+
+    await Task.yield()
+    task.cancel()
+
+    #expect(try await task.value)
+}
+
+/// Rapid cancel-during-iteration churn must not deadlock or trip the weak
+/// registry; every dropped iterator releases its cache.
+@MainActor
+@Test
+func rapidCancellationCyclesDoNotLeakFilterCaches() async throws {
+    let store = try Storage.DataStore.makeInMemoryStore()
+    try await store.saveTags([TagEntityImpl.fixture(name: "a")])
+
+    for _ in 0..<25 {
+        let task = Task { () -> Void in
+            var iterator = store.tagsSequence(filter: .empty).makeAsyncIterator()
+            _ = try await iterator.next()
+            _ = try await iterator.next()
+        }
+        await Task.yield()
+        task.cancel()
+        try await task.value
+    }
+
+    #expect(store.cachedFilterCount == 0)
 }

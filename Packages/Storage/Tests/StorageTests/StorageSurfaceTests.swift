@@ -48,13 +48,13 @@ final class StorageSurfaceTests {
         var iterator = storage.filteredSequence(filter: .empty).makeAsyncIterator()
         #expect(try await iterator.next() == [], "replays the current (empty) value first")
 
-        storage.failureSubject.send(.fetchFailed("simulated"))
+        storage.failureSubject.send(.fetchFailed(details: "simulated"))
 
         do {
             _ = try await iterator.next()
             Issue.record("expected the failure to surface as a thrown StorageError")
         } catch let error as StorageError {
-            #expect(error == .fetchFailed("simulated"))
+            #expect(error == .fetchFailed(details: "simulated"))
         }
     }
 }

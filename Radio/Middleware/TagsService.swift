@@ -14,13 +14,13 @@ final class TagsService {
 
     func fetchAndSaveTags() async throws {
         let tags = try await api.tags.getResources()
-        let entities = tags.map { TagAdapter(from: $0) }
+        let entities = tags.map { TagRecord(from: $0) }
         try await dataStore.saveTags(entities)
     }
 
     func fetchAndSaveTags(filter: String) async throws {
         let tags = try await api.tags.getResources(withFilter: filter)
-        let entities = tags.map { TagAdapter(from: $0) }
+        let entities = tags.map { TagRecord(from: $0) }
         try await dataStore.saveTags(entities)
     }
 }

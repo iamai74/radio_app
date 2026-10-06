@@ -65,22 +65,30 @@ private func facetOrdered<E: FacetEntity>(_ filter: FacetFilter, _ entities: [E]
 // MARK: - Strategy
 
 extension FilterStrategy where Entity: PersistentModel & FacetEntity, Filter == FacetFilter {
-    /// Facets filter and order fully in SQLite; nothing needs post-processing,
-    /// so `requiresPostProcessing` stays false and SQLite owns the window.
+    /// Facets filter and order fully in SQLite; nothing needs post-processing
+    /// and `FacetFilter` carries no offset/limit, so the plan never defers the
+    /// window and `postProcess` stays empty by construction.
     static var facet: FilterStrategy {
         FilterStrategy(
             defaultSortDescriptors: [SortDescriptor(\Entity.name)],
-            predicate: facetPredicate,
-            sortDescriptors: { filter in
-                filter.orderBy.facetSortDescriptor(reverse: filter.reverse)
-            },
-            fetchOffset: { _ in nil },
-            fetchLimit: { _ in nil },
-            requiresPostProcessing: { _ in false },
+            plan: facetPlan,
             postProcess: { _, _ in },
             matching: facetMatching,
             ordered: facetOrdered,
             windowed: { _, entities in entities }
         )
     }
+}
+
+private func facetPlan<E: PersistentModel & FacetEntity>(_ filter: FacetFilter) -> FetchPlan<E> {
+    let predicate: Predicate<E>? = facetPredicate(filter)
+    let sortDescriptors = filter.orderBy.facetSortDescriptor(reverse: filter.reverse)
+        ?? [SortDescriptor(\E.name)]
+    return FetchPlan(
+        predicate: predicate,
+        sortDescriptors: sortDescriptors,
+        windowInSQLite: predicate != nil,
+        offset: nil,
+        limit: nil
+    )
 }

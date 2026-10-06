@@ -2,12 +2,8 @@ import Foundation
 import RadioBrowserAPI
 import Storage
 
-struct LanguageAdapter: Sendable, LanguageEntity {
-    let name: String
-    let stationCount: Int
-
+extension LanguageRecord {
     init(from language: some Language) {
-        self.name = language.name
-        self.stationCount = language.stationCount
+        self.init(name: language.name, stationCount: language.stationCount)
     }
 }

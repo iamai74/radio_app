@@ -33,4 +33,8 @@ final class StationRepository {
     var failures: AnyPublisher<StorageError, Never> {
         storage.failureSubject.eraseToAnyPublisher()
     }
+
+    var cachedFilterCount: Int {
+        storage.cachedFilterCount
+    }
 }

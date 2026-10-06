@@ -21,12 +21,6 @@ public struct StationFilter: Hashable {
     public static var empty: StationFilter { StationFilter() }
 
     public init() {}
-
-    /// True when some part of the filter cannot be expressed as a SwiftData
-    /// `#Predicate`, so the store has to fetch, then filter and window in memory.
-    public var hasPostProcessing: Bool {
-        (tag?.isEmpty == false) || orderBy == .lastCheckOk
-    }
 }
 
 public struct FacetFilter: Hashable {

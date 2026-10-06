@@ -6,8 +6,10 @@ import Combine
 /// fallback, publication of results, and background writes.
 ///
 /// All filter-specific behaviour arrives as a `FilterStrategy` value
-/// (composition instead of the previous subclass hooks), so the pipeline is a
-/// pure function that tests can drive without SwiftData.
+/// (composition instead of the previous subclass hooks), and the SQLite
+/// half of every filter is resolved through a single `FetchPlan` the strategy
+/// builds, so the pipeline is a pure function that tests can drive without
+/// SwiftData.
 ///
 /// Filter results are cached per filter in a registry that holds them
 /// **weakly**: the publisher chain returned by `filteredPublisher` is what
@@ -53,7 +55,7 @@ final class EntityStorage<Entity: PersistentModel & StorageModel & Hashable, Fil
         do {
             try await writer.upsert(DetachedModels(entities))
         } catch {
-            throw StorageError.saveFailed("\(Entity.self) upsert: \(error)")
+            throw StorageError.saveFailed(details: "\(Entity.self) upsert: \(error)", underlying: error)
         }
         reload()
     }
@@ -63,7 +65,7 @@ final class EntityStorage<Entity: PersistentModel & StorageModel & Hashable, Fil
         do {
             try await writer.deleteAll(Entity.self)
         } catch {
-            throw StorageError.saveFailed("\(Entity.self) deleteAll: \(error)")
+            throw StorageError.saveFailed(details: "\(Entity.self) deleteAll: \(error)", underlying: error)
         }
         subject.send([])
         pruneFilterStates()
@@ -74,18 +76,17 @@ final class EntityStorage<Entity: PersistentModel & StorageModel & Hashable, Fil
 
     // MARK: - Filtering
 
-    /// Attempts predicate-based fetch at SQLite level; falls back to the
-    /// in-memory pipeline when the strategy has no predicate for the filter.
+    /// Resolves the filter into a `FetchPlan` and runs the two-tier pipeline:
+    /// SQLite fetch when the plan has a predicate, then — only when the plan
+    /// says the window is deferred — post-processing and the in-memory window.
     func fetchFiltered(_ filter: Filter) throws -> [Entity] {
-        guard let predicate = strategy.predicate(filter) else {
+        let plan = strategy.plan(filter)
+        guard let predicate = plan.predicate else {
             return strategy.filtered(filter, in: try modelContext.fetch(FetchDescriptor<Entity>()))
         }
 
-        // SQLite applies offset/limit while fetching, so whenever results still
-        // need post-processing the window has to be applied afterwards instead.
-        let deferredWindow = strategy.requiresPostProcessing(filter)
-        var results = try fetchWithPredicate(predicate, filter: filter, windowedInSQLite: !deferredWindow)
-        if deferredWindow {
+        var results = try fetchWithPredicate(predicate, plan: plan)
+        if !plan.windowInSQLite {
             strategy.postProcess(filter, &results)
             results = strategy.windowed(filter, results)
         }
@@ -98,28 +99,19 @@ final class EntityStorage<Entity: PersistentModel & StorageModel & Hashable, Fil
         strategy.filtered(filter, in: all)
     }
 
-    private func fetchWithPredicate(
-        _ predicate: Predicate<Entity>,
-        filter: Filter,
-        windowedInSQLite: Bool
-    ) throws -> [Entity] {
+    private func fetchWithPredicate(_ predicate: Predicate<Entity>, plan: FetchPlan<Entity>) throws -> [Entity] {
+        // Only touch the window when the plan carries one; by construction
+        // that is exactly when SQLite may apply it (`windowInSQLite`).
         var descriptor = FetchDescriptor<Entity>(
             predicate: predicate,
-            sortBy: strategy.sortDescriptors(filter) ?? strategy.defaultSortDescriptors
+            sortBy: plan.sortDescriptors
         )
-
-        // Only touch the window when the filter actually has one. Leaving
-        // `fetchLimit`/`fetchOffset` untouched keeps "unlimited" as the SDK
-        // default instead of relying on `0` meaning the same thing.
-        if windowedInSQLite {
-            if let offset = strategy.fetchOffset(filter) {
-                descriptor.fetchOffset = offset
-            }
-            if let limit = strategy.fetchLimit(filter) {
-                descriptor.fetchLimit = limit
-            }
+        if let offset = plan.offset {
+            descriptor.fetchOffset = offset
         }
-
+        if let limit = plan.limit {
+            descriptor.fetchLimit = limit
+        }
         return try modelContext.fetch(descriptor)
     }
 
@@ -185,7 +177,7 @@ final class EntityStorage<Entity: PersistentModel & StorageModel & Hashable, Fil
         do {
             state.subject.send(try fetchFiltered(filter))
         } catch {
-            failureSubject.send(.fetchFailed("\(Entity.self) filter: \(error)"))
+            failureSubject.send(.fetchFailed(details: "\(Entity.self) filter: \(error)", underlying: error))
         }
     }
 
@@ -200,7 +192,7 @@ final class EntityStorage<Entity: PersistentModel & StorageModel & Hashable, Fil
             let descriptor = FetchDescriptor<Entity>(sortBy: strategy.defaultSortDescriptors)
             subject.send(try modelContext.fetch(descriptor))
         } catch {
-            failureSubject.send(.fetchFailed("\(Entity.self) reload: \(error)"))
+            failureSubject.send(.fetchFailed(details: "\(Entity.self) reload: \(error)", underlying: error))
         }
 
         pruneFilterStates()

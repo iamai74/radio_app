@@ -114,28 +114,49 @@ private func stationWindowed(_ filter: StationFilter, _ entities: [StationEntity
 extension FilterStrategy where Entity == StationEntityImpl, Filter == StationFilter {
     /// Pushes name/country/language + ordering into SQLite; `tag` matching and
     /// `.lastCheckOk` ordering run in memory after the fetch.
+    ///
+    /// The SQLite/in-memory split is decided exactly once, here: both the plan
+    /// (window placement, predicate presence) and `postProcess` derive from
+    /// `stationRequiresInMemory`, so they cannot drift apart.
     static var station: FilterStrategy {
         FilterStrategy(
             defaultSortDescriptors: [SortDescriptor(\StationEntityImpl.name)],
-            predicate: stationPredicate,
-            sortDescriptors: { filter in
-                filter.orderBy.stationSortDescriptor(reverse: filter.reverse).map { [$0] }
-            },
-            fetchOffset: { $0.offset },
-            fetchLimit: { $0.limit },
-            requiresPostProcessing: { $0.hasPostProcessing },
-            postProcess: { filter, results in
-                guard filter.hasPostProcessing else { return }
-                // Re-running `matching` is idempotent for the dimensions SQLite
-                // already applied; it is the only place tag filtering lives.
-                results = stationMatching(filter, results)
-                if filter.orderBy == .lastCheckOk {
-                    results = stationOrdered(filter, results)
-                }
-            },
+            plan: stationPlan,
+            postProcess: stationPostProcess,
             matching: stationMatching,
             ordered: stationOrdered,
             windowed: stationWindowed
         )
+    }
+}
+
+/// True when part of the filter cannot be expressed in a SwiftData
+/// `#Predicate` — `tag` matching, `.lastCheckOk` ordering — so post-processing
+/// and the offset/limit window have to run in memory after the fetch.
+private func stationRequiresInMemory(_ filter: StationFilter) -> Bool {
+    (filter.tag?.isEmpty == false) || filter.orderBy == .lastCheckOk
+}
+
+private func stationPlan(_ filter: StationFilter) -> FetchPlan<StationEntityImpl> {
+    let predicate = stationPredicate(filter)
+    let requiresInMemory = stationRequiresInMemory(filter)
+    let windowInSQLite = predicate != nil && !requiresInMemory
+    let sortDescriptors = filter.orderBy.stationSortDescriptor(reverse: filter.reverse).map { [$0] }
+        ?? [SortDescriptor(\StationEntityImpl.name)]
+    return FetchPlan(
+        predicate: predicate,
+        sortDescriptors: sortDescriptors,
+        windowInSQLite: windowInSQLite,
+        offset: windowInSQLite ? filter.offset : nil,
+        limit: windowInSQLite ? filter.limit : nil
+    )
+}
+
+private func stationPostProcess(_ filter: StationFilter, _ results: inout [StationEntityImpl]) {
+    // Re-running `matching` is idempotent for the dimensions SQLite
+    // already applied; it is the only place tag filtering lives.
+    results = stationMatching(filter, results)
+    if filter.orderBy == .lastCheckOk {
+        results = stationOrdered(filter, results)
     }
 }
