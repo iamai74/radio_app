@@ -1,19 +1,52 @@
 import Foundation
 
-// Concrete, persistence-free DTOs the storage layer accepts and publishes.
-//
-// The entity protocols define the contract; these structs are the convenient
-// default implementation so consumers (app adapters, tests, previews) map
-// their own models once instead of declaring a new conforming type per
-// boundary. `DataStore` publishes `[any StationEntity]` etc., so existing
-// protocol-based consumers are unaffected.
+public protocol StationEntity: Sendable, Hashable {
+    var id: String { get }
+    var name: String { get }
+    var url: String { get }
+    var homepage: String? { get }
+    var favicon: String? { get }
+    var tags: [String]? { get }
+    var country: String { get }
+    var state: String? { get }
+    var language: String? { get }
+    var votes: Int { get }
+    var codec: String? { get }
+    var bitrate: Int? { get }
+    var lastCheckOk: Bool { get }
+    var lastCheckTime: Date? { get }
+    var lastCheckTotal: Int { get }
+    var lastCheckFailures: Int { get }
+    var lastCheckDuration: Int { get }
+    var lastCheckError: String? { get }
+    var lastChangeTime: Date? { get }
+    var changeCounter: Int { get }
+    var creationTime: Date? { get }
+    var urlResolved: String? { get }
+}
 
-// MARK: - Stations
+public protocol CountryEntity: Sendable, Hashable {
+    var name: String { get }
+    var iso31661: String { get }
+    var stationCount: Int { get }
+}
 
-/// A radio station as a plain value. Optional check-counter fields default to
-/// zero because the stored model is non-optional there; callers mapping from
-/// the API decide how to fill gaps.
-public struct StationRecord: StationEntity, Sendable, Hashable {
+public protocol TagEntity: Sendable, Hashable {
+    var name: String { get }
+    var stationCount: Int { get }
+}
+
+public protocol LanguageEntity: Sendable, Hashable {
+    var name: String { get }
+    var stationCount: Int { get }
+}
+
+public protocol CodecEntity: Sendable, Hashable {
+    var name: String { get }
+    var stationCount: Int { get }
+}
+
+public struct StationRecord: StationEntity {
     public var id: String
     public var name: String
     public var url: String
@@ -86,10 +119,7 @@ public struct StationRecord: StationEntity, Sendable, Hashable {
     }
 }
 
-// MARK: - Facets
-
-/// A country facet as a plain value.
-public struct CountryRecord: CountryEntity, Sendable, Hashable {
+public struct CountryRecord: CountryEntity {
     public var name: String
     public var iso31661: String
     public var stationCount: Int
@@ -101,8 +131,7 @@ public struct CountryRecord: CountryEntity, Sendable, Hashable {
     }
 }
 
-/// A tag facet as a plain value.
-public struct TagRecord: TagEntity, Sendable, Hashable {
+public struct TagRecord: TagEntity {
     public var name: String
     public var stationCount: Int
 
@@ -112,8 +141,7 @@ public struct TagRecord: TagEntity, Sendable, Hashable {
     }
 }
 
-/// A language facet as a plain value.
-public struct LanguageRecord: LanguageEntity, Sendable, Hashable {
+public struct LanguageRecord: LanguageEntity {
     public var name: String
     public var stationCount: Int
 
@@ -123,8 +151,7 @@ public struct LanguageRecord: LanguageEntity, Sendable, Hashable {
     }
 }
 
-/// A codec facet as a plain value.
-public struct CodecRecord: CodecEntity, Sendable, Hashable {
+public struct CodecRecord: CodecEntity {
     public var name: String
     public var stationCount: Int
 

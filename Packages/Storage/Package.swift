@@ -1,6 +1,4 @@
 // swift-tools-version: 6.4
-// The swift-tools-version declares the minimum version of Swift required to build this package.
-
 import PackageDescription
 
 let package = Package(
@@ -13,28 +11,22 @@ let package = Package(
         .library(
             name: "Storage",
             targets: ["Storage"]),
-        .library(
-            name: "StorageCore",
-            targets: ["StorageCore"]),
     ],
     dependencies: [
         .package(url: "https://github.com/SimplyDanny/SwiftLintPlugins", from: "0.65.1")
     ],
     targets: [
         .target(
-            name: "StorageCore",
-            dependencies: [],
-            plugins: [
-                .plugin(name: "SwiftLintBuildToolPlugin", package: "SwiftLintPlugins")
-            ]),
-        .target(
             name: "Storage",
-            dependencies: ["StorageCore"],
+            dependencies: [],
             plugins: [
                 .plugin(name: "SwiftLintBuildToolPlugin", package: "SwiftLintPlugins")
             ]),
         .testTarget(
             name: "StorageTests",
-            dependencies: ["Storage", "StorageCore"]),
+            dependencies: ["Storage"],
+            plugins: [
+                .plugin(name: "SwiftLintBuildToolPlugin", package: "SwiftLintPlugins")
+            ]),
     ]
 )

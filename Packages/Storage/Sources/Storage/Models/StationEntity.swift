@@ -1,9 +1,9 @@
 import Foundation
 import SwiftData
-import StorageCore
+import Storage
 
 @Model
-final class StationEntityImpl: StationEntityBase {
+final class StationEntityImpl {
     @Attribute(.unique) var id: String
     var name: String
     var url: String
@@ -148,9 +148,6 @@ extension StationEntityImpl: StorageModel {
     }
 }
 
-/// Lightweight DTO that conforms to `StationEntity` for publishing results.
-/// `StationEntityImpl` cannot conform to `StationEntity` directly because
-/// SwiftData `@Model` classes cannot be `Sendable`.
 struct StationDTO: StationEntity, Equatable {
     let id: String
     let name: String

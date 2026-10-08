@@ -104,9 +104,9 @@ func rapidCancellationCyclesDoNotLeakFilterCaches() async throws {
     let store = try Storage.DataStore.makeInMemoryStore()
     try await store.saveTags([TagDTO.fixture(name: "a")])
 
-    for _ in 0..<25 {
-        let task = Task { () -> Void in
-            var iterator = store.tagsSequence(filter: .empty).makeAsyncIterator()
+for _ in 0..<25 {
+            let task = Task {
+                var iterator = store.tagsSequence(filter: .empty).makeAsyncIterator()
             _ = try await iterator.next()
             _ = try await iterator.next()
         }

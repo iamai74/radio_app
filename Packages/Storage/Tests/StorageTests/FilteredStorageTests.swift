@@ -29,7 +29,7 @@ final class FilteredStorageTests {
         #expect(emitted.count == 2)
         #expect(emitted.allSatisfy { $0.name.localizedCaseInsensitiveContains("test") })
 
-        let moreStation: StationDTO = StationDTO.fixture(id: "s4", name: "third test station")
+        let moreStation = StationDTO.fixture(id: "s4", name: "third test station")
         try await store.saveStations([moreStation])
 
         #expect(emitted.count == 3)

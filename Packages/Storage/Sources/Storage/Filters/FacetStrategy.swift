@@ -1,11 +1,7 @@
 import Foundation
 import SwiftData
 
-// MARK: - Ordering (single source of truth)
-
-extension FacetFilter.FacetOrderBy {
-    /// Forward order for the in-memory path; `facetSortDescriptor(reverse:)`
-    /// derives the SQLite `SortDescriptor` from the same definition.
+extension FacetOrderBy {
     func facetComesBefore<E: FacetEntity>(_ lhs: E, _ rhs: E) -> Bool {
         switch self {
         case .name: lhs.name < rhs.name
@@ -13,8 +9,6 @@ extension FacetFilter.FacetOrderBy {
         }
     }
 
-    /// SQLite pushdown for facet ordering. `.stationCount` is "largest first"
-    /// by default, so the descriptor uses descending order for the forward case.
     func facetSortDescriptor<E: FacetEntity>(reverse: Bool) -> [SortDescriptor<E>]? {
         switch self {
         case .name:
@@ -25,10 +19,6 @@ extension FacetFilter.FacetOrderBy {
     }
 }
 
-// MARK: - Filtering
-
-/// SQLite-level facet filter: name + minimum station count in one predicate,
-/// one clause per dimension (no branch per subset of fields).
 private func facetPredicate<E: PersistentModel & FacetEntity>(_ filter: FacetFilter) -> Predicate<E>? {
     let name = filter.name ?? ""
     let minCount = filter.minStationCount ?? 0
@@ -62,12 +52,7 @@ private func facetOrdered<E: FacetEntity>(_ filter: FacetFilter, _ entities: [E]
     return filter.reverse ? sorted.reversed() : sorted
 }
 
-// MARK: - Strategy
-
 extension FilterStrategy where Entity: PersistentModel & FacetEntity, Filter == FacetFilter {
-    /// Facets filter and order fully in SQLite; nothing needs post-processing
-    /// and `FacetFilter` carries no offset/limit, so the plan never defers the
-    /// window and `postProcess` stays empty by construction.
     static var facet: FilterStrategy {
         FilterStrategy(
             defaultSortDescriptors: [SortDescriptor(\Entity.name)],

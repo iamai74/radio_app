@@ -1,12 +1,8 @@
 import Foundation
 import SwiftData
 import Combine
-import StorageCore
+import Storage
 
-/// Read/write access to stations: DTO mapping plus the filtering pipeline.
-///
-/// One layer instead of the previous `StationStore` → `StationStorageImpl`
-/// pair — the second layer only ever forwarded calls.
 @MainActor
 final class StationRepository {
     private let storage: EntityStorage<StationEntityImpl, StationFilter>
@@ -20,19 +16,16 @@ final class StationRepository {
     }
 
     func publisher(filter: StationFilter) -> AnyPublisher<[any StationEntity], Never> {
-        storage.filteredPublisher(filter: filter)
+        storage.publisher(filter: filter)
             .map { $0.map { $0.toDTO() } }
             .eraseToAnyPublisher()
     }
 
     func sequence(filter: StationFilter) -> StorageSequence<any StationEntity> {
-        let base = StorageSequence(
-            values: storage.filteredPublisher(filter: filter)
-                .map { $0.map { $0.toDTO() } }
-                .eraseToAnyPublisher(),
-            failures: storage.failureSubject.eraseToAnyPublisher()
-        )
-        return base.map { $0 as [any StationEntity] }
+        let values = storage.publisher(filter: filter)
+            .map { $0.map { $0.toDTO() as any StationEntity } }
+            .eraseToAnyPublisher()
+        return StorageSequence(values: values, failures: storage.failureSubject.eraseToAnyPublisher())
     }
 
     func deleteAll() async throws {

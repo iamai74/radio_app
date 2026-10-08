@@ -1,7 +1,6 @@
 import Foundation
 import Testing
 import SwiftData
-import StorageCore
 @testable import Storage
 
 /// DTO structs for testing that conform to the public protocols.

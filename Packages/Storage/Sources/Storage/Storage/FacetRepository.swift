@@ -1,19 +1,11 @@
 import Foundation
 import SwiftData
 import Combine
-import StorageCore
+import Storage
 
-/// Read/write access to one facet kind: DTO mapping plus the filtering
-/// pipeline. All four facets (country, tag, language, codec) share this
-/// implementation; only the model and DTO types differ.
-///
-/// Adding a fifth facet kind touches: a `*Entity` protocol in `StorageCore`,
-/// a `*Record` default DTO, an `@Model` + `StorageModel` conformance in
-/// `Models/`, one `FacetRepository` property + forwarding block in
-/// `DataStore`, and two entries in `StorageContainer`'s schema.
 @MainActor
-final class FacetRepository<Impl, DTO>
-where Impl: PersistentModel & FacetEntity & StorageModel & Hashable, Impl.DTO == DTO, DTO: Sendable {
+final class FacetRepository<Impl: PersistentModel & FacetEntity & StorageModel & Hashable, DTO: Sendable>
+where Impl.DTO == DTO {
     private let storage: EntityStorage<Impl, FacetFilter>
 
     init(modelContext: ModelContext) {
@@ -25,16 +17,16 @@ where Impl: PersistentModel & FacetEntity & StorageModel & Hashable, Impl.DTO ==
     }
 
     func publisher(filter: FacetFilter) -> AnyPublisher<[DTO], Never> {
-        storage.filteredPublisher(filter: filter)
+        storage.publisher(filter: filter)
             .map { $0.map { $0.toDTO() } }
             .eraseToAnyPublisher()
     }
 
     func sequence(filter: FacetFilter) -> StorageSequence<DTO> {
-        let publisher = storage.filteredPublisher(filter: filter)
+        let values = storage.publisher(filter: filter)
             .map { $0.map { $0.toDTO() } }
             .eraseToAnyPublisher()
-        return StorageSequence(values: publisher, failures: storage.failureSubject.eraseToAnyPublisher())
+        return StorageSequence(values: values, failures: storage.failureSubject.eraseToAnyPublisher())
     }
 
     func deleteAll() async throws {

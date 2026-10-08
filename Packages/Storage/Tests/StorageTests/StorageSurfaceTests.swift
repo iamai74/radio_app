@@ -56,7 +56,7 @@ final class StorageSurfaceTests {
             failures: storage.failureSubject.eraseToAnyPublisher()
         )
         var iterator = sequence.makeAsyncIterator()
-        #expect(try await iterator.next() == [], "replays the current (empty) value first")
+        #expect(try await iterator.next()?.isEmpty == true, "replays the current (empty) value first")
 
         storage.failureSubject.send(.fetchFailed(details: "simulated"))
 
