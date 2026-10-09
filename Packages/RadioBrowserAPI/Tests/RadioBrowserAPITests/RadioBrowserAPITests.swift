@@ -18,31 +18,6 @@ struct RadioBrowserAPITests {
         #expect(api.codecs is CodecsEndpoint)
     }
 
-    @Test
-    func initializationWithComponentTakesEndpointsFromComponent() {
-        let component = MockComponent()
-        let api = RadioBrowserAPI(component: component)
-
-        #expect(api.stations is MockStationsEndpoint)
-        #expect(api.countries is MockResourceEndpoint<any Country>)
-        #expect(api.languages is MockResourceEndpoint<any Language>)
-        #expect(api.tags is MockResourceEndpoint<any StationTag>)
-        #expect(api.codecs is MockResourceEndpoint<any Codec>)
-    }
-
-    @Test
-    func componentBuildsEndpointsForInjectedNetworkClient() {
-        let component = RadioBrowserAPIComponent(
-            networkClient: MockNetworkClient(data: Data())
-        )
-
-        #expect(component.stations is StationsEndpoint)
-        #expect(component.countries is CountriesEndpoint)
-        #expect(component.languages is LanguagesEndpoint)
-        #expect(component.tags is TagsEndpoint)
-        #expect(component.codecs is CodecsEndpoint)
-    }
-
     // MARK: - Fixtures
 
     @Test

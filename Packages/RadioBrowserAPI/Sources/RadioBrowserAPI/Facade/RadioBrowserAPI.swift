@@ -20,17 +20,6 @@ public struct RadioBrowserAPI: Sendable {
     /// mirrors, transport policy and decoding the built-in endpoints use.
     public let executor: any EndpointExecuting
 
-    /// Initializes the API with a dependency injection component.
-    /// - Parameter component: The DI component containing necessary dependencies.
-    package init(component: RadioBrowserAPIComponentProtocol) {
-        self.stations = component.stations
-        self.countries = component.countries
-        self.languages = component.languages
-        self.tags = component.tags
-        self.codecs = component.codecs
-        self.executor = component.executor
-    }
-
     /// Initializes the API from a configuration.
     ///
     /// This is the entry point every consumer should use: the configuration decides which
@@ -44,8 +33,16 @@ public struct RadioBrowserAPI: Sendable {
         configuration: RadioBrowserConfiguration = .default,
         networkClient: NetworkClientProtocol? = nil
     ) {
-        self.init(
-            component: RadioBrowserAPIComponent(configuration: configuration, networkClient: networkClient)
+        let executor = RequestExecutor(
+            networkClient: networkClient ?? DefaultNetworkClient(),
+            configuration: configuration
         )
+
+        self.stations = StationsEndpoint(executor: executor)
+        self.countries = CountriesEndpoint(executor: executor)
+        self.languages = LanguagesEndpoint(executor: executor)
+        self.tags = TagsEndpoint(executor: executor)
+        self.codecs = CodecsEndpoint(executor: executor)
+        self.executor = executor
     }
 }
