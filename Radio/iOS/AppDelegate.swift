@@ -9,11 +9,22 @@ import NeedleFoundation
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
+    var appComponent: AppComponent?
+
     func application(
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
         registerProviderFactories()
+
+        Task { @MainActor in
+            do {
+                let dependency = try await AppInitializer.initialize()
+                appComponent = AppComponent(appDependency: dependency)
+            } catch {
+                print("Failed to initialize app: \(error)")
+            }
+        }
         return true
     }
 
