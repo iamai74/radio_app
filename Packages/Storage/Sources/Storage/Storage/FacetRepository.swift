@@ -1,7 +1,6 @@
 import Foundation
 import SwiftData
 import Combine
-import Storage
 
 @MainActor
 final class FacetRepository<Impl: PersistentModel & FacetEntity & StorageModel & Hashable, DTO: Sendable>

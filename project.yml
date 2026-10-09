@@ -9,7 +9,7 @@ packages:
     from: 0.65.1
   Needle:
     url: https://github.com/uber/needle.git
-    from: "0.1.0"
+    from: "0.25.0"
   RadioBrowserAPI:
     path: Packages/RadioBrowserAPI
   Storage:
@@ -32,8 +32,12 @@ targets:
       - path: Radio/Middleware
       - path: Radio/Generated
       - path: Radio/Assets.xcassets
+      - path: Radio/Flow
     info:
       path: Radio/iOS/Info.plist
+      properties:
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
     settings:
       base:
         # Exclude running as a Mac/iPad app on Apple Silicon
@@ -48,12 +52,13 @@ targets:
       configs:
         Debug: {}
         Release: {}
-    dependencies:
+    dependencies: &appDependencies
       - package: RadioBrowserAPI
       - package: Storage
+      - package: Architecture
       - package: Needle
         product: NeedleFoundation
-      - package: UILibrary
+      - package: Resources
     buildToolPlugins:
       - plugin: SwiftLintBuildToolPlugin
         package: SwiftLintPlugins
@@ -63,6 +68,7 @@ targets:
         basedOnDependencyAnalysis: false
         script: |
           set -e
+          export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
           if ! command -v needle >/dev/null 2>&1; then
             echo "error: needle CLI not found. Install it with 'brew install needle' to run DI code generation."
             exit 1
@@ -83,6 +89,7 @@ targets:
       - path: Radio/macOS
       - path: Radio/Middleware
       - path: Radio/Generated
+      - path: Radio/Flow
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.radio.macOS
@@ -91,12 +98,7 @@ targets:
       configs:
         Debug: {}
         Release: {}
-    dependencies:
-      - package: RadioBrowserAPI
-      - package: Storage
-      - package: Needle
-        product: NeedleFoundation
-      - package: UILibrary
+    dependencies: *appDependencies
     buildToolPlugins:
       - plugin: SwiftLintBuildToolPlugin
         package: SwiftLintPlugins

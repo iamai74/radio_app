@@ -1,3 +1,6 @@
+/* Main */
+"app_name" = "Radio Browser";
+
 /* StationList */
 "filter_all" = "Все";
 "filter_favorites" = "Избранное";
@@ -10,3 +13,6 @@
 "empty_search_subtitle" = "Введите название станции, страны или тег";
 "empty_search_no_results_title" = "Результатов нет";
 "empty_search_no_results_subtitle" = "Станции не найдены для \"%@\"";
+
+/* StationRow */
+"station_row_bitrate" = "%@ кб\с";

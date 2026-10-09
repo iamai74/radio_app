@@ -13,37 +13,41 @@ import NeedleFoundation
 class AppDelegate: NSObject, NSApplicationDelegate {
     var window: NSWindow?
     var appComponent: AppComponent?
+    private var launchCoordinator: LaunchCoordinator?
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         registerProviderFactories()
 
-        Task { @MainActor in
-            do {
-                let dependency = try await AppInitializer.initialize()
-                appComponent = AppComponent(appDependency: dependency)
-
-                let stationsService = appComponent!.stationsService
-                print("StationsService initialized: \(stationsService)")
-            } catch {
-                print("Failed to initialize app: \(error)")
-            }
-        }
-
-        window = NSWindow(
+        let window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 800, height: 600),
             styleMask: [.titled, .closable, .resizable],
             backing: .buffered,
             defer: false
         )
-        window?.title = "Radio"
-        window?.center()
+        window.title = "Radio"
+        window.center()
+        self.window = window
 
-        let view = NSView()
-        view.wantsLayer = true
-        view.layer?.backgroundColor = NSColor.red.cgColor
-        window?.contentView = view
+        let navigator = MacOSNavigator(window: window)
 
-        window?.makeKeyAndOrderFront(nil)
+        Task { @MainActor in
+            do {
+                let dependency = try await AppInitializer.initialize()
+                let appComponent = AppComponent(appDependency: dependency, navigator: navigator)
+                self.appComponent = appComponent
+
+                let stationsService = appComponent.stationsService
+                print("StationsService initialized: \(stationsService)")
+
+                let coordinator = appComponent.launchComponent.coordinator
+                self.launchCoordinator = coordinator
+                coordinator.start()
+            } catch {
+                print("Failed to initialize app: \(error)")
+            }
+        }
+
+        window.makeKeyAndOrderFront(nil)
     }
 
     func applicationWillTerminate(_ aNotification: Notification) {}

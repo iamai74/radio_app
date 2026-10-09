@@ -1,6 +1,7 @@
 import Foundation
 import NeedleFoundation
 import RadioBrowserAPI
+import Architecture
 
 typealias ComponentAppDependency = AppDependency
 
@@ -8,9 +9,11 @@ typealias ComponentAppDependency = AppDependency
 public class AppComponent: BootstrapComponent {
 
     let appDependency: ComponentAppDependency
+    let navigator: NavigatorProtocol
 
-    init(appDependency: ComponentAppDependency) {
+    init(appDependency: ComponentAppDependency, navigator: NavigatorProtocol) {
         self.appDependency = appDependency
+        self.navigator = navigator
         super.init()
     }
 
@@ -23,6 +26,8 @@ public class AppComponent: BootstrapComponent {
     lazy var apiComponent = rootValuesComponent.apiComponent
 
     lazy var storageComponent = rootValuesComponent.storageComponent
+
+    lazy var launchComponent = LaunchComponent(parent: self, navigator: navigator)
 
     var api: RadioBrowserAPI {
         apiComponent.api
