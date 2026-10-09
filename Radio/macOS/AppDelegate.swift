@@ -15,12 +15,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var appComponent: AppComponent?
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
+        registerProviderFactories()
+
         Task { @MainActor in
             do {
                 let dependency = try await AppInitializer.initialize()
                 appComponent = AppComponent(appDependency: dependency)
-
-                // Note: registerProviderFactories() should be implemented if needed
 
                 let stationsService = appComponent!.stationsService
                 print("StationsService initialized: \(stationsService)")

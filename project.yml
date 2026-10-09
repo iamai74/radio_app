@@ -30,6 +30,7 @@ targets:
     sources:
       - path: Radio/iOS
       - path: Radio/Middleware
+      - path: Radio/Generated
       - path: Radio/Assets.xcassets
     info:
       path: Radio/iOS/Info.plist
@@ -57,7 +58,22 @@ targets:
       - plugin: SwiftLintBuildToolPlugin
         package: SwiftLintPlugins
     scheme: {}
-    preBuildScripts: []
+    preBuildScripts: &needleCodegen
+      - name: Needle DI Codegen
+        basedOnDependencyAnalysis: false
+        script: |
+          set -e
+          if ! command -v needle >/dev/null 2>&1; then
+            echo "error: needle CLI not found. Install it with 'brew install needle' to run DI code generation."
+            exit 1
+          fi
+          export SOURCEKIT_LOGGING=0
+          DEST="${SRCROOT}/Radio/Generated/NeedleGenerated.swift"
+          TMP="${DERIVED_FILE_DIR}/NeedleGenerated.swift.tmp"
+          needle generate "$TMP" "${SRCROOT}/Radio/Middleware"
+          if ! cmp -s "$TMP" "$DEST"; then
+            mv -f "$TMP" "$DEST"
+          fi
     postBuildScripts: []
   Radio_macOS:
     type: application
@@ -66,6 +82,7 @@ targets:
     sources:
       - path: Radio/macOS
       - path: Radio/Middleware
+      - path: Radio/Generated
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.radio.macOS
@@ -84,5 +101,5 @@ targets:
       - plugin: SwiftLintBuildToolPlugin
         package: SwiftLintPlugins
     scheme: {}
-    preBuildScripts: []
+    preBuildScripts: *needleCodegen
     postBuildScripts: []

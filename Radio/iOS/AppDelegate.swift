@@ -5,6 +5,7 @@
 
 import Foundation
 import UIKit
+import NeedleFoundation
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -12,7 +13,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
-        true
+        registerProviderFactories()
+        return true
     }
 
     func application(

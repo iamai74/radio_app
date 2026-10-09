@@ -1,7 +1,6 @@
 import Foundation
 import NeedleFoundation
 import RadioBrowserAPI
-import Storage
 
 typealias ComponentAppDependency = AppDependency
 
@@ -15,42 +14,52 @@ public class AppComponent: BootstrapComponent {
         super.init()
     }
 
+    lazy var rootValuesComponent = RootValuesComponent(
+        parent: self,
+        networkClient: appDependency.networkClient,
+        dataStore: appDependency.dataStore
+    )
+
+    lazy var apiComponent = rootValuesComponent.apiComponent
+
+    lazy var storageComponent = rootValuesComponent.storageComponent
+
     var api: RadioBrowserAPI {
-        RadioBrowserAPI(networkClient: appDependency.networkClient)
+        apiComponent.api
     }
 
     var stationsService: StationsService {
         StationsService(
             api: api,
-            dataStore: appDependency.dataStore
+            dataStore: storageComponent.dataStore
         )
     }
 
     var countriesService: CountriesService {
         CountriesService(
             api: api,
-            dataStore: appDependency.dataStore
+            dataStore: storageComponent.dataStore
         )
     }
 
     var languagesService: LanguagesService {
         LanguagesService(
             api: api,
-            dataStore: appDependency.dataStore
+            dataStore: storageComponent.dataStore
         )
     }
 
     var tagsService: TagsService {
         TagsService(
             api: api,
-            dataStore: appDependency.dataStore
+            dataStore: storageComponent.dataStore
         )
     }
 
     var codecsService: CodecsService {
         CodecsService(
             api: api,
-            dataStore: appDependency.dataStore
+            dataStore: storageComponent.dataStore
         )
     }
 }

@@ -20,7 +20,7 @@ excluded:
   # here would only make manual runs differ from build runs.
   - "**/Package.swift"
   # Generated code
-  - "**/NeedleGenerated.swift"
+  - "Radio/Generated"
   - "Packages/RadioBrowserAPI/Generated"
   - "**/*.generated.swift"
   - "**/R.generated.swift"

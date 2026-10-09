@@ -23,9 +23,9 @@ DerivedData/
 .swiftpm/
 Package.resolved
 
-# Needle (Generated files)
-NeedleGenerated.swift
-*.NeedleGenerated.swift
+# Needle (generated files live in one folder)
+Radio/Generated/*
+!Radio/Generated/.gitkeep
 
 # CocoaPods
 Pods/
