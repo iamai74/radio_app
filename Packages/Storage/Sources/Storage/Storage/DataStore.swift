@@ -6,6 +6,11 @@ import Storage
 @MainActor
 public final class DataStore: DataStoreProtocol {
     private let modelContainer: ModelContainer
+    private let modelContext: ModelContext
+    private let backgroundStore: BackgroundStore
+    private let _stationQueries: StationQueries
+    private let _facetQueries: FacetQueries
+
     private let stations: StationRepository
     private let countries: FacetRepository<CountryEntityImpl, CountryEntity>
     private let tags: FacetRepository<TagEntityImpl, TagEntity>
@@ -14,15 +19,23 @@ public final class DataStore: DataStoreProtocol {
 
     public init(modelContainer: ModelContainer) {
         self.modelContainer = modelContainer
-        let context = modelContainer.mainContext
-        self.stations = StationRepository(modelContext: context)
-        self.countries = FacetRepository(modelContext: context)
-        self.tags = FacetRepository(modelContext: context)
-        self.languages = FacetRepository(modelContext: context)
-        self.codecs = FacetRepository(modelContext: context)
+        self.modelContext = modelContainer.mainContext
+        self.backgroundStore = BackgroundStore(modelContainer: modelContainer)
+        self._stationQueries = StationQueries(context: modelContext)
+        self._facetQueries = FacetQueries(context: modelContext)
+
+        self.stations = StationRepository(modelContext: modelContext)
+        self.countries = FacetRepository(modelContext: modelContext)
+        self.tags = FacetRepository(modelContext: modelContext)
+        self.languages = FacetRepository(modelContext: modelContext)
+        self.codecs = FacetRepository(modelContext: modelContext)
     }
 
     public var container: ModelContainer { modelContainer }
+    public var context: ModelContext { modelContext }
+
+    public var stationQueries: StationQueries { _stationQueries }
+    public var facetQueries: FacetQueries { _facetQueries }
 
     public static func makeInMemoryStore() throws -> DataStore {
         DataStore(modelContainer: try StorageContainer.create(isInMemory: true))
@@ -51,7 +64,8 @@ public final class DataStore: DataStoreProtocol {
     }
 
     public func saveStations(_ stations: [some StationEntity]) async throws {
-        try await self.stations.save(stations)
+        try await backgroundStore.saveStations(stations.map { $0 as any StationEntity })
+        self.stations.reload()
     }
 
     public func stationsPublisher(filter: StationFilter) -> AnyPublisher<[any StationEntity], Never> {
@@ -66,11 +80,13 @@ public final class DataStore: DataStoreProtocol {
     }
 
     public func deleteAllStations() async throws {
-        try await stations.deleteAll()
+        try await backgroundStore.deleteAllStations()
+        stations.reload()
     }
 
     public func saveCountries(_ countries: [some CountryEntity]) async throws {
-        try await self.countries.save(countries)
+        try await backgroundStore.saveCountries(countries.map { $0 as any CountryEntity })
+        self.countries.reload()
     }
 
     public func countriesPublisher(filter: FacetFilter) -> AnyPublisher<[any CountryEntity], Never> {
@@ -85,11 +101,13 @@ public final class DataStore: DataStoreProtocol {
     }
 
     public func deleteAllCountries() async throws {
-        try await countries.deleteAll()
+        try await backgroundStore.deleteAllCountries()
+        countries.reload()
     }
 
     public func saveTags(_ tags: [some TagEntity]) async throws {
-        try await self.tags.save(tags)
+        try await backgroundStore.saveTags(tags.map { $0 as any TagEntity })
+        self.tags.reload()
     }
 
     public func tagsPublisher(filter: FacetFilter) -> AnyPublisher<[any TagEntity], Never> {
@@ -104,11 +122,13 @@ public final class DataStore: DataStoreProtocol {
     }
 
     public func deleteAllTags() async throws {
-        try await tags.deleteAll()
+        try await backgroundStore.deleteAllTags()
+        tags.reload()
     }
 
     public func saveLanguages(_ languages: [some LanguageEntity]) async throws {
-        try await self.languages.save(languages)
+        try await backgroundStore.saveLanguages(languages.map { $0 as any LanguageEntity })
+        self.languages.reload()
     }
 
     public func languagesPublisher(filter: FacetFilter) -> AnyPublisher<[any LanguageEntity], Never> {
@@ -123,11 +143,13 @@ public final class DataStore: DataStoreProtocol {
     }
 
     public func deleteAllLanguages() async throws {
-        try await languages.deleteAll()
+        try await backgroundStore.deleteAllLanguages()
+        languages.reload()
     }
 
     public func saveCodecs(_ codecs: [some CodecEntity]) async throws {
-        try await self.codecs.save(codecs)
+        try await backgroundStore.saveCodecs(codecs.map { $0 as any CodecEntity })
+        self.codecs.reload()
     }
 
     public func codecsPublisher(filter: FacetFilter) -> AnyPublisher<[any CodecEntity], Never> {
@@ -142,6 +164,12 @@ public final class DataStore: DataStoreProtocol {
     }
 
     public func deleteAllCodecs() async throws {
-        try await codecs.deleteAll()
+        try await backgroundStore.deleteAllCodecs()
+        codecs.reload()
+    }
+
+    public func bulkImportStations(_ stations: [some StationEntity]) async throws {
+        try await backgroundStore.bulkImportStations(stations.map { $0 as any StationEntity })
+        self.stations.reload()
     }
 }

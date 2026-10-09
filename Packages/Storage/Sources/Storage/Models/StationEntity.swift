@@ -1,9 +1,8 @@
 import Foundation
 import SwiftData
-import Storage
 
 @Model
-final class StationEntityImpl {
+final class StationEntityImpl: StorageModel {
     @Attribute(.unique) var id: String
     var name: String
     var url: String
@@ -74,9 +73,7 @@ final class StationEntityImpl {
         self.creationTime = creationTime
         self.urlResolved = urlResolved
     }
-}
 
-extension StationEntityImpl: StorageModel {
     typealias DTO = StationEntity
 
     var storageKey: String { id }

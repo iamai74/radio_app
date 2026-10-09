@@ -33,6 +33,10 @@ where Impl.DTO == DTO {
         try await storage.deleteAll()
     }
 
+    func reload() {
+        storage.reload()
+    }
+
     var failures: AnyPublisher<StorageError, Never> {
         storage.failureSubject.eraseToAnyPublisher()
     }

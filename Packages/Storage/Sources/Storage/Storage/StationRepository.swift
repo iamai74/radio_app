@@ -32,6 +32,10 @@ final class StationRepository {
         try await storage.deleteAll()
     }
 
+    func reload() {
+        storage.reload()
+    }
+
     var failures: AnyPublisher<StorageError, Never> {
         storage.failureSubject.eraseToAnyPublisher()
     }
