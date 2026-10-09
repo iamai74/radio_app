@@ -30,15 +30,13 @@ public struct StationRowView: View {
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
 
-                if let tags = station.tags, !tags.isEmpty {
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 4) {
-                            ForEach(tags.prefix(3), id: \.self) { tag in
-                                TagView(text: tag)
-                            }
-                        }
-                    }
-                }
+                                 if let tags = station.tags, !tags.isEmpty {
+                                     TagsCloudView(
+                                         tags: Array(tags.prefix(3)),
+                                         spacing: 4,
+                                         horizontalPadding: 0
+                                     )
+                                 }
             }
 
             Spacer()

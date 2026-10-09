@@ -431,7 +431,7 @@ Current examples include:
 - `StationRowView`
 - `TagView`
 - `TagsCloudView`
-- `EmptySearchView`
+- `NoResultView`
 
 The UI library should remain reusable and application-agnostic.
 

@@ -1,6 +1,6 @@
 import Foundation
 
-public struct MockStation: Station {
+struct MockStation: Station {
     public let id: String
     public let name: String
     public let url: String

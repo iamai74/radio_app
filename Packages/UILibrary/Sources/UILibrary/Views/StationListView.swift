@@ -1,16 +1,17 @@
 import SwiftUI
 
-public enum StationFilter: String, CaseIterable {
-    case all
-    case favorites
-}
-
 public struct StationListView: View {
     let stations: [any Station]
     let filterAllTitle: String
     let filterFavoritesTitle: String
-    let searchView: SearchView
-    @State private var selectedFilter: StationFilter = .all
+    let searchPlaceholder: String
+    let emptySearchTitle: String
+    let emptySearchSubtitle: String
+    let emptySearchNoResultsTitle: String
+    let emptySearchNoResultsSubtitle: (String) -> String
+    @State private var searchText: String = ""
+    @State private var selectedFilter: StationsFilter = .all
+    @State private var selectedTags: Set<String> = []
 
     public init(
         stations: [any Station],
@@ -25,59 +26,90 @@ public struct StationListView: View {
         self.stations = stations
         self.filterAllTitle = filterAllTitle
         self.filterFavoritesTitle = filterFavoritesTitle
-        self.searchView = SearchView(
-            stations: stations,
-            searchPlaceholder: searchPlaceholder,
-            emptySearchTitle: emptySearchTitle,
-            emptySearchSubtitle: emptySearchSubtitle,
-            emptySearchNoResultsTitle: emptySearchNoResultsTitle,
-            emptySearchNoResultsSubtitle: emptySearchNoResultsSubtitle
-        )
+        self.searchPlaceholder = searchPlaceholder
+        self.emptySearchTitle = emptySearchTitle
+        self.emptySearchSubtitle = emptySearchSubtitle
+        self.emptySearchNoResultsTitle = emptySearchNoResultsTitle
+        self.emptySearchNoResultsSubtitle = emptySearchNoResultsSubtitle
+    }
+
+    private var allTags: [String] {
+        var tags = Set<String>()
+        for station in stations {
+            if let stationTags = station.tags {
+                tags.formUnion(stationSegment(stationTags))
+            }
+        }
+        return Array(tags).sorted()
+    }
+    
+    private func stationSegment(_ tags: [String]) -> [String] {
+        tags
     }
 
     private var filteredStations: [any Station] {
-        switch selectedFilter {
-        case .all:
-            return stations
-        case .favorites:
-            return stations.filter(\.isFavorite)
+        var results = stations
+        
+        // Apply filter
+        if selectedFilter == .favorites {
+            results = results.filter { $0.isFavorite }
         }
-    }
-
-    private var filterDisplayName: [StationFilter: String] {
-        [
-            .all: filterAllTitle,
-            .favorites: filterFavoritesTitle
-        ]
+        
+        // Apply search text
+        if !searchText.isEmpty {
+            results = results.filter { station in
+                station.name.localizedCaseInsensitiveContains(searchText) ||
+                station.country.localizedCaseInsensitiveContains(searchText) ||
+                (station.tags?.contains { $0.localizedCaseInsensitiveContains(searchText) } ?? false)
+            }
+        }
+        
+        // Apply tag filter
+        if !selectedTags.isEmpty {
+            results = results.filter { station in
+                guard let stationTags = station.tags else { return false }
+                return !selectedTags.isDisjoint(with: Set(stationTags))
+            }
+        }
+        
+        return results
     }
 
     public var body: some View {
         VStack(spacing: 0) {
-            Picker("Filter", selection: $selectedFilter) {
-                ForEach(StationFilter.allCases, id: \.self) { filter in
-                    Text(filterDisplayName[filter] ?? filter.rawValue).tag(filter)
-                }
-            }
-            .pickerStyle(.segmented)
-            .padding(.horizontal)
-            .padding(.top)
+            StationFilterView(
+                filterAllTitle: filterAllTitle,
+                filterFavoritesTitle: filterFavoritesTitle,
+                selectedFilter: $selectedFilter
+            )
 
-            List(filteredStations, id: \.id) { station in
-                StationRowView(station: station)
-            }
-            .listStyle(.plain)
-
-            HStack {
-                Spacer()
-                Button {
-                } label: {
-                    Image(systemName: "magnifyingglass")
-                        .font(.title)
+            SearchFieldView(placeholder: searchPlaceholder, searchText: $searchText)
+            
+            if filteredStations.isEmpty {
+                NoResultView(
+                    title: emptySearchTitle,
+                    subtitle: emptySearchSubtitle
+                )
+            } else {
+                StationsListView(stations: filteredStations) { _ in
+                    // Handle station selection here if needed
                 }
-                .buttonStyle(.bordered)
-                .clipShape(Circle())
-                .controlSize(.large)
-                .padding()
+                .listStyle(.plain)
+            }
+            
+            if !allTags.isEmpty {
+                TagsCloudView(
+                    tags: allTags,
+                    selectedTags: selectedTags,
+                    onTagTap: { tag in
+                        if selectedTags.contains(tag) {
+                            selectedTags.remove(tag)
+                        } else {
+                            selectedTags.insert(tag)
+                        }
+                    }
+                )
+                .padding(.vertical, 8)
             }
         }
     }
@@ -86,12 +118,12 @@ public struct StationListView: View {
 #Preview {
     StationListView(
         stations: MockStations.all,
-        filterAllTitle: UILibraryStrings.filterAll,
-        filterFavoritesTitle: UILibraryStrings.filterFavorites,
-        searchPlaceholder: UILibraryStrings.searchPlaceholder,
-        emptySearchTitle: UILibraryStrings.emptySearchTitle,
-        emptySearchSubtitle: UILibraryStrings.emptySearchSubtitle,
-        emptySearchNoResultsTitle: UILibraryStrings.emptySearchNoResultsTitle,
-        emptySearchNoResultsSubtitle: UILibraryStrings.emptySearchNoResultsSubtitle
+        filterAllTitle: "All",
+        filterFavoritesTitle: "Favorites",
+        searchPlaceholder: "Search...",
+        emptySearchTitle: "No Results",
+        emptySearchSubtitle: "Try something else",
+        emptySearchNoResultsTitle: "No Results Found",
+        emptySearchNoResultsSubtitle: { _ in "No matches for your search" }
     )
 }

@@ -1,4 +1,4 @@
-public struct UILibraryStrings {
+struct MockStrings {
     public static let filterAll = "All"
     public static let filterFavorites = "Favorites"
     public static let searchPlaceholder = "Search"
@@ -8,4 +8,5 @@ public struct UILibraryStrings {
     public static let emptySearchNoResultsSubtitle: @Sendable (String) -> String = { query in
         "No stations match \"\(query)\""
     }
+    public static let searchFieldPlaceholder = "Search stations..."
 }

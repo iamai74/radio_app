@@ -61,12 +61,9 @@ public struct SearchView: View {
     public var body: some View {
         VStack(spacing: 0) {
             if filteredStations.isEmpty {
-                EmptySearchView(
-                    searchText: searchText,
-                    title: emptySearchTitle,
-                    subtitle: emptySearchSubtitle,
-                    noResultsTitle: emptySearchNoResultsTitle,
-                    noResultsSubtitle: emptySearchNoResultsSubtitle
+                NoResultView(
+                    title: searchText.isEmpty ? emptySearchTitle : emptySearchNoResultsTitle,
+                    subtitle: searchText.isEmpty ? emptySearchSubtitle : emptySearchNoResultsSubtitle(searchText)
                 )
             } else {
                 List(filteredStations, id: \.id) { station in
@@ -114,12 +111,9 @@ public struct SearchView: View {
             }
 
             if filteredStations.isEmpty {
-                EmptySearchView(
-                    searchText: searchText,
-                    title: emptySearchTitle,
-                    subtitle: emptySearchSubtitle,
-                    noResultsTitle: emptySearchNoResultsTitle,
-                    noResultsSubtitle: emptySearchNoResultsSubtitle
+                NoResultView(
+                    title: searchText.isEmpty ? emptySearchTitle : emptySearchNoResultsTitle,
+                    subtitle: searchText.isEmpty ? emptySearchSubtitle : emptySearchNoResultsSubtitle(searchText)
                 )
             } else {
                 List(filteredStations, id: \.id) { station in
@@ -132,23 +126,17 @@ public struct SearchView: View {
     #endif
 
     private var searchField: some View {
-        HStack {
-            Image(systemName: "magnifyingglass")
-                .foregroundStyle(.secondary)
-            TextField(searchPlaceholder, text: $searchText)
-                .textFieldStyle(.roundedBorder)
-        }
-        .padding()
+        SearchFieldView(placeholder: searchPlaceholder, searchText: $searchText)
     }
 }
 
 #Preview {
     SearchView(
         stations: MockStations.all,
-        searchPlaceholder: UILibraryStrings.searchPlaceholder,
-        emptySearchTitle: UILibraryStrings.emptySearchTitle,
-        emptySearchSubtitle: UILibraryStrings.emptySearchSubtitle,
-        emptySearchNoResultsTitle: UILibraryStrings.emptySearchNoResultsTitle,
-        emptySearchNoResultsSubtitle: UILibraryStrings.emptySearchNoResultsSubtitle
+        searchPlaceholder: MockStrings.searchPlaceholder,
+        emptySearchTitle: MockStrings.emptySearchTitle,
+        emptySearchSubtitle: MockStrings.emptySearchSubtitle,
+        emptySearchNoResultsTitle: MockStrings.emptySearchNoResultsTitle,
+        emptySearchNoResultsSubtitle: MockStrings.emptySearchNoResultsSubtitle
     )
 }
