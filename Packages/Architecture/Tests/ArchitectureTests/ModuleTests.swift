@@ -1,10 +1,13 @@
 import XCTest
 import Combine
+import SwiftUI
 
 @testable import Architecture
 
+@MainActor
 final class ModuleTests: XCTestCase {
     class MockNavigator: NavigatorProtocol {
+        func setRoot<V: ViewProtocol>(view: V) {}
         func push<V: ViewProtocol>(view: V) {}
         func present<V: ViewProtocol>(view: V) {}
         func pop() {}
@@ -19,8 +22,12 @@ final class ModuleTests: XCTestCase {
         }
     }
 
-    class MockView: ViewProtocol {
+    final class MockView: ViewProtocol {
         var viewModel: MockViewModel = MockViewModel()
+
+        var body: some View {
+            EmptyView()
+        }
     }
 
     class MockCoordinator: CoordinatorProtocol {

@@ -1,9 +1,11 @@
 import Foundation
 
+@MainActor
 public protocol ModuleFactoryProtocol: AnyObject {
     func makeCoordinator<M: ModuleProtocol>(for moduleType: M.Type, navigator: NavigatorProtocol) -> M.CoordinatorType
 }
 
+@MainActor
 public class DefaultModuleFactory: ModuleFactoryProtocol {
     private let resolver: any DependencyResolver
 
