@@ -41,10 +41,10 @@ public struct TagsCloudView: View {
 
 #Preview {
     VStack {
-        TagsCloudView(tags: ["jazz", "rock", "classical", "pop", "electronic", "hip-hop", "country"])
+        TagsCloudView(tags: MockStrings.tagsPreview)
         TagsCloudView(
             tags: ["jazz", "rock", "classical"],
-            selectedTags: ["rock"]
+            selectedTags: Set(MockStrings.tagsSelectedPreview)
         )
     }
 }

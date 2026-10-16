@@ -9,4 +9,16 @@ struct MockStrings {
         "No stations match \"\(query)\""
     }
     public static let searchFieldPlaceholder = "Search stations..."
+
+    public static let tagsPreview = ["jazz", "rock", "classical", "pop", "electronic", "hip-hop", "country"]
+    public static let tagsSelectedPreview = ["rock"]
+
+    public static let tagJazz = "Jazz"
+    public static let tagRock = "Rock"
+
+    public static let textHeading1 = "Heading 1"
+    public static let textHeading2 = "Heading 2"
+    public static let textHeading3 = "Heading 3"
+    public static let textHeading4 = "Heading 4"
+    public static let textBase = "Base text"
 }

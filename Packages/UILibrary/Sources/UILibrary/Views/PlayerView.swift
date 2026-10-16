@@ -203,29 +203,13 @@ private struct PlayerContentView: View {
     }
 }
 
-private struct PlayerPreviewModel: Station {
-    let id: String = "preview"
-    let name: String = "Jazz Radio - Smooth Evening Vibes"
-    let url: String = "https://jazz.streamr.fm"
-    let homepage: String? = "https://www.jazzradio.com"
-    let favicon: String? = "https://www.google.com/s2/favicons?domain=www.jazzradio.com&sz=128"
-    let tags: [String]? = ["jazz", "smooth jazz", "instrumental", "evening"]
-    let country: String = "United States"
-    let state: String? = "California"
-    let language: String? = "English"
-    let votes: Int = 1500
-    let bitrate: Int? = 128
-    let lastCheckOk: Bool = true
-    let isFavorite: Bool = true
-}
-
 #Preview {
     ZStack {
         Color.gray.opacity(0.1)
             .ignoresSafeArea()
 
         PlayerView(
-            station: PlayerPreviewModel(),
+            station: MockStations.jazzRadio,
             isPlaying: true,
             volume: 0.65
         )

@@ -17,7 +17,7 @@ public struct TagView: View {
 
 #Preview {
     VStack(spacing: 16) {
-        TagView(text: "Jazz")
-        TagView(text: "Rock", isSelected: true)
+        TagView(text: MockStrings.tagJazz)
+        TagView(text: MockStrings.tagRock, isSelected: true)
     }
 }
