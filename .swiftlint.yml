@@ -88,6 +88,12 @@ identifier_name:
     - h2
     - h3
     - h4
+    - s
+    - m
+    - l
+    - xs
+    - xl
+    - xxl
 
 nesting:
   type_level: 2

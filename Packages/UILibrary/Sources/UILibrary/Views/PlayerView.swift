@@ -79,25 +79,24 @@ private struct PlayerContentView: View {
         AsyncImage(url: URL(string: station.favicon ?? "")) { phase in
             switch phase {
             case .success(let image):
-                image
-                    .resizable()
-                    .scaledToFill()
+                AvatarView(
+                    image: image,
+                    initials: String(station.name.prefix(2)),
+                    size: .xxl
+                )
             case .failure, .empty:
-                placeholderImage
+                AvatarView(
+                    initials: String(station.name.prefix(2)),
+                    size: .xxl
+                )
             @unknown default:
-                placeholderImage
+                AvatarView(
+                    initials: String(station.name.prefix(2)),
+                    size: .xxl
+                )
             }
         }
-        .frame(width: 120, height: 120)
-        .clipShape(RoundedRectangle(cornerRadius: 16))
         .shadow(radius: 4)
-    }
-
-    private var placeholderImage: some View {
-        Image(systemName: "radio.fill")
-            .resizable()
-            .scaledToFill()
-            .foregroundStyle(.secondary)
     }
 
     private var infoView: some View {

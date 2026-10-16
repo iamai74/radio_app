@@ -6,19 +6,17 @@ public struct StationRowView: View {
     public var body: some View {
         HStack(spacing: 12) {
             AsyncImage(url: URL(string: station.favicon ?? "")) { image in
-                image
-                    .resizable()
-                    .scaledToFill()
+                AvatarView(
+                    image: image,
+                    initials: String(station.name.prefix(2)),
+                    size: .s
+                )
             } placeholder: {
-                Image(systemName: "radio")
-                    .foregroundStyle(.secondary)
+                AvatarView(
+                    initials: String(station.name.prefix(2)),
+                    size: .s
+                )
             }
-            .frame(width: 50, height: 50)
-            .clipShape(RoundedRectangle(cornerRadius: 8))
-            .background(
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(Color.secondary.opacity(0.1))
-            )
 
             VStack(alignment: .leading, spacing: 4) {
                 TextView(station.name, size: .h4)
