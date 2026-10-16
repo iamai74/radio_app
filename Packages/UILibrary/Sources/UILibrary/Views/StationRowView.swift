@@ -21,31 +21,26 @@ public struct StationRowView: View {
             )
 
             VStack(alignment: .leading, spacing: 4) {
-                Text(station.name)
-                    .font(.headline)
+                TextView(station.name, size: .h4)
                     .lineLimit(1)
 
-                Text(station.country)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                TextView(station.country, size: .subheadline, textStyle: .secondary)
                     .lineLimit(1)
 
-                                 if let tags = station.tags, !tags.isEmpty {
-                                     TagsCloudView(
-                                         tags: Array(tags.prefix(3)),
-                                         spacing: 4,
-                                         horizontalPadding: 0
-                                     )
-                                 }
+                                  if let tags = station.tags, !tags.isEmpty {
+                                      TagsCloudView(
+                                          tags: Array(tags.prefix(3)),
+                                          spacing: 4,
+                                          horizontalPadding: 0
+                                      )
+                                  }
             }
 
             Spacer()
 
             VStack(alignment: .trailing, spacing: 4) {
                 if let bitrate = station.bitrate, bitrate > 0 {
-                    Text("\(bitrate) kbps")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                    TextView("\(bitrate) kbps", size: .caption, textStyle: .secondary)
                 }
 
                 if station.isFavorite {

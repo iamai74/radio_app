@@ -102,9 +102,7 @@ private struct PlayerContentView: View {
 
     private var infoView: some View {
         VStack(spacing: 8) {
-            Text(station.name)
-                .font(.title2)
-                .fontWeight(.semibold)
+            TextView(station.name, size: .h3)
                 .lineLimit(2)
                 .multilineTextAlignment(.center)
 
@@ -122,6 +120,7 @@ private struct PlayerContentView: View {
                         "\(bitrate) kbps",
                         systemImage: "gauge.medium"
                     )
+                    .labelStyle(.titleAndIcon)
                     .font(.caption)
                     .foregroundStyle(.secondary)
                 }
@@ -131,6 +130,7 @@ private struct PlayerContentView: View {
                         station.country,
                         systemImage: "globe"
                     )
+                    .labelStyle(.titleAndIcon)
                     .font(.caption)
                     .foregroundStyle(.secondary)
                 }
@@ -152,9 +152,7 @@ private struct PlayerContentView: View {
             )
             .tint(.accentColor)
 
-            Text("\(Int(currentVolume * 100))%")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+            TextView("\(Int(currentVolume * 100))%", size: .caption, textStyle: .secondary)
                 .frame(width: 36, alignment: .trailing)
         }
     }

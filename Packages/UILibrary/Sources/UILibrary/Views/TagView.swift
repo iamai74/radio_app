@@ -4,13 +4,19 @@ public struct TagView: View {
     let text: String
     var isSelected: Bool = false
 
+    private var style: TextStyle {
+        isSelected ? .white : .primary
+    }
+
+    private var backgroundColor: Color {
+        isSelected ? Color.accentColor : Color.secondary.opacity(0.15)
+    }
+
     public var body: some View {
-        Text(text)
-            .font(.caption)
+        TextView(text, size: .caption, textStyle: style)
             .padding(.horizontal, 12)
             .padding(.vertical, 6)
-            .background(isSelected ? Color.accentColor : Color.secondary.opacity(0.15))
-            .foregroundStyle(isSelected ? .white : .primary)
+            .background(backgroundColor)
             .clipShape(Capsule())
     }
 }

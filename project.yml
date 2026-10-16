@@ -59,6 +59,7 @@ targets:
       - package: Needle
         product: NeedleFoundation
       - package: Resources
+      - package: UILibrary
     buildToolPlugins:
       - plugin: SwiftLintBuildToolPlugin
         package: SwiftLintPlugins

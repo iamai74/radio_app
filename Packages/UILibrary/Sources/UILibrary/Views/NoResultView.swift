@@ -21,11 +21,8 @@ public struct NoResultView: View {
                 .font(.system(size: 48))
                 .foregroundStyle(.secondary)
 
-            Text(title)
-                .font(.title2)
-                .fontWeight(.semibold)
-            Text(subtitle)
-                .foregroundStyle(.secondary)
+            TextView(title, size: .h3)
+            TextView(subtitle, size: .base, textStyle: .secondary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }

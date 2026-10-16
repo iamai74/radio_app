@@ -6,6 +6,8 @@ public enum Size {
 	case h3
 	case h4
 	case `base`
+	case subheadline
+	case caption
 
 	var fontSize: Double {
 		switch self {
@@ -14,6 +16,8 @@ public enum Size {
 		case .h3: 22
 		case .h4: 18
 		case .base: 17
+		case .subheadline: 15
+		case .caption: 12
 		}
 	}
 
@@ -21,8 +25,24 @@ public enum Size {
 		switch self {
 		case .h1, .h2, .h3, .h4:
 			.semibold
-		case .base:
+		case .base, .subheadline, .caption:
 			.regular
+		}
+	}
+}
+
+public enum TextStyle {
+	case primary
+	case secondary
+	case accent
+	case white
+
+	var color: Color {
+		switch self {
+		case .primary: .primary
+		case .secondary: .secondary
+		case .accent: .accentColor
+		case .white: .white
 		}
 	}
 }
@@ -30,16 +50,19 @@ public enum Size {
 public struct TextView: View {
 	let text: String
 	let size: Size
+	let textStyle: TextStyle
 
-	public init(_ text: String, size: Size = .base) {
+	public init(_ text: String, size: Size = .base, textStyle: TextStyle = .primary) {
 		self.text = text
 		self.size = size
+		self.textStyle = textStyle
 	}
 
 	public var body: some View {
 		Text(text)
 			.font(.system(size: size.fontSize, design: .default))
 			.fontWeight(size.fontWeight)
+			.foregroundStyle(textStyle.color)
 	}
 }
 
@@ -50,6 +73,11 @@ public struct TextView: View {
 		TextView(MockStrings.textHeading3, size: .h3)
 		TextView(MockStrings.textHeading4, size: .h4)
 		TextView(MockStrings.textBase, size: .base)
+		TextView("Secondary", size: .base, textStyle: .secondary)
+		TextView("Caption", size: .caption, textStyle: .white)
+			.padding(8)
+			.background(Color.accentColor)
+			.clipShape(Capsule())
 	}
 	.padding()
 }
