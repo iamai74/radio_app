@@ -1,7 +1,7 @@
 import Foundation
 @testable import ImageStorage
 
-final class TestableImageStorage: ImageStorageProtocol {
+final class TestableImageStorage: ImageStorageProtocol, @unchecked Sendable {
     private let fileManager: MemoryFileManager
     private let baseDirectory: URL
     

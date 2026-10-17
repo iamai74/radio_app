@@ -79,7 +79,9 @@ targets:
           fi
           export SOURCEKIT_LOGGING=0
           DEST="${SRCROOT}/Radio/Generated/NeedleGenerated.swift"
+          mkdir -p "$(dirname "$DEST")"
           TMP="${DERIVED_FILE_DIR}/NeedleGenerated.swift.tmp"
+          mkdir -p "$(dirname "$TMP")"
           needle generate "$TMP" "${SRCROOT}/Radio/Middleware"
           if ! cmp -s "$TMP" "$DEST"; then
             mv -f "$TMP" "$DEST"

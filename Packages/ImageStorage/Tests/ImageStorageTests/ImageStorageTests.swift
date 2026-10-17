@@ -23,8 +23,13 @@ struct KeyValidationTests {
         let fileManager = MemoryFileManager(baseDirectory: tempDir)
         let storage = TestableImageStorage(fileManager: fileManager, baseDirectory: tempDir)
         
-        await #throws(by: ImageStorageError.self) {
+        do {
             try await storage.store(Data(), forKey: "")
+            #expect(Bool(false), "should have thrown")
+        } catch is ImageStorageError {
+            // expected
+        } catch {
+            #expect(Bool(false), "unexpected error: \(error)")
         }
     }
 
@@ -34,8 +39,13 @@ struct KeyValidationTests {
         let fileManager = MemoryFileManager(baseDirectory: tempDir)
         let storage = TestableImageStorage(fileManager: fileManager, baseDirectory: tempDir)
         
-        await #throws(by: ImageStorageError.self) {
+        do {
             try await storage.store(Data(), forKey: "../escape")
+            #expect(Bool(false), "should have thrown")
+        } catch is ImageStorageError {
+            // expected
+        } catch {
+            #expect(Bool(false), "unexpected error: \(error)")
         }
     }
 }
@@ -74,8 +84,13 @@ struct ImageStorageLifecycleTests {
         let fileManager = MemoryFileManager(baseDirectory: tempDir)
         let storage = TestableImageStorage(fileManager: fileManager, baseDirectory: tempDir)
         
-        await #throws(by: ImageStorageError.self) {
-            try await storage.url(forKey: "missingKey")
+        do {
+            _ = try await storage.url(forKey: "missingKey")
+            #expect(Bool(false), "should have thrown")
+        } catch is ImageStorageError {
+            // expected
+        } catch {
+            #expect(Bool(false), "unexpected error: \(error)")
         }
     }
 
