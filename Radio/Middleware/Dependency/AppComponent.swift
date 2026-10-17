@@ -20,7 +20,8 @@ public class AppComponent: BootstrapComponent {
     lazy var rootValuesComponent = RootValuesComponent(
         parent: self,
         networkClient: appDependency.networkClient,
-        dataStore: appDependency.dataStore
+        dataStore: appDependency.dataStore,
+        imageStorage: appDependency.imageStorage
     )
 
     lazy var apiComponent = rootValuesComponent.apiComponent
