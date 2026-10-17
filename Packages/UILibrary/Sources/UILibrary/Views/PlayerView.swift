@@ -38,6 +38,8 @@ public struct PlayerView: View {
 
 private struct PlayerContentView: View {
     @State private var currentVolume: Double
+    @State private var loadedImage: Image?
+    @State private var isLoadingImage = true
 
     let station: any Station
     let isPlaying: Bool
@@ -76,25 +78,14 @@ private struct PlayerContentView: View {
     }
 
     private var artworkView: some View {
-        AsyncImage(url: URL(string: station.favicon ?? "")) { phase in
-            switch phase {
-            case .success(let image):
-                AvatarView(
-                    image: image,
-                    initials: String(station.name.prefix(2)),
-                    size: .xxl
-                )
-            case .failure, .empty:
-                AvatarView(
-                    initials: String(station.name.prefix(2)),
-                    size: .xxl
-                )
-            @unknown default:
-                AvatarView(
-                    initials: String(station.name.prefix(2)),
-                    size: .xxl
-                )
-            }
+        AvatarView(
+            image: loadedImage,
+            initials: String(station.name.prefix(2)),
+            size: .xxl,
+            isLoading: isLoadingImage
+        )
+        .task {
+            await loadImage()
         }
         .shadow(radius: 4)
     }
@@ -197,6 +188,32 @@ private struct PlayerContentView: View {
         } else {
             return "speaker.wave.3"
         }
+    }
+
+    @MainActor
+    private func loadImage() async {
+        guard isLoadingImage else { return }
+        guard let favicon = station.favicon,
+              let url = URL(string: favicon) else {
+            isLoadingImage = false
+            return
+        }
+
+        do {
+            let (data, _) = try await URLSession.shared.data(from: url)
+#if os(iOS)
+            if let uiImage = UIImage(data: data) {
+                loadedImage = Image(uiImage: uiImage)
+            }
+#elseif os(macOS)
+            if let nsImage = NSImage(data: data) {
+                loadedImage = Image(nsImage: nsImage)
+            }
+#endif
+        } catch {
+            // Ignore loading errors
+        }
+        isLoadingImage = false
     }
 }
 

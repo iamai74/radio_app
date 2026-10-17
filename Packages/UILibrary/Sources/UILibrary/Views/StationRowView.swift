@@ -2,20 +2,23 @@ import SwiftUI
 
 public struct StationRowView: View {
     let station: any Station
+    @State private var loadedImage: Image?
+    @State private var isLoadingImage = true
+
+    public init(station: any Station) {
+        self.station = station
+    }
 
     public var body: some View {
         HStack(spacing: 12) {
-            AsyncImage(url: URL(string: station.favicon ?? "")) { image in
-                AvatarView(
-                    image: image,
-                    initials: String(station.name.prefix(2)),
-                    size: .s
-                )
-            } placeholder: {
-                AvatarView(
-                    initials: String(station.name.prefix(2)),
-                    size: .s
-                )
+            AvatarView(
+                image: loadedImage,
+                initials: String(station.name.prefix(2)),
+                size: .s,
+                isLoading: isLoadingImage
+            )
+            .task {
+                await loadImage()
             }
 
             VStack(alignment: .leading, spacing: 4) {
@@ -49,6 +52,32 @@ public struct StationRowView: View {
             }
         }
         .padding(.vertical, 4)
+    }
+
+    @MainActor
+    private func loadImage() async {
+        guard isLoadingImage else { return }
+        guard let favicon = station.favicon,
+              let url = URL(string: favicon) else {
+            isLoadingImage = false
+            return
+        }
+
+        do {
+            let (data, _) = try await URLSession.shared.data(from: url)
+#if os(iOS)
+            if let uiImage = UIImage(data: data) {
+                loadedImage = Image(uiImage: uiImage)
+            }
+#elseif os(macOS)
+            if let nsImage = NSImage(data: data) {
+                loadedImage = Image(nsImage: nsImage)
+            }
+#endif
+        } catch {
+            // Ignore loading errors
+        }
+        isLoadingImage = false
     }
 }
 
