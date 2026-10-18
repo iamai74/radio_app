@@ -11,10 +11,10 @@ public final class DataStore: DataStoreProtocol {
     private let _facetQueries: FacetQueries
 
     private let stations: StationRepository
-    private let countries: FacetRepository<CountryEntityImpl, CountryEntity>
-    private let tags: FacetRepository<TagEntityImpl, TagEntity>
-    private let languages: FacetRepository<LanguageEntityImpl, LanguageEntity>
-    private let codecs: FacetRepository<CodecEntityImpl, CodecEntity>
+    private let countries: FacetRepository<CountryEntityImpl, any CountryEntity>
+    private let tags: FacetRepository<TagEntityImpl, any TagEntity>
+    private let languages: FacetRepository<LanguageEntityImpl, any LanguageEntity>
+    private let codecs: FacetRepository<CodecEntityImpl, any CodecEntity>
 
     public init(modelContainer: ModelContainer) {
         self.modelContainer = modelContainer

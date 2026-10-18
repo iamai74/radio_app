@@ -39,11 +39,17 @@ public struct StationFilterView: View {
     }
 }
 
+private struct StationFilterViewPreview: View {
+    @State private var selectedFilter = StationsFilter.all
+    var body: some View {
+        StationFilterView(
+            filterAllTitle: MockStrings.filterAll,
+            filterFavoritesTitle: MockStrings.filterFavorites,
+            selectedFilter: $selectedFilter
+        )
+    }
+}
+
 #Preview {
-    @State var selectedFilter = StationsFilter.all
-    return StationFilterView(
-        filterAllTitle: MockStrings.filterAll,
-        filterFavoritesTitle: MockStrings.filterFavorites,
-        selectedFilter: $selectedFilter
-    )
+    StationFilterViewPreview()
 }

@@ -16,11 +16,11 @@ final class CountryEntityImpl: FacetEntity, StorageModel {
     typealias DTO = CountryEntity
     var storageKey: String { name }
 
-    static func persist(_ dto: CountryEntity) -> CountryEntityImpl {
+    static func persist(_ dto: any CountryEntity) -> CountryEntityImpl {
         CountryEntityImpl(name: dto.name, iso31661: dto.iso31661, stationCount: dto.stationCount)
     }
 
-    func apply(from dto: CountryEntity) {
+    func apply(from dto: any CountryEntity) {
         name = dto.name
         iso31661 = dto.iso31661
         stationCount = dto.stationCount
@@ -32,7 +32,7 @@ final class CountryEntityImpl: FacetEntity, StorageModel {
         stationCount = other.stationCount
     }
 
-    func toDTO() -> CountryEntity {
+    func toDTO() -> any CountryEntity {
         CountryDTO.from(self)
     }
 

@@ -14,11 +14,11 @@ final class CodecEntityImpl: FacetEntity, StorageModel {
     typealias DTO = CodecEntity
     var storageKey: String { name }
 
-    static func persist(_ dto: CodecEntity) -> CodecEntityImpl {
+    static func persist(_ dto: any CodecEntity) -> CodecEntityImpl {
         CodecEntityImpl(name: dto.name, stationCount: dto.stationCount)
     }
 
-    func apply(from dto: CodecEntity) {
+    func apply(from dto: any CodecEntity) {
         name = dto.name
         stationCount = dto.stationCount
     }
@@ -28,7 +28,7 @@ final class CodecEntityImpl: FacetEntity, StorageModel {
         stationCount = other.stationCount
     }
 
-    func toDTO() -> CodecEntity {
+    func toDTO() -> any CodecEntity {
         CodecDTO.from(self)
     }
 

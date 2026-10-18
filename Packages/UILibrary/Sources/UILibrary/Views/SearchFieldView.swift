@@ -23,10 +23,16 @@ public struct SearchFieldView: View {
     }
 }
 
+private struct SearchFieldViewPreview: View {
+    @State private var searchText = ""
+    var body: some View {
+        SearchFieldView(
+            placeholder: MockStrings.searchPlaceholder,
+            searchText: $searchText
+        )
+    }
+}
+
 #Preview {
-    @State var searchText = ""
-    return SearchFieldView(
-        placeholder: MockStrings.searchPlaceholder,
-        searchText: $searchText
-    )
+    SearchFieldViewPreview()
 }

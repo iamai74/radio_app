@@ -14,11 +14,11 @@ final class TagEntityImpl: FacetEntity, StorageModel {
     typealias DTO = TagEntity
     var storageKey: String { name }
 
-    static func persist(_ dto: TagEntity) -> TagEntityImpl {
+    static func persist(_ dto: any TagEntity) -> TagEntityImpl {
         TagEntityImpl(name: dto.name, stationCount: dto.stationCount)
     }
 
-    func apply(from dto: TagEntity) {
+    func apply(from dto: any TagEntity) {
         name = dto.name
         stationCount = dto.stationCount
     }
@@ -28,7 +28,7 @@ final class TagEntityImpl: FacetEntity, StorageModel {
         stationCount = other.stationCount
     }
 
-    func toDTO() -> TagEntity {
+    func toDTO() -> any TagEntity {
         TagDTO.from(self)
     }
 

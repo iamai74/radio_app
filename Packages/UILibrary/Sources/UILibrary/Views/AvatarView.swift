@@ -140,5 +140,4 @@ public struct AvatarView: View {
         }
     }
     .padding()
-    .previewLayout(.sizeThatFits)
 }

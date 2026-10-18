@@ -3,7 +3,7 @@ import SwiftData
 
 @ModelActor
 actor BackgroundStore {
-    func saveStations(_ stations: [StationEntity]) async throws {
+    func saveStations(_ stations: [any StationEntity]) async throws {
         let dtos = stations.map { StationEntityImpl.persist($0) }
         for dto in dtos {
             modelContext.insert(dto)
@@ -16,7 +16,7 @@ actor BackgroundStore {
         try modelContext.save()
     }
 
-    func saveCountries(_ countries: [CountryEntity]) async throws {
+    func saveCountries(_ countries: [any CountryEntity]) async throws {
         let dtos = countries.map { CountryEntityImpl.persist($0) }
         for dto in dtos {
             modelContext.insert(dto)
@@ -29,7 +29,7 @@ actor BackgroundStore {
         try modelContext.save()
     }
 
-    func saveTags(_ tags: [TagEntity]) async throws {
+    func saveTags(_ tags: [any TagEntity]) async throws {
         let dtos = tags.map { TagEntityImpl.persist($0) }
         for dto in dtos {
             modelContext.insert(dto)
@@ -42,7 +42,7 @@ actor BackgroundStore {
         try modelContext.save()
     }
 
-    func saveLanguages(_ languages: [LanguageEntity]) async throws {
+    func saveLanguages(_ languages: [any LanguageEntity]) async throws {
         let dtos = languages.map { LanguageEntityImpl.persist($0) }
         for dto in dtos {
             modelContext.insert(dto)
@@ -55,7 +55,7 @@ actor BackgroundStore {
         try modelContext.save()
     }
 
-    func saveCodecs(_ codecs: [CodecEntity]) async throws {
+    func saveCodecs(_ codecs: [any CodecEntity]) async throws {
         let dtos = codecs.map { CodecEntityImpl.persist($0) }
         for dto in dtos {
             modelContext.insert(dto)
@@ -68,7 +68,7 @@ actor BackgroundStore {
         try modelContext.save()
     }
 
-    func bulkImportStations(_ stations: [StationEntity], batchSize: Int = 500) async throws {
+    func bulkImportStations(_ stations: [any StationEntity], batchSize: Int = 500) async throws {
         let dtos = stations.map { StationEntityImpl.persist($0) }
         for (index, dto) in dtos.enumerated() {
             modelContext.insert(dto)

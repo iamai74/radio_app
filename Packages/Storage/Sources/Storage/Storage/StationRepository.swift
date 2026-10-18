@@ -22,7 +22,7 @@ final class StationRepository {
 
     func sequence(filter: StationFilter) -> StorageSequence<any StationEntity> {
         let values = storage.publisher(filter: filter)
-            .map { $0.map { $0.toDTO() as any StationEntity } }
+            .map { $0.map { $0.toDTO() } }
             .eraseToAnyPublisher()
         return StorageSequence(values: values, failures: storage.failureSubject.eraseToAnyPublisher())
     }

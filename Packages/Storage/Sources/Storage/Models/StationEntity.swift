@@ -78,13 +78,13 @@ final class StationEntityImpl: StorageModel {
 
     var storageKey: String { id }
 
-    static func persist(_ dto: StationEntity) -> StationEntityImpl {
+    static func persist(_ dto: any StationEntity) -> StationEntityImpl {
         let station = StationEntityImpl(id: dto.id, name: dto.name, url: dto.url, country: dto.country)
         station.apply(from: dto)
         return station
     }
 
-    func apply(from dto: StationEntity) {
+    func apply(from dto: any StationEntity) {
         id = dto.id
         name = dto.name
         url = dto.url
@@ -134,7 +134,7 @@ final class StationEntityImpl: StorageModel {
         urlResolved = other.urlResolved
     }
 
-    func toDTO() -> StationEntity {
+    func toDTO() -> any StationEntity {
         StationDTO.from(self)
     }
 

@@ -14,11 +14,11 @@ final class LanguageEntityImpl: FacetEntity, StorageModel {
     typealias DTO = LanguageEntity
     var storageKey: String { name }
 
-    static func persist(_ dto: LanguageEntity) -> LanguageEntityImpl {
+    static func persist(_ dto: any LanguageEntity) -> LanguageEntityImpl {
         LanguageEntityImpl(name: dto.name, stationCount: dto.stationCount)
     }
 
-    func apply(from dto: LanguageEntity) {
+    func apply(from dto: any LanguageEntity) {
         name = dto.name
         stationCount = dto.stationCount
     }
@@ -28,7 +28,7 @@ final class LanguageEntityImpl: FacetEntity, StorageModel {
         stationCount = other.stationCount
     }
 
-    func toDTO() -> LanguageEntity {
+    func toDTO() -> any LanguageEntity {
         LanguageDTO.from(self)
     }
 

@@ -18,7 +18,7 @@ final class ImageDownloadService {
     func downloadAndStore(from url: URL) async throws -> String {
         let key = ImageDownloadService.storageKey(from: url)
 
-        if try await imageStorage.exists(forKey: key) {
+        if await imageStorage.exists(forKey: key) {
             return key
         }
 

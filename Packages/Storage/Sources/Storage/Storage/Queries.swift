@@ -15,7 +15,7 @@ public struct StationQueries {
         sortBy: StationOrderBy = .name,
         ascending: Bool = true,
         limit: Int? = nil
-    ) throws -> [StationEntity] {
+    ) throws -> [any StationEntity] {
         var descriptor = FetchDescriptor<StationEntityImpl>(
             sortBy: [SortDescriptor(\StationEntityImpl.name, order: ascending ? .forward : .reverse)]
         )
@@ -37,14 +37,14 @@ public struct StationQueries {
         }
 
         let results = try context.fetch(descriptor)
-        return results.map { $0.toDTO() as any StationEntity }
+        return results.map { $0.toDTO() }
     }
 
     public func station(byID id: String) throws -> (any StationEntity)? {
         let descriptor = FetchDescriptor<StationEntityImpl>(
             predicate: #Predicate { $0.id == id }
         )
-        return try context.fetch(descriptor).first?.toDTO() as (any StationEntity)?
+        return try context.fetch(descriptor).first?.toDTO()
     }
 }
 
@@ -61,7 +61,7 @@ public struct FacetQueries {
         sortBy: FacetOrderBy = .name,
         ascending: Bool = true,
         limit: Int? = nil
-    ) throws -> [CountryEntity] {
+    ) throws -> [any CountryEntity] {
         var descriptor = FetchDescriptor<CountryEntityImpl>(
             sortBy: [SortDescriptor(\CountryEntityImpl.name, order: ascending ? .forward : .reverse)]
         )
@@ -76,7 +76,7 @@ public struct FacetQueries {
         }
 
         let results = try context.fetch(descriptor)
-        return results.map { $0.toDTO() as any CountryEntity }
+        return results.map { $0.toDTO() }
     }
 
     public func tags(
@@ -84,7 +84,7 @@ public struct FacetQueries {
         sortBy: FacetOrderBy = .name,
         ascending: Bool = true,
         limit: Int? = nil
-    ) throws -> [TagEntity] {
+    ) throws -> [any TagEntity] {
         var descriptor = FetchDescriptor<TagEntityImpl>(
             sortBy: [SortDescriptor(\TagEntityImpl.name, order: ascending ? .forward : .reverse)]
         )
@@ -99,7 +99,7 @@ public struct FacetQueries {
         }
 
         let results = try context.fetch(descriptor)
-        return results.map { $0.toDTO() as any TagEntity }
+        return results.map { $0.toDTO() }
     }
 
     public func languages(
@@ -107,7 +107,7 @@ public struct FacetQueries {
         sortBy: FacetOrderBy = .name,
         ascending: Bool = true,
         limit: Int? = nil
-    ) throws -> [LanguageEntity] {
+    ) throws -> [any LanguageEntity] {
         var descriptor = FetchDescriptor<LanguageEntityImpl>(
             sortBy: [SortDescriptor(\LanguageEntityImpl.name, order: ascending ? .forward : .reverse)]
         )
@@ -122,7 +122,7 @@ public struct FacetQueries {
         }
 
         let results = try context.fetch(descriptor)
-        return results.map { $0.toDTO() as any LanguageEntity }
+        return results.map { $0.toDTO() }
     }
 
     public func codecs(
@@ -130,7 +130,7 @@ public struct FacetQueries {
         sortBy: FacetOrderBy = .name,
         ascending: Bool = true,
         limit: Int? = nil
-    ) throws -> [CodecEntity] {
+    ) throws -> [any CodecEntity] {
         var descriptor = FetchDescriptor<CodecEntityImpl>(
             sortBy: [SortDescriptor(\CodecEntityImpl.name, order: ascending ? .forward : .reverse)]
         )
@@ -145,6 +145,6 @@ public struct FacetQueries {
         }
 
         let results = try context.fetch(descriptor)
-        return results.map { $0.toDTO() as any CodecEntity }
+        return results.map { $0.toDTO() }
     }
 }
