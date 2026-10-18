@@ -1,22 +1,38 @@
 import SwiftUI
 
-public final class GradientViewModel: ObservableObject {
+@MainActor
+public final class GradientAnimator: ObservableObject {
     @Published var colors: [Color]
+    @Published var startPoint: UnitPoint
+    @Published var endPoint: UnitPoint
 
     private let colorCount: Int
-    private let interval: Double
+    private let colorInterval: UInt64
+    private let pointInterval: UInt64
+    private var colorTask: Task<Void, Never>?
+    private var pointTask: Task<Void, Never>?
 
-    private var timer: Timer?
+    private let gradientPoints: [(UnitPoint, UnitPoint)] = [
+        (.leading, .trailing),
+        (.topLeading, .bottomTrailing),
+        (.top, .bottom),
+        (.topTrailing, .bottomLeading)
+    ]
 
-    public init(colorCount: Int = 4, interval: Double = 3.0) {
+    private var pointIndex = 0
+
+    public init(
+        colorCount: Int = 4,
+        colorInterval: TimeInterval = 4.0,
+        pointInterval: TimeInterval = 6.0
+    ) {
         self.colorCount = max(colorCount, 2)
-        self.interval = interval
+        self.colorInterval = UInt64(colorInterval * 1_000_000_000)
+        self.pointInterval = UInt64(pointInterval * 1_000_000_000)
         self.colors = Self.randomColors(count: self.colorCount)
+        self.startPoint = gradientPoints[0].0
+        self.endPoint = gradientPoints[0].1
         startAnimating()
-    }
-
-    deinit {
-        stopAnimating()
     }
 
     public func randomize() {
@@ -24,17 +40,41 @@ public final class GradientViewModel: ObservableObject {
     }
 
     private func startAnimating() {
-        stopAnimating()
-        let vmPtr = Unmanaged.passUnretained(self).toOpaque()
-        timer = .scheduledTimer(withTimeInterval: interval, repeats: true) { _ in
-            let strong = Unmanaged<GradientViewModel>.fromOpaque(vmPtr).takeUnretainedValue()
-            strong.colors = Self.randomColors(count: strong.colorCount)
+        cancelAnimating()
+        colorTask = Task { [weak self] in
+            await self?.animateColors()
+        }
+        pointTask = Task { [weak self] in
+            await self?.animatePoints()
         }
     }
 
-    private func stopAnimating() {
-        timer?.invalidate()
-        timer = nil
+    private func cancelAnimating() {
+        colorTask?.cancel()
+        colorTask = nil
+        pointTask?.cancel()
+        pointTask = nil
+    }
+
+    private func animateColors() async {
+        while !Task.isCancelled {
+            try? await Task.sleep(nanoseconds: colorInterval)
+            withAnimation(.easeInOut(duration: 2.5)) {
+                colors = Self.randomColors(count: colorCount)
+            }
+        }
+    }
+
+    private func animatePoints() async {
+        while !Task.isCancelled {
+            try? await Task.sleep(nanoseconds: pointInterval)
+            pointIndex = (pointIndex + 1) % gradientPoints.count
+            let pair = gradientPoints[pointIndex]
+            withAnimation(.easeInOut(duration: 3.0)) {
+                startPoint = pair.0
+                endPoint = pair.1
+            }
+        }
     }
 
     private static func randomColors(count: Int) -> [Color] {
@@ -55,36 +95,43 @@ public struct GradientView: View {
         case angular
     }
 
-    @StateObject private var viewModel: GradientViewModel
+    @StateObject private var animator: GradientAnimator
 
     private let gradientStyle: Style
 
     public init(
         gradientStyle: Style = .linear,
         colorCount: Int = 4,
-        animationDuration: Double = 3.0
+        animationDuration: Double = 4.0
     ) {
         self.gradientStyle = gradientStyle
-        _viewModel = StateObject(wrappedValue: GradientViewModel(
+        _animator = StateObject(wrappedValue: GradientAnimator(
             colorCount: colorCount,
-            interval: animationDuration
+            colorInterval: animationDuration
         ))
     }
 
     public var body: some View {
         Rectangle()
-            .fill(makeGradient(colors: viewModel.colors))
-            .animation(.easeInOut(duration: 0.8), value: viewModel.colors)
+            .fill(makeGradient(
+                colors: animator.colors,
+                startPoint: animator.startPoint,
+                endPoint: animator.endPoint
+            ))
     }
 
-    private func makeGradient(colors: [Color]) -> AnyShapeStyle {
+    private func makeGradient(
+        colors: [Color],
+        startPoint: UnitPoint,
+        endPoint: UnitPoint
+    ) -> AnyShapeStyle {
         switch gradientStyle {
         case .linear:
             return AnyShapeStyle(
                 LinearGradient(
                     colors: colors,
-                    startPoint: .leading,
-                    endPoint: .trailing
+                    startPoint: startPoint,
+                    endPoint: endPoint
                 )
             )
         case .radial:
