@@ -5,12 +5,14 @@ public final class GradientAnimator: ObservableObject {
     @Published var colors: [Color]
     @Published var startPoint: UnitPoint
     @Published var endPoint: UnitPoint
+    @Published var center: UnitPoint
 
     private let colorCount: Int
-    private let colorInterval: UInt64
-    private let pointInterval: UInt64
+    private let colorDuration: UInt64
+    private let pointDuration: UInt64
     private var colorTask: Task<Void, Never>?
     private var pointTask: Task<Void, Never>?
+    private var centerTask: Task<Void, Never>?
 
     private let gradientPoints: [(UnitPoint, UnitPoint)] = [
         (.leading, .trailing),
@@ -23,15 +25,15 @@ public final class GradientAnimator: ObservableObject {
 
     public init(
         colorCount: Int = 4,
-        colorInterval: TimeInterval = 4.0,
-        pointInterval: TimeInterval = 6.0
+        animationDuration: TimeInterval = 3.0
     ) {
         self.colorCount = max(colorCount, 2)
-        self.colorInterval = UInt64(colorInterval * 1_000_000_000)
-        self.pointInterval = UInt64(pointInterval * 1_000_000_000)
+        self.colorDuration = UInt64(animationDuration * 1_000_000_000)
+        self.pointDuration = UInt64(animationDuration * 1_000_000_000)
         self.colors = Self.randomColors(count: self.colorCount)
         self.startPoint = gradientPoints[0].0
         self.endPoint = gradientPoints[0].1
+        self.center = .center
         startAnimating()
     }
 
@@ -47,6 +49,9 @@ public final class GradientAnimator: ObservableObject {
         pointTask = Task { [weak self] in
             await self?.animatePoints()
         }
+        centerTask = Task { [weak self] in
+            await self?.animateCenter()
+        }
     }
 
     private func cancelAnimating() {
@@ -54,26 +59,40 @@ public final class GradientAnimator: ObservableObject {
         colorTask = nil
         pointTask?.cancel()
         pointTask = nil
+        centerTask?.cancel()
+        centerTask = nil
     }
 
     private func animateColors() async {
         while !Task.isCancelled {
-            try? await Task.sleep(nanoseconds: colorInterval)
-            withAnimation(.easeInOut(duration: 2.5)) {
+            withAnimation(.easeInOut(duration: Double(colorDuration) / 1_000_000_000)) {
                 colors = Self.randomColors(count: colorCount)
             }
+            try? await Task.sleep(nanoseconds: colorDuration)
         }
     }
 
     private func animatePoints() async {
         while !Task.isCancelled {
-            try? await Task.sleep(nanoseconds: pointInterval)
             pointIndex = (pointIndex + 1) % gradientPoints.count
             let pair = gradientPoints[pointIndex]
-            withAnimation(.easeInOut(duration: 3.0)) {
+            withAnimation(.easeInOut(duration: Double(pointDuration) / 1_000_000_000)) {
                 startPoint = pair.0
                 endPoint = pair.1
             }
+            try? await Task.sleep(nanoseconds: pointDuration)
+        }
+    }
+
+    private func animateCenter() async {
+        while !Task.isCancelled {
+            withAnimation(.easeInOut(duration: Double(pointDuration) / 1_000_000_000)) {
+                center = UnitPoint(
+                    x: .random(in: 0.2...0.8),
+                    y: .random(in: 0.2...0.8)
+                )
+            }
+            try? await Task.sleep(nanoseconds: pointDuration)
         }
     }
 
@@ -102,12 +121,12 @@ public struct GradientView: View {
     public init(
         gradientStyle: Style = .linear,
         colorCount: Int = 4,
-        animationDuration: Double = 4.0
+        animationDuration: Double = 3.0
     ) {
         self.gradientStyle = gradientStyle
         _animator = StateObject(wrappedValue: GradientAnimator(
             colorCount: colorCount,
-            colorInterval: animationDuration
+            animationDuration: animationDuration
         ))
     }
 
@@ -116,14 +135,16 @@ public struct GradientView: View {
             .fill(makeGradient(
                 colors: animator.colors,
                 startPoint: animator.startPoint,
-                endPoint: animator.endPoint
+                endPoint: animator.endPoint,
+                center: animator.center
             ))
     }
 
     private func makeGradient(
         colors: [Color],
         startPoint: UnitPoint,
-        endPoint: UnitPoint
+        endPoint: UnitPoint,
+        center: UnitPoint
     ) -> AnyShapeStyle {
         switch gradientStyle {
         case .linear:
@@ -138,7 +159,7 @@ public struct GradientView: View {
             return AnyShapeStyle(
                 RadialGradient(
                     colors: colors,
-                    center: .center,
+                    center: center,
                     startRadius: 0,
                     endRadius: 300
                 )
@@ -147,7 +168,7 @@ public struct GradientView: View {
             return AnyShapeStyle(
                 AngularGradient(
                     colors: colors,
-                    center: .center
+                    center: center
                 )
             )
         }
