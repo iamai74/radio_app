@@ -12,5 +12,8 @@ struct LaunchView: ViewProtocol {
             LoadingIndicator(isLoading: true, size: .medium)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background {
+            GradientView(gradientStyle: .radial, colorCount: 6, animationDuration: 1)
+        }
     }
 }
