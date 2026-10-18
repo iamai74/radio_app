@@ -9,7 +9,7 @@ struct LaunchView: ViewProtocol {
     var body: some View {
         VStack(spacing: 12) {
             TextView(R.string.localizable.app_name(), size: .h1)
-            TextView("Loading…", size: .base, textStyle: .secondary)
+            LoadingIndicator(isLoading: true, size: .medium)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }

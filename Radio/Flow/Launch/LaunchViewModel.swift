@@ -1,13 +1,20 @@
 import Combine
 import Architecture
+import Foundation
 
 @MainActor
 final class LaunchViewModel: ViewModelProtocol {
     enum Input {}
 
-    enum Output {}
+    enum Output {
+        case navigateToMain
+    }
 
     func transform(input: AnyPublisher<Input, Never>) -> AnyPublisher<Output, Never> {
-        Empty().eraseToAnyPublisher()
+        Timer.publish(every: 2, on: .main, in: .common)
+            .autoconnect()
+            .first()
+            .map { _ in Output.navigateToMain }
+            .eraseToAnyPublisher()
     }
 }
