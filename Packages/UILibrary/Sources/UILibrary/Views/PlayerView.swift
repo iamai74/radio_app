@@ -1,9 +1,15 @@
 import SwiftUI
 
+public enum PlayerLayout: String, CaseIterable {
+    case vertical
+    case horizontal
+}
+
 public struct PlayerView: View {
     let station: any Station
     let isPlaying: Bool
     let volume: Double
+    let layout: PlayerLayout
     let onPlayPause: () -> Void
     let onVolumeChange: (Double) -> Void
     let onFavoriteToggle: () -> Void
@@ -12,6 +18,7 @@ public struct PlayerView: View {
         station: some Station,
         isPlaying: Bool = false,
         volume: Double = 0.5,
+        layout: PlayerLayout = .vertical,
         onPlayPause: @escaping () -> Void = {},
         onVolumeChange: @escaping (Double) -> Void = { _ in },
         onFavoriteToggle: @escaping () -> Void = {}
@@ -19,6 +26,7 @@ public struct PlayerView: View {
         self.station = station
         self.isPlaying = isPlaying
         self.volume = volume
+        self.layout = layout
         self.onPlayPause = onPlayPause
         self.onVolumeChange = onVolumeChange
         self.onFavoriteToggle = onFavoriteToggle
@@ -29,6 +37,7 @@ public struct PlayerView: View {
             station: station,
             isPlaying: isPlaying,
             volume: volume,
+            layout: layout,
             onPlayPause: onPlayPause,
             onVolumeChange: onVolumeChange,
             onFavoriteToggle: onFavoriteToggle
@@ -43,6 +52,7 @@ private struct PlayerContentView: View {
 
     let station: any Station
     let isPlaying: Bool
+    let layout: PlayerLayout
     let onPlayPause: () -> Void
     let onVolumeChange: (Double) -> Void
     let onFavoriteToggle: () -> Void
@@ -51,12 +61,14 @@ private struct PlayerContentView: View {
         station: any Station,
         isPlaying: Bool,
         volume: Double,
+        layout: PlayerLayout,
         onPlayPause: @escaping () -> Void,
         onVolumeChange: @escaping (Double) -> Void,
         onFavoriteToggle: @escaping () -> Void
     ) {
         self.station = station
         self.isPlaying = isPlaying
+        self.layout = layout
         self._currentVolume = State(initialValue: volume)
         self.onPlayPause = onPlayPause
         self.onVolumeChange = onVolumeChange
@@ -64,24 +76,76 @@ private struct PlayerContentView: View {
     }
 
     var body: some View {
-        VStack(spacing: 16) {
-            artworkView
-
-            infoView
-
-            volumeView
-
-            controlsView
+        switch layout {
+        case .vertical:
+            verticalBody
+        case .horizontal:
+            horizontalBody
         }
-        .padding(.horizontal)
-        .padding(.vertical, 24)
     }
 
-    private var artworkView: some View {
+    private var verticalBody: some View {
+        ZStack {
+            VStack(spacing: 16) {
+                artworkView(size: .xxl)
+
+                VStack(spacing: 8) {
+                    TextView(station.name, size: .h3)
+                        .lineLimit(2)
+                        .multilineTextAlignment(.center)
+
+                    if let tags = station.tags, !tags.isEmpty {
+                        TagsCloudView(
+                            tags: Array(tags.prefix(4)),
+                            spacing: 6,
+                            horizontalPadding: 0
+                        )
+                        .frame(maxWidth: .infinity)
+                    }
+
+                    metadataLabels
+                }
+
+                volumeView
+
+                playPauseButton
+            }
+            .padding(.horizontal)
+            .padding(.vertical, 24)
+
+            VStack {
+                HStack {
+                    Spacer()
+                    favoriteButton
+                }
+
+                Spacer()
+            }
+        }
+    }
+
+    private var horizontalBody: some View {
+        HStack(spacing: 16) {
+            artworkView(size: .xl)
+
+            VStack(alignment: .leading, spacing: 12) {
+                infoView(alignment: .leading)
+
+                volumeView
+            }
+
+            Spacer()
+
+            playPauseButton
+        }
+        .padding()
+    }
+
+    private func artworkView(size: AvatarView.Size) -> some View {
         AvatarView(
             image: loadedImage,
             initials: String(station.name.prefix(2)),
-            size: .xxl,
+            size: size,
             isLoading: isLoadingImage
         )
         .task {
@@ -90,11 +154,11 @@ private struct PlayerContentView: View {
         .shadow(radius: 4)
     }
 
-    private var infoView: some View {
-        VStack(spacing: 8) {
+    private func infoView(alignment: HorizontalAlignment) -> some View {
+        VStack(alignment: alignment, spacing: 8) {
             TextView(station.name, size: .h3)
                 .lineLimit(2)
-                .multilineTextAlignment(.center)
+                .multilineTextAlignment(alignment == .leading ? .leading : .center)
 
             if let tags = station.tags, !tags.isEmpty {
                 TagsCloudView(
@@ -104,29 +168,32 @@ private struct PlayerContentView: View {
                 )
             }
 
-            HStack(spacing: 8) {
-                if let bitrate = station.bitrate, bitrate > 0 {
-                    Label(
-                        "\(bitrate) kbps",
-                        systemImage: "gauge.medium"
-                    )
-                    .labelStyle(.titleAndIcon)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                }
+            metadataLabels
+        }
+    }
 
-                if !station.country.isEmpty {
-                    Label(
-                        station.country,
-                        systemImage: "globe"
-                    )
-                    .labelStyle(.titleAndIcon)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                }
+    private var metadataLabels: some View {
+        HStack(spacing: 8) {
+            if let bitrate = station.bitrate, bitrate > 0 {
+                Label(
+                    "\(bitrate) kbps",
+                    systemImage: "gauge.medium"
+                )
+                .labelStyle(.titleAndIcon)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            }
+
+            if !station.country.isEmpty {
+                Label(
+                    station.country,
+                    systemImage: "globe"
+                )
+                .labelStyle(.titleAndIcon)
+                .font(.caption)
+                .foregroundStyle(.secondary)
             }
         }
-        .frame(maxWidth: .infinity)
     }
 
     private var volumeView: some View {
@@ -147,31 +214,29 @@ private struct PlayerContentView: View {
         }
     }
 
-    private var controlsView: some View {
-        HStack(spacing: 32) {
-            Button(action: onFavoriteToggle) {
-                Image(systemName: station.isFavorite ? "heart.fill" : "heart")
-                    .font(.title3)
-                    .foregroundStyle(station.isFavorite ? .red : .secondary)
-            }
-            .buttonStyle(.plain)
-
-            Button(action: onPlayPause) {
-                ZStack {
-                    Circle()
-                        .fill(Color.accentColor)
-                        .frame(width: 60, height: 60)
-
-                    Image(systemName: playPauseIcon)
-                        .font(.title2)
-                        .foregroundStyle(.white)
-                        .scaleEffect(isPlaying ? 1.1 : 1)
-                }
-            }
-            .buttonStyle(.plain)
-
-            Spacer()
+    private var favoriteButton: some View {
+        Button(action: onFavoriteToggle) {
+            Image(systemName: station.isFavorite ? "heart.fill" : "heart")
+                .font(.title3)
+                .foregroundStyle(station.isFavorite ? .red : .secondary)
         }
+        .buttonStyle(.plain)
+    }
+
+    private var playPauseButton: some View {
+        Button(action: onPlayPause) {
+            ZStack {
+                Circle()
+                    .fill(Color.accentColor)
+                    .frame(width: 60, height: 60)
+
+                Image(systemName: playPauseIcon)
+                    .font(.title2)
+                    .foregroundStyle(.white)
+                    .scaleEffect(isPlaying ? 1.1 : 1)
+            }
+        }
+        .buttonStyle(.plain)
     }
 
     private var playPauseIcon: String {
@@ -218,14 +283,25 @@ private struct PlayerContentView: View {
 }
 
 #Preview {
-    ZStack {
-        Color.gray.opacity(0.1)
-            .ignoresSafeArea()
+    NavigationStack {
+        Form {
+            Section("Vertical Layout") {
+                PlayerView(
+                    station: MockStations.jazzRadio,
+                    isPlaying: true,
+                    volume: 0.65,
+                    layout: .vertical
+                )
+            }
 
-        PlayerView(
-            station: MockStations.jazzRadio,
-            isPlaying: true,
-            volume: 0.65
-        )
+            Section("Horizontal Layout") {
+                PlayerView(
+                    station: MockStations.jazzRadio,
+                    isPlaying: true,
+                    volume: 0.65,
+                    layout: .horizontal
+                )
+            }
+        }
     }
 }
