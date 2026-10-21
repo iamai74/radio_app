@@ -12,7 +12,7 @@ final class MainViewModel: ViewModelProtocol, ObservableObject {
         case none
     }
 
-    private let service: StationsService
+    private let service: StationsService?
     private var cancellables: Set<AnyCancellable> = []
 
     @Published var stations: [any UILibrary.Station] = []
@@ -25,6 +25,22 @@ final class MainViewModel: ViewModelProtocol, ObservableObject {
         Task { [weak self] in
             await self?.loadStations()
         }
+    }
+
+    static var preview: MainViewModel {
+        let instance = MainViewModel.previewInit()
+        instance.stations = MockStations.all
+        instance.selectedStation = MockStations.jazzRadio
+        instance.isLoading = false
+        return instance
+    }
+
+    private static func previewInit() -> MainViewModel {
+        MainViewModel()
+    }
+
+    private init() {
+        self.service = nil
     }
 
     func transform(input: AnyPublisher<Input, Never>) -> AnyPublisher<Output, Never> {
@@ -40,6 +56,7 @@ final class MainViewModel: ViewModelProtocol, ObservableObject {
     }
 
     private func subscribeToStations() {
+        guard let service = service else { return }
         service.stationsPublisher()
             .sink { [weak self] stations in
                 self?.stations = stations
@@ -49,6 +66,7 @@ final class MainViewModel: ViewModelProtocol, ObservableObject {
     }
 
     private func loadStations() async {
+        guard let service = service else { return }
         do {
             try await service.fetchAndSaveStations(limit: 100, offset: 0)
         } catch {

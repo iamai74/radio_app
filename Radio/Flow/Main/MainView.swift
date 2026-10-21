@@ -31,3 +31,9 @@ struct MainView: ViewProtocol {
         }
     }
 }
+
+#if DEBUG
+#Preview {
+    MainView(viewModel: .preview)
+}
+#endif

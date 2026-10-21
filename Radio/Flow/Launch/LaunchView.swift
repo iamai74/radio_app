@@ -17,3 +17,9 @@ struct LaunchView: ViewProtocol {
         }
     }
 }
+
+#if DEBUG
+#Preview {
+    LaunchView(viewModel: LaunchViewModel())
+}
+#endif
