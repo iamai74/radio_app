@@ -7,9 +7,11 @@ final class LaunchCoordinator: CoordinatorProtocol {
     var navigator: NavigatorProtocol
 
     private var cancellables: Set<AnyCancellable> = []
+    private let mainCoordinator: MainCoordinator
 
-    init(navigator: NavigatorProtocol) {
+    init(navigator: NavigatorProtocol, mainCoordinator: MainCoordinator) {
         self.navigator = navigator
+        self.mainCoordinator = mainCoordinator
     }
 
     func start() {
@@ -21,7 +23,7 @@ final class LaunchCoordinator: CoordinatorProtocol {
                 guard let self = self else { return }
                 switch output {
                 case .navigateToMain:
-                    MainCoordinator(navigator: self.navigator).start()
+                    self.mainCoordinator.start()
                 }
             }
             .store(in: &cancellables)

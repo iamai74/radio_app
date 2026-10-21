@@ -250,7 +250,7 @@ Current examples include:
 
 - `AppInitializer`
 - `AppComponent`
-- `RootValuesComponent`, `ApiComponent`, `StorageComponent`, `LaunchComponent`
+- `RootValuesComponent`, `ApiComponent`, `StorageComponent`, `LaunchComponent`, `MainComponent`
 - `StationsService`
 - `CountriesService`
 - `LanguagesService`

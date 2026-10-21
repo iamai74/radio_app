@@ -1,21 +1,21 @@
 import Foundation
 
 struct MockStation: Station {
-    public let id: String
-    public let name: String
-    public let url: String
-    public let homepage: String?
-    public let favicon: String?
-    public let tags: [String]?
-    public let country: String
-    public let state: String?
-    public let language: String?
-    public let votes: Int
-    public let bitrate: Int?
-    public let lastCheckOk: Bool
-    public let isFavorite: Bool
+    let id: String
+    let name: String
+    let url: String
+    let homepage: String?
+    let favicon: String?
+    let tags: [String]?
+    let country: String
+    let state: String?
+    let language: String?
+    let votes: Int
+    let bitrate: Int?
+    let lastCheckOk: Bool
+    let isFavorite: Bool
 
-    public init(
+    init(
         id: String,
         name: String,
         url: String,

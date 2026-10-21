@@ -1,15 +1,29 @@
 import Foundation
+import Combine
 import RadioBrowserAPI
 import Storage
+import UILibrary
 
 @MainActor
 final class StationsService {
     private let api: RadioBrowserAPI
     private let dataStore: any StationWriting
+    private let reader: any StationReading
 
-    init(api: RadioBrowserAPI, dataStore: any StationWriting) {
+    init(api: RadioBrowserAPI, dataStore: any StationWriting, reader: any StationReading) {
         self.api = api
         self.dataStore = dataStore
+        self.reader = reader
+    }
+
+    func stationsPublisher(filter: StationFilter = .empty) -> AnyPublisher<[any UILibrary.Station], Never> {
+        reader.stationsPublisher(filter: filter)
+            .map { (entities: [any StationEntity]) -> [any UILibrary.Station] in
+                entities.map { entity in
+                    StorageStation(from: entity)
+                }
+            }
+            .eraseToAnyPublisher()
     }
 
     func fetchAndSaveStations(
@@ -53,7 +67,7 @@ final class StationsService {
         try await dataStore.saveStations(entities)
     }
 
-    private static func adapt(_ stations: [any Station]) async -> [StationRecord] {
+    private static func adapt(_ stations: [any ApiStation]) async -> [StationRecord] {
         await Task.detached(priority: .utility) {
             stations.map { StationRecord(from: $0) }
         }.value

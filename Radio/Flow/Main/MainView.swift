@@ -4,12 +4,30 @@ import Resources
 import UILibrary
 
 struct MainView: ViewProtocol {
-    let viewModel: MainViewModel
+    @ObservedObject var viewModel: MainViewModel
 
     var body: some View {
-        VStack(spacing: 12) {
-            TextView("R.string.localizable.app_name()", size: .h1)
+        VStack(spacing: 0) {
+            if let station = viewModel.selectedStation {
+                PlayerView(
+                    station: station,
+                    isPlaying: false,
+                    layout: .horizontal
+                )
+                .padding(.horizontal)
+                .padding(.top)
+            }
+
+            StationsListView(
+                stations: viewModel.stations,
+                onStationSelected: { [weak viewModel] station in
+                    viewModel?.selectedStation = station
+                }
+            )
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background {
+            SeaSurfGradientView()
+        }
     }
 }

@@ -2,6 +2,7 @@ import Foundation
 import NeedleFoundation
 import RadioBrowserAPI
 import Architecture
+import Storage
 
 typealias ComponentAppDependency = AppDependency
 
@@ -28,7 +29,17 @@ public class AppComponent: BootstrapComponent {
 
     lazy var storageComponent = rootValuesComponent.storageComponent
 
-    lazy var launchComponent = LaunchComponent(parent: self, navigator: navigator)
+    lazy var mainComponent = MainComponent(
+        parent: self,
+        navigator: navigator,
+        stationsService: stationsService
+    )
+
+    lazy var launchComponent = LaunchComponent(
+        parent: self,
+        navigator: navigator,
+        mainCoordinator: mainComponent.coordinator
+    )
 
     var api: RadioBrowserAPI {
         apiComponent.api
@@ -37,7 +48,8 @@ public class AppComponent: BootstrapComponent {
     var stationsService: StationsService {
         StationsService(
             api: api,
-            dataStore: storageComponent.dataStore
+            dataStore: storageComponent.dataStore,
+            reader: storageComponent.dataStore
         )
     }
 
