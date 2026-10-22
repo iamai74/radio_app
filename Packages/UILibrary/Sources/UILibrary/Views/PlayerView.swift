@@ -125,20 +125,15 @@ private struct PlayerContentView: View {
     }
 
     private var horizontalBody: some View {
-        HStack(spacing: 16) {
-            artworkView(size: .l)
-
-            VStack(alignment: .leading, spacing: 12) {
+        VStack {
+            HStack {
+                artworkView(size: .xl)
                 infoView(alignment: .leading)
-
-                volumeView
+                playPauseButton
             }
-
-            Spacer()
-
-            playPauseButton
+            volumeView
         }
-        .padding()
+        
     }
 
     private func artworkView(size: AvatarView.Size) -> some View {
