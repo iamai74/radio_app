@@ -13,8 +13,15 @@ struct MainView: ViewProtocol {
     private static let playerColumnMaximumWidth: CGFloat = 400
 
     var body: some View {
-        GeometryReader { proxy in
-            layout(for: proxy.size)
+        ZStack {
+            SeaSurfGradientView()
+
+            BlurView(blurStyle: .ultraThin)
+                .ignoresSafeArea()
+
+            GeometryReader { proxy in
+                layout(for: proxy.size)
+            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }

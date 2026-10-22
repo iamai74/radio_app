@@ -12,7 +12,7 @@ This package declares lower minimums (iOS 15+, macOS 12+) than the application s
 
 ## Components
 
-`StationsListView`, `StationRowView`, `StationFilterView`, `SearchFieldView`, `TagView`, `TagsCloudView`, `NoResultView`, `AvatarView`, `PlayerView`, `LoadingIndicator`, `TextView`, `SeaSurfGradientView`.
+`StationsListView`, `StationRowView`, `StationFilterView`, `SearchFieldView`, `TagView`, `TagsCloudView`, `NoResultView`, `AvatarView`, `PlayerView`, `LoadingIndicator`, `TextView`, `SeaSurfGradientView`, `BlurView`.
 
 Preview/mock data (`MockStations`, `MockStation`) and the UI-facing `Station` protocol also live in this package.
 

@@ -18,8 +18,11 @@ public struct StationsListView: View {
                 .onTapGesture {
                     onStationSelected(station)
                 }
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
         }
-        .listStyle(.plain)
+//        .listStyle(.plain)
+        .scrollContentBackground(.hidden)
     }
 }
 
