@@ -26,9 +26,6 @@ struct MainView: ViewProtocol {
             )
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background {
-            SeaSurfGradientView()
-        }
     }
 }
 
