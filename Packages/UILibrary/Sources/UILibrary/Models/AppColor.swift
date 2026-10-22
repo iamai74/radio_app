@@ -20,6 +20,7 @@ public enum AppColor {
     case seaWaveIntense4
     case customDarkNavy
     case emptyLayerBackground
+    case favorite
 
     public var color: Color {
         switch self {
@@ -61,6 +62,8 @@ public enum AppColor {
             Color(red: 0.05, green: 0.08, blue: 0.25)
         case .emptyLayerBackground:
             .accentColor.opacity(0.1)
+        case .favorite:
+            .yellow
         }
     }
 }

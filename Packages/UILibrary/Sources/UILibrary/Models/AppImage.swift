@@ -13,6 +13,7 @@ public enum AppImage {
     case volumeHigh
     case gauge
     case globe
+    case radio
 
     public var name: String {
         switch self {
@@ -28,6 +29,7 @@ public enum AppImage {
         case .volumeHigh: "speaker.wave.3"
         case .gauge: "gauge.medium"
         case .globe: "globe"
+        case .radio: "radio"
         }
     }
 

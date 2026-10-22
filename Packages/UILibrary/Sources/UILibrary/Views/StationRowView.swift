@@ -12,7 +12,7 @@ public struct StationRowView: View {
     public var body: some View {
         HStack(spacing: 12) {
             AvatarView(
-                image: loadedImage,
+                image: loadedImage ?? AppImage.radio.view,
                 initials: String(station.name.prefix(2)),
                 size: .s,
                 isLoading: isLoadingImage
@@ -45,8 +45,8 @@ public struct StationRowView: View {
                 }
 
                 if station.isFavorite {
-                    AppImage.heart.view
-                        .foregroundStyle(.red)
+                    AppImage.favoriteFilled.view
+                        .foregroundStyle(AppColor.favorite.color)
                         .font(.caption)
                 }
             }

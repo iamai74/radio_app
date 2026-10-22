@@ -18,7 +18,7 @@ public struct FavoriteButton: View {
             action(isFavorite)
         }, label: {
             Image(systemName: isFavorite ? AppImage.favoriteFilled.name : AppImage.favoriteUnfilled.name)
-                .foregroundColor(isFavorite ? .yellow : .secondary)
+                .foregroundColor(isFavorite ? AppColor.favorite.color : .secondary)
                 .scaleEffect(isFavorite ? 1.2 : 1)
         })
         .buttonStyle(.plain)
