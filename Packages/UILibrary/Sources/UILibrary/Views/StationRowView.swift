@@ -1,57 +1,122 @@
 import SwiftUI
 
+public enum StationRowLayout: String, CaseIterable {
+    case horizontal
+    case vertical
+}
+
 public struct StationRowView: View {
+    @Binding var layout: StationRowLayout
     let station: any Station
     @State private var loadedImage: Image?
     @State private var isLoadingImage = true
 
-    public init(station: any Station) {
+    public init(
+        layout: Binding<StationRowLayout> = .constant(.horizontal),
+        station: any Station
+    ) {
+        self._layout = layout
         self.station = station
     }
 
     public var body: some View {
-        HStack(spacing: 12) {
-            AvatarView(
-                image: loadedImage ?? AppImage.radio.view,
-                initials: String(station.name.prefix(2)),
-                size: .s,
-                isLoading: isLoadingImage
-            )
-            .task {
-                await loadImage()
-            }
+        switch layout {
+        case .horizontal:
+            horizontalBody
+        case .vertical:
+            verticalBody
+        }
+    }
 
-            VStack(alignment: .leading, spacing: 4) {
-                TextView(station.name, size: .h4)
-                    .lineLimit(1)
+    private var horizontalBody: some View {
+        ZStack(alignment: .topTrailing) {
+            HStack(spacing: 12) {
+                avatarView
 
-                TextView(station.country, size: .subheadline, textStyle: .secondary)
-                    .lineLimit(1)
+                VStack(alignment: .leading, spacing: 4) {
+                    TextView(station.name, size: .h4)
+                        .lineLimit(1)
 
-                                  if let tags = station.tags, !tags.isEmpty {
-                                      TagsCloudView(
-                                          tags: Array(tags.prefix(3)),
-                                          spacing: 4,
-                                          horizontalPadding: 0
-                                      )
-                                  }
-            }
+                    TextView(station.country, size: .subheadline, textStyle: .secondary)
+                        .lineLimit(1)
+                    if let bitrate = station.bitrate, bitrate > 0 {
+                        TextView("\(bitrate) kbps", size: .caption, textStyle: .secondary)
+                    }
 
-            Spacer()
-
-            VStack(alignment: .trailing, spacing: 4) {
-                if let bitrate = station.bitrate, bitrate > 0 {
-                    TextView("\(bitrate) kbps", size: .caption, textStyle: .secondary)
+                    if let tags = station.tags, !tags.isEmpty {
+                        TagsCloudView(
+                            tags: Array(tags.prefix(3)),
+                            spacing: 4,
+                            horizontalPadding: 0
+                        )
+                    }
                 }
 
-                if station.isFavorite {
-                    AppImage.favoriteFilled.view
-                        .foregroundStyle(AppColor.favorite.color)
-                        .font(.caption)
-                }
+                Spacer()
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 4)
+
+            if station.isFavorite {
+                AppImage.favoriteFilled.view
+                    .foregroundStyle(AppColor.favorite.color)
+                    .font(.caption)
             }
         }
-        .padding(.vertical, 4)
+    }
+
+    private var verticalBody: some View {
+        ZStack(alignment: .topTrailing) {
+            VStack(alignment: .leading) {
+                HStack {
+                    avatarView
+                    VStack {
+                        TextView(station.name, size: .h4)
+                            .lineLimit(1)
+                            .multilineTextAlignment(.center)
+
+                        TextView(station.country, size: .subheadline, textStyle: .secondary)
+                            .lineLimit(1)
+                        if let bitrate = station.bitrate, bitrate > 0 {
+                            TextView("\(bitrate) kbps", size: .caption, textStyle: .secondary)
+                        }
+                    }
+                }
+
+                if let tags = station.tags, !tags.isEmpty {
+                    TagsCloudView(
+                        tags: Array(tags.prefix(3)),
+                        spacing: 4,
+                        horizontalPadding: 0,
+                        contentAlignment: .center
+                    )
+                }
+                Spacer()
+            }
+            .padding(.vertical, 8)
+            .padding(.horizontal, 12)
+            .frame(maxWidth: .infinity)
+            .background(Color(.systemBackground))
+            .cornerRadius(12)
+
+            if station.isFavorite {
+                AppImage.favoriteFilled.view
+                    .foregroundStyle(AppColor.favorite.color)
+                    .font(.caption)
+            }
+        }
+    }
+
+    private var avatarView: some View {
+        AvatarView(
+            image: loadedImage ?? AppImage.radio.view,
+            initials: String(station.name.prefix(2)),
+            size: .m,
+            isLoading: isLoadingImage
+        )
+        .task {
+            await loadImage()
+        }
     }
 
     @MainActor
@@ -82,10 +147,23 @@ public struct StationRowView: View {
 }
 
 #Preview {
-    List {
-        StationRowView(station: MockStations.jazzRadio)
-        StationRowView(station: MockStations.classical)
-        StationRowView(station: MockStations.rockRadio)
+    NavigationStack {
+        Form {
+            Section("Horizontal Layout") {
+                List {
+                    StationRowView(station: MockStations.jazzRadio)
+                    StationRowView(station: MockStations.classical)
+                    StationRowView(station: MockStations.rockRadio)
+                }
+            }
+
+            Section("Vertical Layout") {
+                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())]) {
+                    StationRowView(layout: .constant(.vertical), station: MockStations.jazzRadio)
+                    StationRowView(layout: .constant(.vertical), station: MockStations.classical)
+                    StationRowView(layout: .constant(.vertical), station: MockStations.rockRadio)
+                }
+            }
+        }
     }
-    .listStyle(.plain)
 }
