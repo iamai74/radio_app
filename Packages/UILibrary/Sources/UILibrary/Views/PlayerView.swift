@@ -47,6 +47,7 @@ public struct PlayerView: View {
 
 private struct PlayerContentView: View {
     @State private var currentVolume: Double
+    @State private var isFavorite: Bool
     @State private var loadedImage: Image?
     @State private var isLoadingImage = true
 
@@ -70,6 +71,7 @@ private struct PlayerContentView: View {
         self.isPlaying = isPlaying
         self.layout = layout
         self._currentVolume = State(initialValue: volume)
+        self._isFavorite = State(initialValue: station.isFavorite)
         self.onPlayPause = onPlayPause
         self.onVolumeChange = onVolumeChange
         self.onFavoriteToggle = onFavoriteToggle
@@ -210,12 +212,12 @@ private struct PlayerContentView: View {
     }
 
     private var favoriteButton: some View {
-        Button(action: onFavoriteToggle) {
-            Image(systemName: station.isFavorite ? "heart.fill" : "heart")
-                .font(.title3)
-                .foregroundStyle(station.isFavorite ? .red : .secondary)
-        }
-        .buttonStyle(.plain)
+        FavoriteButton(
+            isFavorite: $isFavorite,
+            action: { _ in
+                onFavoriteToggle()
+            }
+        )
     }
 
     private var playPauseButton: some View {
