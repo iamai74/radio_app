@@ -1,12 +1,12 @@
 import SwiftUI
 
 public struct NoResultView: View {
-    let imageName: String
+    let imageName: String?
     let title: String
     let subtitle: String
 
     public init(
-        imageName: String = "magnifyingglass",
+        imageName: String? = "magnifyingglass",
         title: String,
         subtitle: String
     ) {
@@ -17,7 +17,7 @@ public struct NoResultView: View {
 
     public var body: some View {
         VStack(spacing: 12) {
-            Image(systemName: imageName)
+            Image(systemName: imageName ?? AppImage.search.name)
                 .font(.system(size: 48))
                 .foregroundStyle(.secondary)
 

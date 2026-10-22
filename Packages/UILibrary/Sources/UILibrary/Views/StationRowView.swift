@@ -45,7 +45,7 @@ public struct StationRowView: View {
                 }
 
                 if station.isFavorite {
-                    Image(systemName: "heart.fill")
+                    AppImage.heart.view
                         .foregroundStyle(.red)
                         .font(.caption)
                 }

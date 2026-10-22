@@ -14,7 +14,7 @@ public struct SearchFieldView: View {
     
     public var body: some View {
         HStack {
-            Image(systemName: "magnifyingglass")
+            AppImage.search.view
                 .foregroundStyle(.secondary)
             TextField(placeholder, text: $searchText)
                 .textFieldStyle(.roundedBorder)

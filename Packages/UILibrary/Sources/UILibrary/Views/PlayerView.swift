@@ -174,7 +174,7 @@ private struct PlayerContentView: View {
             if let bitrate = station.bitrate, bitrate > 0 {
                 Label(
                     "\(bitrate) kbps",
-                    systemImage: "gauge.medium"
+                    systemImage: AppImage.gauge.name
                 )
                 .labelStyle(.titleAndIcon)
                 .font(.caption)
@@ -184,7 +184,7 @@ private struct PlayerContentView: View {
             if !station.country.isEmpty {
                 Label(
                     station.country,
-                    systemImage: "globe"
+                    systemImage: AppImage.globe.name
                 )
                 .labelStyle(.titleAndIcon)
                 .font(.caption)
@@ -195,7 +195,7 @@ private struct PlayerContentView: View {
 
     private var volumeView: some View {
         HStack(spacing: 12) {
-            Image(systemName: volumeIcon(for: currentVolume))
+            Image(systemName: volumeIcon(for: currentVolume)?.name ?? AppImage.volumeMedium.name)
                 .foregroundStyle(.secondary)
                 .font(.caption)
 
@@ -227,7 +227,7 @@ private struct PlayerContentView: View {
                     .fill(Color.accentColor)
                     .frame(width: 60, height: 60)
 
-                Image(systemName: playPauseIcon)
+                Image(systemName: playPauseIcon?.name ?? AppImage.play.name)
                     .font(.title2)
                     .foregroundStyle(.white)
                     .scaleEffect(isPlaying ? 1.1 : 1)
@@ -236,19 +236,19 @@ private struct PlayerContentView: View {
         .buttonStyle(.plain)
     }
 
-    private var playPauseIcon: String {
-        isPlaying ? "pause.fill" : "play.fill"
+    private var playPauseIcon: AppImage? {
+        isPlaying ? .pause : .play
     }
 
-    private func volumeIcon(for volume: Double) -> String {
+    private func volumeIcon(for volume: Double) -> AppImage? {
         if volume == 0 {
-            return "speaker.slash"
+            return .volumeMuted
         } else if volume < 0.3 {
-            return "speaker.wave.1"
+            return .volumeLow
         } else if volume < 0.7 {
-            return "speaker.wave.2"
+            return .volumeMedium
         } else {
-            return "speaker.wave.3"
+            return .volumeHigh
         }
     }
 

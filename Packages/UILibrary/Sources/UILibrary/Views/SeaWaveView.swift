@@ -3,19 +3,19 @@ import SwiftUI
 public struct SeaWaveView: View {
     public enum WaveConfig {
         case gentle(
-            colors: [Color] = [.blue.opacity(0.6), .cyan.opacity(0.4), .blue.opacity(0.8)],
+            colors: [Color] = [AppColor.seaWaveGentle1.color, AppColor.seaWaveGentle2.color, AppColor.seaWaveGentle3.color],
             amplitude: CGFloat = 20,
             waveCount: Int = 3,
             speed: Double = 0.03
         )
         case moderate(
-            colors: [Color] = [.blue.opacity(0.7), .cyan.opacity(0.5), .purple.opacity(0.6)],
+            colors: [Color] = [AppColor.seaWaveModerate1.color, AppColor.seaWaveModerate2.color, AppColor.seaWaveModerate3.color],
             amplitude: CGFloat = 35,
             waveCount: Int = 4,
             speed: Double = 0.05
         )
         case intense(
-            colors: [Color] = [.blue, .cyan, .purple, .blue.opacity(0.7)],
+            colors: [Color] = [AppColor.seaWaveIntense1.color, AppColor.seaWaveIntense2.color, AppColor.seaWaveIntense3.color, AppColor.seaWaveIntense4.color],
             amplitude: CGFloat = 50,
             waveCount: Int = 5,
             speed: Double = 0.08

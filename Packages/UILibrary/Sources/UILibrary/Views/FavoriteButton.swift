@@ -17,7 +17,7 @@ public struct FavoriteButton: View {
             isFavorite.toggle()
             action(isFavorite)
         }, label: {
-            Image(systemName: isFavorite ? "star.fill" : "star")
+            Image(systemName: isFavorite ? AppImage.favoriteFilled.name : AppImage.favoriteUnfilled.name)
                 .foregroundColor(isFavorite ? .yellow : .secondary)
                 .scaleEffect(isFavorite ? 1.2 : 1)
         })

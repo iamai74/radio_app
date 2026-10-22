@@ -11,15 +11,15 @@ public struct SeaSurfGradientView: View {
 
         public init(
             gradientColors: [Color] = [
-                Color(red: 0.01, green: 0.06, blue: 0.16),
-                Color(red: 0.02, green: 0.22, blue: 0.36),
-                Color(red: 0.04, green: 0.45, blue: 0.52)
+                AppColor.seaSurfGradientDeep.color,
+                AppColor.seaSurfGradientMid.color,
+                AppColor.seaSurfGradientShallow.color
             ],
             waveColors: [Color] = [
-                Color(red: 0.20, green: 0.75, blue: 0.78),
-                Color(red: 0.05, green: 0.55, blue: 0.65),
-                Color(red: 0.03, green: 0.35, blue: 0.55),
-                Color(red: 0.02, green: 0.15, blue: 0.35)
+                AppColor.seaSurfWaveSurface.color,
+                AppColor.seaSurfWaveMid.color,
+                AppColor.seaSurfWaveDeep.color,
+                AppColor.seaSurfWaveBottom.color
             ],
             foamColor: Color = .white.opacity(0.8),
             amplitude: CGFloat = 24,
@@ -139,7 +139,7 @@ private struct SurfWaveShape: Shape {
     SeaSurfGradientView(
         configuration: .init(
             gradientColors: [.black.opacity(0.7), .indigo, .cyan.opacity(0.6)],
-            waveColors: [.mint, .teal, .blue, Color(red: 0.05, green: 0.08, blue: 0.25)],
+            waveColors: [.mint, .teal, .blue, AppColor.customDarkNavy.color],
             amplitude: 40,
             waveCount: 5,
             speed: 0.8
