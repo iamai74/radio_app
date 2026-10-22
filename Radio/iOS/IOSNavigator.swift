@@ -8,20 +8,21 @@ final class IOSNavigator: NavigatorProtocol {
 
     init(window: UIWindow) {
         navigationController = UINavigationController()
+        navigationController.setNavigationBarHidden(true, animated: false)
         window.rootViewController = navigationController
         window.makeKeyAndVisible()
     }
 
     func setRoot<V: ViewProtocol>(view: V) {
-        navigationController.setViewControllers([UIHostingController(rootView: view)], animated: false)
+        navigationController.setViewControllers([HostingController(rootView: view)], animated: false)
     }
 
     func push<V: ViewProtocol>(view: V) {
-        navigationController.pushViewController(UIHostingController(rootView: view), animated: true)
+        navigationController.pushViewController(HostingController(rootView: view), animated: true)
     }
 
     func present<V: ViewProtocol>(view: V) {
-        navigationController.present(UIHostingController(rootView: view), animated: true)
+        navigationController.present(HostingController(rootView: view), animated: true)
     }
 
     func pop() {
