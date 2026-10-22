@@ -98,9 +98,9 @@ private struct PlayerContentView: View {
                         TagsCloudView(
                             tags: Array(tags.prefix(4)),
                             spacing: 6,
-                            horizontalPadding: 0
+                            horizontalPadding: 0,
+                            contentAlignment: .center
                         )
-                        .frame(maxWidth: .infinity)
                     }
 
                     metadataLabels
@@ -126,7 +126,7 @@ private struct PlayerContentView: View {
 
     private var horizontalBody: some View {
         HStack(spacing: 16) {
-            artworkView(size: .xl)
+            artworkView(size: .l)
 
             VStack(alignment: .leading, spacing: 12) {
                 infoView(alignment: .leading)

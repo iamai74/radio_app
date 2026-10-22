@@ -6,36 +6,37 @@ public struct TagsCloudView: View {
     var onTagTap: ((String) -> Void)?
     let spacing: CGFloat
     let horizontalPadding: CGFloat
-
+    let contentAlignment: Alignment
+    
     public init(
         tags: [String],
         selectedTags: Set<String> = [],
         onTagTap: ((String) -> Void)? = nil,
         spacing: CGFloat = 8,
-        horizontalPadding: CGFloat = 0
+        horizontalPadding: CGFloat = 0,
+        contentAlignment: Alignment = .leading
     ) {
         self.tags = tags
         self.selectedTags = selectedTags
         self.onTagTap = onTagTap
         self.spacing = spacing
         self.horizontalPadding = horizontalPadding
+        self.contentAlignment = contentAlignment
     }
-
+    
     public var body: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: spacing) {
-                ForEach(tags, id: \.self) { tag in
-                    TagView(
-                        text: tag,
-                        isSelected: selectedTags.contains(tag)
-                    )
-                    .onTapGesture {
-                        onTagTap?(tag)
-                    }
+        HStack(spacing: spacing) {
+            ForEach(tags, id: \.self) { tag in
+                TagView(
+                    text: tag,
+                    isSelected: selectedTags.contains(tag)
+                )
+                .onTapGesture {
+                    onTagTap?(tag)
                 }
             }
-            .padding(.horizontal, horizontalPadding)
         }
+        .padding(.horizontal, horizontalPadding)
     }
 }
 
