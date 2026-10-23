@@ -73,8 +73,7 @@ public struct TagsCloudView: View {
             ForEach(line.tags) { tag in
                 TagView(
                     text: tag.text,
-                    isSelected: selectedTags.contains(tag.text),
-                    fontSize: tag.fontSize
+                    isSelected: selectedTags.contains(tag.text)
                 )
                 .onTapGesture {
                     onTagTap?(tag.text)
