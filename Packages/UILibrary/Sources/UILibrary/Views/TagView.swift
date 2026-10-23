@@ -3,9 +3,9 @@ import SwiftUI
 public struct TagView: View {
     let text: String
     var isSelected: Bool = false
-    var fontSize: CGFloat?
+    var size: Size?
 
-    private var style: TextStyle {
+    private var textStyle: TextStyle {
         isSelected ? .white : .primary
     }
 
@@ -13,15 +13,12 @@ public struct TagView: View {
         isSelected ? Color.accentColor : Color.secondary.opacity(0.15)
     }
 
-    private var effectiveFontSize: CGFloat {
-        fontSize ?? Size.caption.fontSize
+    private var effectiveSize: Size {
+        size ?? .caption
     }
 
     public var body: some View {
-        Text(text)
-            .font(.system(size: effectiveFontSize, design: .default))
-            .fontWeight(.regular)
-            .foregroundStyle(style.color)
+        TextView(text, size: effectiveSize, textStyle: textStyle)
             .padding(.horizontal, 12)
             .padding(.vertical, 6)
             .background(backgroundColor)
