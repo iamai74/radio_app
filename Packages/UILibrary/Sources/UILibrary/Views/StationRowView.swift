@@ -55,7 +55,7 @@ public struct StationRowView: View {
                 Spacer()
             }
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 4)
+            .padding(.vertical, 12)
 
             if station.isFavorite {
                 AppImage.favoriteFilled.view
@@ -93,10 +93,9 @@ public struct StationRowView: View {
                 }
                 Spacer()
             }
-            .padding(.vertical, 8)
+            .padding(.vertical, 12)
             .padding(.horizontal, 12)
             .frame(maxWidth: .infinity)
-            .background(Color(.systemBackground))
             .cornerRadius(12)
 
             if station.isFavorite {
