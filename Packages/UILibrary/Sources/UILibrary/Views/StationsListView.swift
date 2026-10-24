@@ -19,8 +19,8 @@ public struct StationsListView: View {
             ScrollView {
                 LazyVGrid(columns: gridItems(columns: columns), spacing: 12) {
                     ForEach(stations, id: \.id) { station in
-                        StationRowView(layout: .constant(.vertical), station: station)
-                            .onTapGesture {
+                        StationRowView(layout: .constant(columns == 1 ? .horizontal : .vertical), station: station)
+                             .onTapGesture {
                                 onStationSelected(station)
                             }
                     }
