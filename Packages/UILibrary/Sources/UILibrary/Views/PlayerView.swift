@@ -141,10 +141,10 @@ private struct PlayerContentView: View {
 
     private func artworkView(size: AvatarView.Size) -> some View {
         AvatarView(
-            image: loadedImage,
+            image: $loadedImage,
             initials: String(station.name.prefix(2)),
             size: size,
-            isLoading: isLoadingImage
+            isLoading: $isLoadingImage
         )
         .task {
             await loadImage()

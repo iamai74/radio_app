@@ -47,11 +47,25 @@ public struct AvatarView: View {
         }
     }
 
+    @Binding var image: Image?
     let initials: String
     let size: Size
     let backgroundColor: Color
-    var image: Image?
-    var isLoading: Bool
+    @Binding var isLoading: Bool
+
+    public init(
+        image: Binding<Image?>,
+        initials: String = "",
+        size: Size = .m,
+        backgroundColor: Color = .accentColor,
+        isLoading: Binding<Bool>
+    ) {
+        self._image = image
+        self.initials = initials
+        self.size = size
+        self.backgroundColor = backgroundColor
+        self._isLoading = isLoading
+    }
 
     public init(
         image: Image? = nil,
@@ -60,22 +74,22 @@ public struct AvatarView: View {
         backgroundColor: Color = .accentColor,
         isLoading: Bool = false
     ) {
-        self.image = image
+        self._image = .constant(image)
         self.initials = initials
         self.size = size
         self.backgroundColor = backgroundColor
-        self.isLoading = isLoading
+        self._isLoading = .constant(isLoading)
     }
 
     public func image(_ image: Image?) -> AvatarView {
         var view = self
-        view.image = image
+        view._image = .constant(image)
         return view
     }
 
     public func isLoading(_ isLoading: Bool) -> AvatarView {
         var view = self
-        view.isLoading = isLoading
+        view._isLoading = .constant(isLoading)
         return view
     }
 

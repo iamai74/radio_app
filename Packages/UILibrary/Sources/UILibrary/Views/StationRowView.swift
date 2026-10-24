@@ -110,10 +110,10 @@ public struct StationRowView: View {
 
     private var avatarView: some View {
         AvatarView(
-            image: loadedImage ?? AppImage.radio.view,
+            image: $loadedImage,
             initials: String(station.name.prefix(2)),
             size: .m,
-            isLoading: isLoadingImage
+            isLoading: $isLoadingImage
         )
         .task {
             await loadImage()
