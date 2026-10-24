@@ -13,6 +13,8 @@ public struct PlayerView: View {
     let onPlayPause: () -> Void
     let onVolumeChange: (Double) -> Void
     let onFavoriteToggle: () -> Void
+    let stationImage: Image?
+    let isImageLoading: Bool
 
     public init(
         station: some Station,
@@ -21,7 +23,9 @@ public struct PlayerView: View {
         layout: PlayerLayout = .vertical,
         onPlayPause: @escaping () -> Void = {},
         onVolumeChange: @escaping (Double) -> Void = { _ in },
-        onFavoriteToggle: @escaping () -> Void = {}
+        onFavoriteToggle: @escaping () -> Void = {},
+        stationImage: Image? = nil,
+        isImageLoading: Bool = false
     ) {
         self.station = station
         self.isPlaying = isPlaying
@@ -30,6 +34,8 @@ public struct PlayerView: View {
         self.onPlayPause = onPlayPause
         self.onVolumeChange = onVolumeChange
         self.onFavoriteToggle = onFavoriteToggle
+        self.stationImage = stationImage
+        self.isImageLoading = isImageLoading
     }
 
     public var body: some View {
@@ -40,7 +46,9 @@ public struct PlayerView: View {
             layout: layout,
             onPlayPause: onPlayPause,
             onVolumeChange: onVolumeChange,
-            onFavoriteToggle: onFavoriteToggle
+            onFavoriteToggle: onFavoriteToggle,
+            stationImage: stationImage,
+            isImageLoading: isImageLoading
         )
     }
 }
@@ -48,8 +56,6 @@ public struct PlayerView: View {
 private struct PlayerContentView: View {
     @State private var currentVolume: Double
     @State private var isFavorite: Bool
-    @State private var loadedImage: Image?
-    @State private var isLoadingImage = true
 
     let station: any Station
     let isPlaying: Bool
@@ -57,6 +63,8 @@ private struct PlayerContentView: View {
     let onPlayPause: () -> Void
     let onVolumeChange: (Double) -> Void
     let onFavoriteToggle: () -> Void
+    let stationImage: Image?
+    let isImageLoading: Bool
 
     init(
         station: any Station,
@@ -65,7 +73,9 @@ private struct PlayerContentView: View {
         layout: PlayerLayout,
         onPlayPause: @escaping () -> Void,
         onVolumeChange: @escaping (Double) -> Void,
-        onFavoriteToggle: @escaping () -> Void
+        onFavoriteToggle: @escaping () -> Void,
+        stationImage: Image?,
+        isImageLoading: Bool
     ) {
         self.station = station
         self.isPlaying = isPlaying
@@ -75,6 +85,8 @@ private struct PlayerContentView: View {
         self.onPlayPause = onPlayPause
         self.onVolumeChange = onVolumeChange
         self.onFavoriteToggle = onFavoriteToggle
+        self.stationImage = stationImage
+        self.isImageLoading = isImageLoading
     }
 
     var body: some View {
@@ -136,19 +148,16 @@ private struct PlayerContentView: View {
             }
             volumeView
         }
-        
+
     }
 
     private func artworkView(size: AvatarView.Size) -> some View {
         AvatarView(
-            image: $loadedImage,
+            image: stationImage,
             initials: String(station.name.prefix(2)),
             size: size,
-            isLoading: $isLoadingImage
+            isLoading: isImageLoading
         )
-        .task {
-            await loadImage()
-        }
         .shadow(radius: 4)
     }
 
@@ -240,53 +249,35 @@ private struct PlayerContentView: View {
             return .volumeHigh
         }
     }
-
-    @MainActor
-    private func loadImage() async {
-        guard isLoadingImage else { return }
-        guard let favicon = station.favicon,
-              let url = URL(string: favicon) else {
-            isLoadingImage = false
-            return
-        }
-
-        do {
-            let (data, _) = try await URLSession.shared.data(from: url)
-#if os(iOS)
-            if let uiImage = UIImage(data: data) {
-                loadedImage = Image(uiImage: uiImage)
-            }
-#elseif os(macOS)
-            if let nsImage = NSImage(data: data) {
-                loadedImage = Image(nsImage: nsImage)
-            }
-#endif
-        } catch {
-            // Ignore loading errors
-        }
-        isLoadingImage = false
-    }
 }
 
 #Preview {
     NavigationStack {
         Form {
             Section("Vertical Layout") {
-                PlayerView(
-                    station: MockStations.jazzRadio,
-                    isPlaying: true,
-                    volume: 0.65,
-                    layout: .vertical
-                )
+                AsyncImageLoaderView(favicon: MockStations.jazzRadio.favicon) { image, isLoading in
+                    PlayerView(
+                        station: MockStations.jazzRadio,
+                        isPlaying: true,
+                        volume: 0.65,
+                        layout: .vertical,
+                        stationImage: image,
+                        isImageLoading: isLoading
+                    )
+                }
             }
 
             Section("Horizontal Layout") {
-                PlayerView(
-                    station: MockStations.jazzRadio,
-                    isPlaying: true,
-                    volume: 0.65,
-                    layout: .horizontal
-                )
+                AsyncImageLoaderView(favicon: MockStations.jazzRadio.favicon) { image, isLoading in
+                    PlayerView(
+                        station: MockStations.jazzRadio,
+                        isPlaying: true,
+                        volume: 0.65,
+                        layout: .horizontal,
+                        stationImage: image,
+                        isImageLoading: isLoading
+                    )
+                }
             }
         }
     }

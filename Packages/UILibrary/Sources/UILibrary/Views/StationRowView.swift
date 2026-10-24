@@ -8,15 +8,19 @@ public enum StationRowLayout: String, CaseIterable {
 public struct StationRowView: View {
     @Binding var layout: StationRowLayout
     let station: any Station
-    @State private var loadedImage: Image?
-    @State private var isLoadingImage = true
+    let stationImage: Image?
+    let isImageLoading: Bool
 
     public init(
         layout: Binding<StationRowLayout> = .constant(.horizontal),
-        station: any Station
+        station: any Station,
+        stationImage: Image? = nil,
+        isImageLoading: Bool = false
     ) {
         self._layout = layout
         self.station = station
+        self.stationImage = stationImage
+        self.isImageLoading = isImageLoading
     }
 
     public var body: some View {
@@ -110,40 +114,11 @@ public struct StationRowView: View {
 
     private var avatarView: some View {
         AvatarView(
-            image: $loadedImage,
+            image: stationImage,
             initials: String(station.name.prefix(2)),
             size: .m,
-            isLoading: $isLoadingImage
+            isLoading: isImageLoading
         )
-        .task {
-            await loadImage()
-        }
-    }
-
-    @MainActor
-    private func loadImage() async {
-        guard isLoadingImage else { return }
-        guard let favicon = station.favicon,
-              let url = URL(string: favicon) else {
-            isLoadingImage = false
-            return
-        }
-
-        do {
-            let (data, _) = try await URLSession.shared.data(from: url)
-#if os(iOS)
-            if let uiImage = UIImage(data: data) {
-                loadedImage = Image(uiImage: uiImage)
-            }
-#elseif os(macOS)
-            if let nsImage = NSImage(data: data) {
-                loadedImage = Image(nsImage: nsImage)
-            }
-#endif
-        } catch {
-            // Ignore loading errors
-        }
-        isLoadingImage = false
     }
 }
 
