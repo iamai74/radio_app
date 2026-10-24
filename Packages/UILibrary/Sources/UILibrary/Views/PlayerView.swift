@@ -173,23 +173,21 @@ private struct PlayerContentView: View {
     private var metadataLabels: some View {
         HStack(spacing: 8) {
             if let bitrate = station.bitrate, bitrate > 0 {
-                Label(
-                    "\(bitrate) kbps",
-                    systemImage: AppImage.gauge.name
+                LabelView(
+                    icon: .gauge,
+                    text: "\(bitrate) kbps",
+                    size: .caption,
+                    textStyle: .secondary
                 )
-                .labelStyle(.titleAndIcon)
-                .font(.caption)
-                .foregroundStyle(.secondary)
             }
 
             if !station.country.isEmpty {
-                Label(
-                    station.country,
-                    systemImage: AppImage.globe.name
+                LabelView(
+                    icon: .globe,
+                    text: station.country,
+                    size: .caption,
+                    textStyle: .secondary
                 )
-                .labelStyle(.titleAndIcon)
-                .font(.caption)
-                .foregroundStyle(.secondary)
             }
         }
     }

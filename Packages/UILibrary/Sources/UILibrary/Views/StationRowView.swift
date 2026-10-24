@@ -37,10 +37,21 @@ public struct StationRowView: View {
                     TextView(station.name, size: .h4)
                         .lineLimit(1)
 
-                    TextView(station.country, size: .subheadline, textStyle: .secondary)
-                        .lineLimit(1)
+                    LabelView(
+                        icon: .globe,
+                        text: station.country,
+                        size: .subheadline,
+                        textStyle: .secondary
+                    )
+                    .lineLimit(1)
+
                     if let bitrate = station.bitrate, bitrate > 0 {
-                        TextView("\(bitrate) kbps", size: .caption, textStyle: .secondary)
+                        LabelView(
+                            icon: .gauge,
+                            text: "\(bitrate) kbps",
+                            size: .caption,
+                            textStyle: .secondary
+                        )
                     }
 
                     if let tags = station.tags, !tags.isEmpty {
@@ -75,10 +86,21 @@ public struct StationRowView: View {
                             .lineLimit(1)
                             .multilineTextAlignment(.center)
 
-                        TextView(station.country, size: .subheadline, textStyle: .secondary)
-                            .lineLimit(1)
+                        LabelView(
+                            icon: .globe,
+                            text: station.country,
+                            size: .subheadline,
+                            textStyle: .secondary
+                        )
+                        .lineLimit(1)
+
                         if let bitrate = station.bitrate, bitrate > 0 {
-                            TextView("\(bitrate) kbps", size: .caption, textStyle: .secondary)
+                            LabelView(
+                                icon: .gauge,
+                                text: "\(bitrate) kbps",
+                                size: .caption,
+                                textStyle: .secondary
+                            )
                         }
                     }
                 }
