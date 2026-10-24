@@ -92,7 +92,7 @@ private struct PlayerContentView: View {
                 artworkView(size: .xxl)
 
                 VStack(spacing: 8) {
-                    TextView(station.name, size: .h3)
+                    StationNameTextView(name: station.name, size: .h3)
                         .lineLimit(2)
                         .multilineTextAlignment(.center)
 
@@ -173,21 +173,11 @@ private struct PlayerContentView: View {
     private var metadataLabels: some View {
         HStack(spacing: 8) {
             if let bitrate = station.bitrate, bitrate > 0 {
-                LabelView(
-                    icon: .gauge,
-                    text: "\(bitrate) kbps",
-                    size: .caption,
-                    textStyle: .secondary
-                )
+                BitrateLabelView(bitrate: bitrate)
             }
 
             if !station.country.isEmpty {
-                LabelView(
-                    icon: .globe,
-                    text: station.country,
-                    size: .caption,
-                    textStyle: .secondary
-                )
+                CountryLabelView(country: station.country)
             }
         }
     }

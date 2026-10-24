@@ -34,24 +34,14 @@ public struct StationRowView: View {
                 avatarView
 
                 VStack(alignment: .leading, spacing: 4) {
-                    TextView(station.name, size: .h4)
+                    StationNameTextView(name: station.name, size: .h4)
                         .lineLimit(1)
 
-                    LabelView(
-                        icon: .globe,
-                        text: station.country,
-                        size: .subheadline,
-                        textStyle: .secondary
-                    )
-                    .lineLimit(1)
+                    CountryLabelView(country: station.country)
+                        .lineLimit(1)
 
                     if let bitrate = station.bitrate, bitrate > 0 {
-                        LabelView(
-                            icon: .gauge,
-                            text: "\(bitrate) kbps",
-                            size: .caption,
-                            textStyle: .secondary
-                        )
+                        BitrateLabelView(bitrate: bitrate)
                     }
 
                     if let tags = station.tags, !tags.isEmpty {
@@ -82,25 +72,15 @@ public struct StationRowView: View {
                 HStack {
                     avatarView
                     VStack {
-                        TextView(station.name, size: .h4)
+                        StationNameTextView(name: station.name, size: .h4)
                             .lineLimit(1)
                             .multilineTextAlignment(.center)
 
-                        LabelView(
-                            icon: .globe,
-                            text: station.country,
-                            size: .subheadline,
-                            textStyle: .secondary
-                        )
-                        .lineLimit(1)
+                        CountryLabelView(country: station.country)
+                            .lineLimit(1)
 
                         if let bitrate = station.bitrate, bitrate > 0 {
-                            LabelView(
-                                icon: .gauge,
-                                text: "\(bitrate) kbps",
-                                size: .caption,
-                                textStyle: .secondary
-                            )
+                            BitrateLabelView(bitrate: bitrate)
                         }
                     }
                 }
