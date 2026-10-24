@@ -8,7 +8,8 @@ final class IOSNavigator: NavigatorProtocol {
 
     init(window: UIWindow) {
         navigationController = UINavigationController()
-        navigationController.setNavigationBarHidden(true, animated: false)
+        navigationController.setNavigationBarHidden(false, animated: false)
+        navigationController.navigationBar.prefersLargeTitles = true
         window.rootViewController = navigationController
         window.makeKeyAndVisible()
     }
