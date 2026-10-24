@@ -131,6 +131,7 @@ private struct PlayerContentView: View {
             HStack {
                 artworkView(size: .xl)
                 infoView(alignment: .leading)
+                Spacer()
                 playPauseButton
             }
             volumeView

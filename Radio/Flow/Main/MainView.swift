@@ -24,6 +24,15 @@ struct MainView: ViewProtocol {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    // Action to be implemented
+                } label: {
+                    Image(systemName: "slider.vertical.3")
+                }
+            }
+        }
     }
 
     @ViewBuilder
