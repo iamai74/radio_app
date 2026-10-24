@@ -8,8 +8,8 @@ public enum StationRowLayout: String, CaseIterable {
 public struct StationRowView: View {
     @Binding var layout: StationRowLayout
     let station: any Station
-    let stationImage: Image?
-    let isImageLoading: Bool
+    @State private var stationImage: Image?
+    @State private var isImageLoading: Bool
 
     public init(
         layout: Binding<StationRowLayout> = .constant(.horizontal),
@@ -19,8 +19,17 @@ public struct StationRowView: View {
     ) {
         self._layout = layout
         self.station = station
-        self.stationImage = stationImage
-        self.isImageLoading = isImageLoading
+        self._stationImage = State(initialValue: stationImage)
+        self._isImageLoading = State(initialValue: isImageLoading)
+    }
+
+    public func updateImage(image: Image?) {
+        self.stationImage = image
+        self.isImageLoading = false
+    }
+
+    public func startImageLoading() {
+        self.isImageLoading = true
     }
 
     public var body: some View {
