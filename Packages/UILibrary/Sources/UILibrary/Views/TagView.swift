@@ -3,9 +3,9 @@ import SwiftUI
 public struct TagView: View {
     let text: String
     var isSelected: Bool = false
-    var size: Size?
+    var size: TextSize?
 
-    private var textStyle: TextStyle {
+    private var textStyle: TextColorStyle {
         isSelected ? .white : .primary
     }
 
@@ -13,7 +13,7 @@ public struct TagView: View {
         isSelected ? Color.accentColor : Color.secondary.opacity(0.15)
     }
 
-    private var effectiveSize: Size {
+    private var effectiveSize: TextSize {
         size ?? .caption
     }
 

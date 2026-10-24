@@ -8,15 +8,15 @@ public enum LabelAlignment {
 public struct LabelView: View {
     let icon: AppImage
     let text: String
-    let size: Size
-    let textStyle: TextStyle
+    let size: TextSize
+    let textStyle: TextColorStyle
     let alignment: LabelAlignment
 
     public init(
         icon: AppImage,
         text: String,
-        size: Size = .base,
-        textStyle: TextStyle = .primary,
+        size: TextSize = .base,
+        textStyle: TextColorStyle = .primary,
         alignment: LabelAlignment = .leadingIcon
     ) {
         self.icon = icon
